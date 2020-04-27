@@ -1,0 +1,91 @@
+{
+	"info": {
+		"_postman_id": "f3479d2e-dcc0-4a82-8e52-755707e5d12a",
+		"name": "Stacks",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Boards",
+			"item": [
+				{
+					"name": "Get Boards list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Board",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "16c47681-cbc9-4282-946f-d2fd95d12d8e",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "7e550fb4-3265-4e4b-941d-1b060668fee2",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "1d379ae5-3606-407d-853b-b1142fcb4016",
+			"key": "server",
+			"value": "http://stacks:8888",
+			"type": "string"
+		},
+		{
+			"id": "286b93aa-a2c0-4900-b486-f7ef8face670",
+			"key": "ver",
+			"value": "v1",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}

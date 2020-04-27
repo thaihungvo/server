@@ -4,11 +4,9 @@ use App\Models\BoardModel;
 
 class BoardsController extends BaseController
 {
-	public function all()
+	public function all_v1()
 	{
         $boardModel = new BoardModel();
-        // $boards = $boardModel->where('owner', 1)->findAll();
-
         $builder = $boardModel->builder();
 
         $query = $builder->join('boards_members', 'boards_members.board = boards.id')
@@ -28,7 +26,7 @@ class BoardsController extends BaseController
         return $this->reply($boards);
 	}
 
-	public function one($id)
+	public function one_v1($id)
 	{
         $boardModel = new BoardModel();
         $board = $boardModel
