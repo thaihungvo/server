@@ -71,4 +71,32 @@ class BoardsController extends BaseController
 
         return $this->reply($board, 200, "OK_BOARD_CREATE_SUCCESS");
     }
+
+    public function update_v1($id)
+	{
+        $user = $this->request->user;
+
+        $boardModel = new BoardModel();
+        $board = $boardModel
+            ->where('owner', $user->id)
+            ->find($id);
+
+        if (!$board) {
+            return $this->reply(null, 404, "ERR_BOARDS_NOT_FOUND_MSG");
+        }
+
+        $boardData = $this->request->getJSON();
+
+        $board->title = $boardData->title;
+
+        if (isset($boardData->archived_order)) {
+            $board->archived_order = $boardData->archived_order;
+        }
+
+        if ($boardModel->update($board->id, $board) === false) {
+            return $this->reply(null, 404, "ERR_BOARDS_UPDATE");
+        }
+
+        return $this->reply($board);
+    }
 }

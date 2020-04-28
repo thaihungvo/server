@@ -6,7 +6,7 @@ class BoardModel extends Model
 {
     protected $table      = 'boards';
     protected $primaryKey = 'id';
-    protected $returnType = 'array';
+    protected $returnType = 'object';
 
     protected $useSoftDeletes = true;
 
