@@ -70,7 +70,7 @@ class UserController extends BaseController
             'password' => $hash
         ];
         
-        if (!$userModel->save($data)) {
+        if (!$userModel->insert($data)) {
             return $this->reply(null, 500, "ERR_USER_REGISTRATION_SAVE");
         }
 

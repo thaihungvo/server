@@ -62,10 +62,36 @@
 				{
 					"name": "Create Board",
 					"request": {
-						"method": "GET",
-						"header": [],
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"id\": \"e6c0f754-fe02-42c5-a026-eeac75bf87ae\",\n\t\"title\": \"Hello Board\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": ""
+							"raw": "{{server}}/api/{{ver}}/boards",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards"
+							]
 						}
 					},
 					"response": []

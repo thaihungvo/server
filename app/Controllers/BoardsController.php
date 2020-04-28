@@ -50,16 +50,25 @@ class BoardsController extends BaseController
         $boardData = $this->request->getJSON();
 
         $data = [
+            'id' => $boardData->id,
             'title' => $boardData->title,
-            'owner' => $user->id
+            'owner' => $user->id,
+            'archived_order' => 'title-asc'
         ];
 
         $boardModel = new BoardModel();
 
-        if (!$boardModel->save($data)) {
-            return $this->reply(null, 500, "ERR_BOARD_CREATE");
+        try {
+            if ($boardModel->insert($data) === false) {
+                $errors = $boardModel->errors();
+                return $this->reply($errors, 500, "ERR_BOARD_CREATE");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR_BOARD_CREATE");
         }
 
-        return $this->reply(null, 200, "OK_BOARD_CREATE_SUCCESS");
+        $board = $boardModel->find($boardData->id);
+
+        return $this->reply($board, 200, "OK_BOARD_CREATE_SUCCESS");
     }
 }

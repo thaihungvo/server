@@ -38,6 +38,7 @@ $routes->post('/register', 'UserController::register_v1');
 
 // BOARDS
 $routes->get('/api/v1/boards', 'BoardsController::all_v1');
+$routes->post('/api/v1/boards', 'BoardsController::create_v1');
 $routes->get('/api/v1/boards/(:any)', 'BoardsController::one_v1/$1');
 
 /**
