@@ -60,4 +60,38 @@ class TagsController extends BaseController
 
         return $this->reply($tag, 200, "OK_BOARD_TAGS_CREATE_SUCCESS");
     }
+
+    public function update_v1($idBoard, $idTag)
+	{
+        $user = $this->request->user;
+
+        $boardModel = new BoardModel();
+        $board = $boardModel
+            ->where('owner', $user->id)
+            ->find($idBoard);
+
+        if (!$board) {
+            return $this->reply(null, 404, "ERR_BOARDS_NOT_FOUND_MSG");
+        }
+
+        $tagModel = new TagModel();
+        $tag = $tagModel
+            ->where('board', $board->id)
+            ->find($idTag);
+
+        if (!$tag) {
+            return $this->reply(null, 404, "ERR_BOARDS_TAG_NOT_FOUND_MSG");
+        }
+
+        $tagData = $this->request->getJSON();
+
+        $tag->title = $tagData->title;
+        $tag->color = $tagData->color;
+
+        if ($tagModel->update($tag->id, $tag) === false) {
+            return $this->reply(null, 404, "ERR_BOARDS_TAGS_UPDATE");
+        }
+
+        return $this->reply($tag);
+    }
 }

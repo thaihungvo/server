@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.26)
 # Database: stacks
-# Generation Time: 2020-04-28 12:35:06 +0000
+# Generation Time: 2020-04-28 19:36:43 +0000
 # ************************************************************
 
 
@@ -41,11 +41,16 @@ LOCK TABLES `stk_boards` WRITE;
 
 INSERT INTO `stk_boards` (`id`, `owner`, `title`, `archived_order`, `created`, `updated`, `deleted`)
 VALUES
-	('35436ec7-d32b-4f50-bba5-b5f276f289f9',1,'Welcome to Stacks','title-asc','2020-04-25 13:21:17',NULL,NULL),
-	('c710debc-1679-46d7-9606-0752c855a9f7',1,'Hello world','title-asc',NULL,NULL,NULL);
+	('35436ec7-d32b-4f50-bba5-b5f276f289f9',1,'Welcome board','title-asc','2020-04-25 13:21:17','2020-04-28 12:44:39',NULL);
 
 /*!40000 ALTER TABLE `stk_boards` ENABLE KEYS */;
 UNLOCK TABLES;
+
+DELIMITER ;;
+/*!50003 SET SESSION SQL_MODE="ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" */;;
+/*!50003 CREATE */ /*!50017 DEFINER=`root`@`localhost` */ /*!50003 TRIGGER `UUID` BEFORE INSERT ON `stk_boards` FOR EACH ROW SET new.id = UUID() */;;
+DELIMITER ;
+/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;
 
 
 # Dump of table stk_boards_members
@@ -80,7 +85,7 @@ CREATE TABLE `stk_boards_tags` (
   `id` varchar(37) NOT NULL DEFAULT '',
   `title` varchar(100) NOT NULL DEFAULT '',
   `color` varchar(7) NOT NULL DEFAULT '',
-  `board` int(11) NOT NULL,
+  `board` varchar(37) NOT NULL DEFAULT '',
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -91,13 +96,13 @@ LOCK TABLES `stk_boards_tags` WRITE;
 
 INSERT INTO `stk_boards_tags` (`id`, `title`, `color`, `board`, `created`, `updated`)
 VALUES
-	('1','Bugs','#FF6C35',1,'2020-04-25 13:21:47',NULL),
-	('2','Doing','#92D632',1,'2020-04-25 13:21:47',NULL),
-	('3','High Priority','#FFDC00',1,'2020-04-25 13:21:47',NULL),
-	('4','Missing Info','#FF9C00',1,'2020-04-25 13:21:47',NULL),
-	('5','Idle','#B7C3C8',1,'2020-04-25 13:21:47',NULL),
-	('6','On Hold','#32BAF5',1,'2020-04-25 13:21:47',NULL),
-	('7','Complete','#00E6B2',1,'2020-04-25 13:21:47',NULL);
+	('1','Bugs','#FF6C35','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
+	('2','Doing','#92D632','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
+	('3','High Priority','#FFDC00','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
+	('4','Missing Info','#FF9C00','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
+	('5','Idle','#B7C3C8','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
+	('6','On Hold','#32BAF5','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
+	('7','Complete','#00E6B2','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL);
 
 /*!40000 ALTER TABLE `stk_boards_tags` ENABLE KEYS */;
 UNLOCK TABLES;
