@@ -19,12 +19,6 @@ class BoardsController extends BaseController
 
         $boards = $query->getResult();
 
-        /*
-        SELECT stk_boards.* FROM stk_boards
-        LEFT JOIN stk_boards_members ON stk_boards_members.board = stk_boards.id
-        WHERE stk_boards.owner = 1 OR stk_boards_members.user = 1 AND stk_boards.deleted IS NULL
-        */
-
         return $this->reply($boards);
 	}
 
