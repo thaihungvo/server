@@ -6,13 +6,15 @@ class BoardsController extends BaseController
 {
 	public function all_v1()
 	{
+        $user = $this->request->user;
+
         $boardModel = new BoardModel();
         $builder = $boardModel->builder();
 
         $query = $builder->join('boards_members', 'boards_members.board = boards.id')
             ->where('boards.deleted', NULL)
-            ->where('boards.owner', 1)
-            ->orWhere('boards_members.user', 1)
+            ->where('boards.owner', $user->id)
+            ->orWhere('boards_members.user', $user->id)
             ->get();
 
         $boards = $query->getResult();
@@ -28,15 +30,36 @@ class BoardsController extends BaseController
 
 	public function one_v1($id)
 	{
+        $user = $this->request->user;
+
         $boardModel = new BoardModel();
         $board = $boardModel
-            ->where('owner', 1)
+            ->where('owner', $user->id)
             ->find($id);
 
         if (!$board) {
-            return $this->reply(null, 404, "ERR_BOARD_NOT_FOUND_MSG");
+            return $this->reply(null, 404, "ERR_BOARDS_NOT_FOUND_MSG");
         }
 
         return $this->reply($board);
+    }
+
+    public function create_v1()
+    {
+        $user = $this->request->user;
+        $boardData = $this->request->getJSON();
+
+        $data = [
+            'title' => $boardData->title,
+            'owner' => $user->id
+        ];
+
+        $boardModel = new BoardModel();
+
+        if (!$boardModel->save($data)) {
+            return $this->reply(null, 500, "ERR_BOARD_CREATE");
+        }
+
+        return $this->reply(null, 200, "OK_BOARD_CREATE_SUCCESS");
     }
 }

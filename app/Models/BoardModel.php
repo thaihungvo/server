@@ -6,11 +6,11 @@ class BoardModel extends Model
 {
     protected $table      = 'boards';
     protected $primaryKey = 'id';
-    protected $returnType    = 'array';
+    protected $returnType = 'array';
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ['title', 'tags', 'archived_order'];
+    protected $allowedFields = ['title', 'archived_order'];
 
     protected $useTimestamps = true;
     protected $createdField  = 'created';

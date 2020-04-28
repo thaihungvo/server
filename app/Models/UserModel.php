@@ -6,15 +6,13 @@ class UserModel extends Model
 {
     protected $table      = 'users';
     protected $primaryKey = 'id';
-    protected $returnType    = 'array';
+    protected $returnType    = 'object';
 
     protected $useSoftDeletes = false;
 
-    protected $allowedFields = ['username', 'email', 'password'];
+    protected $allowedFields = ['email', 'password'];
 
     protected $useTimestamps = true;
-    protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
-
-    
+    protected $createdField  = 'created';
+    protected $updatedField  = 'updated';
 }

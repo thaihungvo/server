@@ -33,7 +33,8 @@ $routes->setAutoRoute(true);
 $routes->get('/', 'Home::index');
 
 // USER
-$routes->post('/api/v1/user/login', 'UserController:login_v1');
+$routes->post('/login', 'UserController::login_v1');
+$routes->post('/register', 'UserController::register_v1');
 
 // BOARDS
 $routes->get('/api/v1/boards', 'BoardsController::all_v1');

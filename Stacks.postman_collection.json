@@ -12,7 +12,13 @@
 					"name": "Get Boards list",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{server}}/api/{{ver}}/boards",
 							"host": [
@@ -31,7 +37,13 @@
 					"name": "Get Single Board",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9",
 							"host": [
@@ -42,6 +54,88 @@
 								"{{ver}}",
 								"boards",
 								"35436ec7-d32b-4f50-bba5-b5f276f289f9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Board",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6e603917-a6df-44d4-a0d9-93ff31f0d6aa",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"authToken\", \"Bearer \" + jsonData.data);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"admin@stacks.rocks\",\n\t\"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/login",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User registration",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"user@email.com\",\n\t\"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/register",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"register"
 							]
 						}
 					},
@@ -71,20 +165,6 @@
 					""
 				]
 			}
-		}
-	],
-	"variable": [
-		{
-			"id": "1d379ae5-3606-407d-853b-b1142fcb4016",
-			"key": "server",
-			"value": "http://stacks:8888",
-			"type": "string"
-		},
-		{
-			"id": "286b93aa-a2c0-4900-b486-f7ef8face670",
-			"key": "ver",
-			"value": "v1",
-			"type": "string"
 		}
 	],
 	"protocolProfileBehavior": {}
