@@ -75,7 +75,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"id\": \"e6c0f754-fe02-42c5-a026-eeac75bf87ae\",\n\t\"title\": \"Hello Board\"\n}",
+							"raw": "{\n\t\"title\": \"Hello Board\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -171,7 +171,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"id\": \"6492090f-7ca2-420e-98ab-5f137f00bea9\",\n\t\"title\": \"New Tag\",\n\t\"color\": \"#000000\"\n}",
+							"raw": "{\n\t\"title\": \"New Tag\",\n\t\"color\": \"#000000\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -303,6 +303,117 @@
 					"response": []
 				}
 			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Stacks",
+			"item": [
+				{
+					"name": "Get Stacks list",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"stacks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Stacks",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"New Stack\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"stacks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Stack",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Updated Stack\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks/9b8004ea-89e8-11ea-be55-2474dae7f827",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"stacks",
+								"9b8004ea-89e8-11ea-be55-2474dae7f827"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Tasks",
+			"item": [],
 			"protocolProfileBehavior": {}
 		}
 	],

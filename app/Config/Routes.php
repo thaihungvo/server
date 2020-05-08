@@ -36,13 +36,26 @@ $routes->get('/', 'Home::index');
 $routes->post('/login', 'UserController::login_v1');
 $routes->post('/register', 'UserController::register_v1');
 
-// BOARDS
-
+// TAGS
 $routes->get('/api/v1/boards/(:any)/tags', 'TagsController::all_v1/$1');
 $routes->post('/api/v1/boards/(:any)/tags', 'TagsController::add_v1/$1');
 $routes->put('/api/v1/boards/(:any)/tags/(:any)', 'TagsController::update_v1/$1/$2');
+
+// STACKS
+$routes->get('/api/v1/boards/(:any)/stacks', 'StacksController::all_v1/$1');
+$routes->post('/api/v1/boards/(:any)/stacks', 'StacksController::add_v1/$1');
+$routes->put('/api/v1/boards/(:any)/stacks/(:any)', 'StacksController::update_v1/$1/$2');
+
+// TASKS
+$routes->get('/api/v1/boards/(:any)/tasks', 'TasksController::all_board_v1/$1');
+$routes->get('/api/v1/boards/(:any)/stacks/(:any)/tasks', 'TasksController::all_stack_v1/$1/$2');
+$routes->get('/api/v1/boards/(:any)/stacks/(:any)/tasks/(:any)', 'StacksController::all_v1/$1');
+$routes->post('/api/v1/boards/(:any)/stacks/(:any)/tasks', 'StacksController::all_v1/$1');
+$routes->put('/api/v1/boards/(:any)/stacks/(:any)/tasks/(:any)', 'StacksController::all_v1/$1');
+
+// BOARDS
 $routes->get('/api/v1/boards', 'BoardsController::all_v1');
-$routes->post('/api/v1/boards', 'BoardsController::create_v1');
+$routes->post('/api/v1/boards', 'BoardsController::add_v1');
 $routes->get('/api/v1/boards/(:any)', 'BoardsController::one_v1/$1');
 $routes->put('/api/v1/boards/(:any)', 'BoardsController::update_v1/$1');
 

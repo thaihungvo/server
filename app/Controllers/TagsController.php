@@ -40,12 +40,18 @@ class TagsController extends BaseController
         $tagModel = new TagModel();
         $tagData = $this->request->getJSON();
 
+        helper('uuid');
+
         $data = [
-            'id' => $tagData->id,
+            'id' => uuid(),
             'title' => $tagData->title,
             'color' => $tagData->color,
             'board' => $board->id
         ];
+
+        if (isset($tagData->id)) {
+            $data['id'] = $tagData->id;
+        }
 
         try {
             if ($tagModel->insert($data) === false) {

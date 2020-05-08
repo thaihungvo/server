@@ -1,6 +1,9 @@
 <?php namespace App\Controllers;
 
 use App\Models\BoardModel;
+use App\Models\TagModel;
+use App\Models\StackModel;
+use App\Models\TaskModel;
 
 class BoardsController extends BaseController
 {
@@ -11,7 +14,7 @@ class BoardsController extends BaseController
         $boardModel = new BoardModel();
         $builder = $boardModel->builder();
 
-        $query = $builder->join('boards_members', 'boards_members.board = boards.id')
+        $query = $builder->select('boards.*')->join('boards_members', 'boards_members.board = boards.id')
             ->where('boards.deleted', NULL)
             ->where('boards.owner', $user->id)
             ->orWhere('boards_members.user', $user->id)
@@ -27,28 +30,70 @@ class BoardsController extends BaseController
         $user = $this->request->user;
 
         $boardModel = new BoardModel();
-        $board = $boardModel
-            ->where('owner', $user->id)
-            ->find($id);
 
-        if (!$board) {
+        $builder = $boardModel->builder();
+        $query = $builder->select('boards.*')->join('boards_members', 'boards_members.board = boards.id')
+            ->where('boards.deleted', NULL)
+            ->where('boards.id', $id)
+            ->where('boards.owner', $user->id)
+            ->orWhere('boards_members.user', $user->id)
+            ->limit(1)
+            ->get();
+
+        $boards = $query->getResult();
+        
+        if (!count($boards)) {
             return $this->reply(null, 404, "ERR_BOARDS_NOT_FOUND_MSG");
+        }
+
+        $board = $boards[0];
+
+        // load board tags
+        $tagModel = new TagModel();
+        $board->tags = $tagModel->where('board', $board->id)->findAll();
+
+        // load board stacks
+        $stackModel = new StackModel();
+        $board->stacks = $stackModel->where('board', $board->id)->findAll();
+
+        $stacksIDs = [];
+        foreach ($board->stacks as $stack) {
+            $stacksIDs[] = $stack->id;
+        }
+
+        // load all tasks
+        $taskModel = new TaskModel();
+        $tasks = $taskModel->whereIn('stack', $stacksIDs)->findAll();
+
+        foreach ($board->stacks as &$stack) {
+            $stack->tasks = [];
+            foreach ($tasks as $task) {
+                if ($task->stack === $stack->id) {
+                    $stack->tasks[] = $task;
+                }
+            }
         }
 
         return $this->reply($board);
     }
 
-    public function create_v1()
+    public function add_v1()
     {
         $user = $this->request->user;
         $boardData = $this->request->getJSON();
 
+        helper('uuid');
+
         $data = [
-            'id' => $boardData->id,
+            'id' => uuid(),
             'title' => $boardData->title,
             'owner' => $user->id,
             'archived_order' => 'title-asc'
         ];
+
+        if (isset($boardData->id)) {
+            $data['id'] = $boardData->id;
+        }
 
         $boardModel = new BoardModel();
 
