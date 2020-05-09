@@ -8,15 +8,7 @@ class StacksController extends BaseController
     public function all_v1($id)
     {
         $user = $this->request->user;
-
-        $boardModel = new BoardModel();
-        $board = $boardModel
-            ->where('owner', $user->id)
-            ->find($id);
-
-        if (!$board) {
-            return $this->reply(null, 404, "ERR_BOARDS_NOT_FOUND_MSG");
-        }
+        $board = $this->request->board;
 
         $stackModel = new StackModel();
         $stacks = $stackModel->where('board', $board->id)->findAll();
@@ -27,15 +19,7 @@ class StacksController extends BaseController
     public function add_v1($id)
     {
         $user = $this->request->user;
-
-        $boardModel = new BoardModel();
-        $board = $boardModel
-            ->where('owner', $user->id)
-            ->find($id);
-
-        if (!$board) {
-            return $this->reply(null, 404, "ERR_BOARDS_NOT_FOUND_MSG");
-        }
+        $board = $this->request->board;
 
         $stackModel = new StackModel();
         $stackData = $this->request->getJSON();
@@ -69,15 +53,7 @@ class StacksController extends BaseController
     public function update_v1($idBoard, $idStack)
     {
         $user = $this->request->user;
-
-        $boardModel = new BoardModel();
-        $board = $boardModel
-            ->where('owner', $user->id)
-            ->find($idBoard);
-
-        if (!$board) {
-            return $this->reply(null, 404, "ERR_BOARDS_NOT_FOUND_MSG");
-        }
+        $board = $this->request->board;
 
         $stackModel = new StackModel();
         $stack = $stackModel

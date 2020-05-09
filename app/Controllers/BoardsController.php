@@ -28,25 +28,7 @@ class BoardsController extends BaseController
 	public function one_v1($id)
 	{
         $user = $this->request->user;
-
-        $boardModel = new BoardModel();
-
-        $builder = $boardModel->builder();
-        $query = $builder->select('boards.*')->join('boards_members', 'boards_members.board = boards.id')
-            ->where('boards.deleted', NULL)
-            ->where('boards.id', $id)
-            ->where('boards.owner', $user->id)
-            ->orWhere('boards_members.user', $user->id)
-            ->limit(1)
-            ->get();
-
-        $boards = $query->getResult();
-        
-        if (!count($boards)) {
-            return $this->reply(null, 404, "ERR_BOARDS_NOT_FOUND_MSG");
-        }
-
-        $board = $boards[0];
+        $board = $this->request->board;
 
         // load board tags
         $tagModel = new TagModel();

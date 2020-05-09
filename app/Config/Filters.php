@@ -11,6 +11,7 @@ class Filters extends BaseConfig
 		'toolbar'  => \CodeIgniter\Filters\DebugToolbar::class,
 		'honeypot' => \CodeIgniter\Filters\Honeypot::class,
 		'auth' => \App\Filters\APIAuth::class,
+		'board' => \App\Filters\Board::class,
 	];
 
 	// Always applied before every request
@@ -34,6 +35,17 @@ class Filters extends BaseConfig
 	// that they should run on, like:
 	//    'isLoggedIn' => ['before' => ['account/*', 'profiles/*']],
 	public $filters = [
-        'auth' => ['before' => ['api/*']]
+        'auth' => ['before' => ['api/*']],
+        'board' => ['before' => [
+                '/api/*/boards/*',
+                '/api/*/boards/*/tags',
+                '/api/*/boards/*/tags/*',
+                '/api/*/boards/*/stacks',
+                '/api/*/boards/*/stacks/*',
+                '/api/*/boards/*/tasks',
+                '/api/*/boards/*/stacks/*/tasks',
+                '/api/*/boards/*/stacks/*/tasks/*'
+            ]
+        ]
     ];
 }

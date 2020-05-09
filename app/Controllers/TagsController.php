@@ -8,15 +8,7 @@ class TagsController extends BaseController
     public function all_v1($id)
     {
         $user = $this->request->user;
-
-        $boardModel = new BoardModel();
-        $board = $boardModel
-            ->where('owner', $user->id)
-            ->find($id);
-
-        if (!$board) {
-            return $this->reply(null, 404, "ERR_BOARDS_NOT_FOUND_MSG");
-        }
+        $board = $this->request->board;
 
         $tagModel = new TagModel();
         $tags = $tagModel->where('board', $board->id)->findAll();
@@ -27,15 +19,7 @@ class TagsController extends BaseController
     public function add_v1($id)
     {
         $user = $this->request->user;
-
-        $boardModel = new BoardModel();
-        $board = $boardModel
-            ->where('owner', $user->id)
-            ->find($id);
-
-        if (!$board) {
-            return $this->reply(null, 404, "ERR_BOARDS_NOT_FOUND_MSG");
-        }
+        $board = $this->request->board;
 
         $tagModel = new TagModel();
         $tagData = $this->request->getJSON();
@@ -70,15 +54,7 @@ class TagsController extends BaseController
     public function update_v1($idBoard, $idTag)
 	{
         $user = $this->request->user;
-
-        $boardModel = new BoardModel();
-        $board = $boardModel
-            ->where('owner', $user->id)
-            ->find($idBoard);
-
-        if (!$board) {
-            return $this->reply(null, 404, "ERR_BOARDS_NOT_FOUND_MSG");
-        }
+        $board = $this->request->board;
 
         $tagModel = new TagModel();
         $tag = $tagModel
