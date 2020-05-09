@@ -7,7 +7,6 @@ class StacksController extends BaseController
 {
     public function all_v1($id)
     {
-        $user = $this->request->user;
         $board = $this->request->board;
 
         $stackModel = new StackModel();
@@ -18,7 +17,6 @@ class StacksController extends BaseController
 
     public function add_v1($id)
     {
-        $user = $this->request->user;
         $board = $this->request->board;
 
         $stackModel = new StackModel();
@@ -52,7 +50,6 @@ class StacksController extends BaseController
 
     public function update_v1($idBoard, $idStack)
     {
-        $user = $this->request->user;
         $board = $this->request->board;
 
         $stackModel = new StackModel();

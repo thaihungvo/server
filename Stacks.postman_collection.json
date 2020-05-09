@@ -215,7 +215,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tags/6492090f-7ca2-420e-98ab-5f137f00bea9",
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tags/8decf5f4-91c7-11ea-b366-0d4c57d00ccc",
 							"host": [
 								"{{server}}"
 							],
@@ -225,7 +225,7 @@
 								"boards",
 								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
 								"tags",
-								"6492090f-7ca2-420e-98ab-5f137f00bea9"
+								"8decf5f4-91c7-11ea-b366-0d4c57d00ccc"
 							]
 						}
 					},
@@ -413,7 +413,92 @@
 		},
 		{
 			"name": "Tasks",
-			"item": [],
+			"item": [
+				{
+					"name": "All Tasks by Board",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tasks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Tasks by Stack",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks/9b8004ea-89e8-11ea-be55-2474dae7f827/tasks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"stacks",
+								"9b8004ea-89e8-11ea-be55-2474dae7f827",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Single Task",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tasks/f15ce382-8a11-11ea-b94d-a87f862112f6",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"tasks",
+								"f15ce382-8a11-11ea-b94d-a87f862112f6"
+							]
+						}
+					},
+					"response": []
+				}
+			],
 			"protocolProfileBehavior": {}
 		}
 	],
