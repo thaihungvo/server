@@ -26,19 +26,14 @@ class TagsController extends BaseController
 
         helper('uuid');
 
-        $data = [
-            'id' => uuid(),
-            'title' => $tagData->title,
-            'color' => $tagData->color,
-            'board' => $board->id
-        ];
+        $tagData->board = $board->id;
 
-        if (isset($tagData->id)) {
-            $data['id'] = $tagData->id;
+        if (!isset($tagData->id)) {
+            $tagData->id = uuid();
         }
 
         try {
-            if ($tagModel->insert($data) === false) {
+            if ($tagModel->insert($tagData) === false) {
                 $errors = $tagModel->errors();
                 return $this->reply($errors, 500, "ERR_BOARD_TAGS_CREATE");
             }
@@ -67,13 +62,12 @@ class TagsController extends BaseController
 
         $tagData = $this->request->getJSON();
 
-        $tag->title = $tagData->title;
-        $tag->color = $tagData->color;
+        unset($tagData->id);
 
-        if ($tagModel->update($tag->id, $tag) === false) {
-            return $this->reply(null, 404, "ERR_BOARDS_TAGS_UPDATE");
+        if ($tagModel->update($tag->id, $tagData) === false) {
+            return $this->reply(null, 404, "ERR_BOARDS_TAG_UPDATE");
         }
 
-        return $this->reply($tag);
+        return $this->reply(null, 200, "OK_BOARDS_TAG_UPDATE_SUCCESS");
     }
 }

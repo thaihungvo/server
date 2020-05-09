@@ -24,28 +24,24 @@ class StacksController extends BaseController
 
         helper('uuid');
 
-        $data = [
-            'id' => uuid(),
-            'title' => $stackData->title,
-            'board' => $board->id
-        ];
+        $stackData->board = $board->id;
 
-        if (isset($stackData->id)) {
-            $data['id'] = $stackData->id;
+        if (!isset($stackData->id)) {
+            $stackData->id = uuid();
         }
 
         try {
-            if ($stackModel->insert($data) === false) {
+            if ($stackModel->insert($stackData) === false) {
                 $errors = $stackModel->errors();
-                return $this->reply($errors, 500, "ERR_BOARD_STACKS_CREATE");
+                return $this->reply($errors, 500, "ERR_STACK_CREATE");
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR_BOARD_STACKS_CREATE");
+            return $this->reply($e->getMessage(), 500, "ERR_STACK_CREATE");
         }
 
         $stack = $stackModel->find($data['id']);
 
-        return $this->reply($stack, 200, "OK_BOARD_STACKS_CREATE_SUCCESS");
+        return $this->reply($stack, 200, "OK_STACK_CREATE_SUCCESS");
     }
 
     public function update_v1($idBoard, $idStack)
@@ -58,7 +54,7 @@ class StacksController extends BaseController
             ->find($idStack);
 
         if (!$stack) {
-            return $this->reply(null, 404, "ERR_BOARDS_STACK_NOT_FOUND_MSG");
+            return $this->reply(null, 404, "ERR_STACK_NOT_FOUND_MSG");
         }
 
         $stackData = $this->request->getJSON();
@@ -66,9 +62,9 @@ class StacksController extends BaseController
         $stack->title = $stackData->title;
 
         if ($stackModel->update($stack->id, $stack) === false) {
-            return $this->reply(null, 404, "ERR_BOARDS_STACKS_UPDATE");
+            return $this->reply(null, 404, "ERR_STACK_UPDATE");
         }
 
-        return $this->reply($stack);
+        return $this->reply(null, 200, "OK_STACK_UPDATE_SUCCESS");
     }
 }

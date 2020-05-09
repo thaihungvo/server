@@ -50,8 +50,8 @@ $routes->put('/api/v1/boards/(:any)/stacks/(:any)', 'StacksController::update_v1
 $routes->get('/api/v1/boards/(:any)/stacks/(:any)/tasks', 'TasksController::all_stack_v1/$1/$2');
 $routes->get('/api/v1/boards/(:any)/tasks/(:any)', 'TasksController::one_v1/$1/$2');
 $routes->get('/api/v1/boards/(:any)/tasks', 'TasksController::all_board_v1/$1');
-$routes->post('/api/v1/boards/(:any)/stacks/(:any)/tasks', 'StacksController::all_v1/$1');
-$routes->put('/api/v1/boards/(:any)/stacks/(:any)/tasks/(:any)', 'StacksController::all_v1/$1');
+$routes->post('/api/v1/boards/(:any)/tasks', 'TasksController::add_v1/$1');
+$routes->put('/api/v1/boards/(:any)/tasks/(:any)', 'TasksController::update_v1/$1/$2');
 
 // BOARDS
 $routes->get('/api/v1/boards', 'BoardsController::all_v1');

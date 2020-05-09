@@ -108,16 +108,12 @@ class BoardsController extends BaseController
 
         $boardData = $this->request->getJSON();
 
-        $board->title = $boardData->title;
+        unset($boardData->id);
 
-        if (isset($boardData->archived_order)) {
-            $board->archived_order = $boardData->archived_order;
-        }
-
-        if ($boardModel->update($board->id, $board) === false) {
+        if ($boardModel->update($board->id, $boardData) === false) {
             return $this->reply(null, 404, "ERR_BOARDS_UPDATE");
         }
 
-        return $this->reply($board);
+        return $this->reply();
     }
 }

@@ -16,4 +16,24 @@ class TaskModel extends Model
     protected $createdField  = 'created';
     protected $updatedField  = 'updated';
     protected $deletedField  = 'deleted';
+
+    protected $validationRules = [
+        'id' => 'required|min_length[35]',
+        'title' => 'required',
+        'stack' => 'required|min_length[35]'
+    ];
+
+    protected $validationMessages = [
+        'id' => [
+            'required' => 'ERR_TASK_ID_REQUIRED',
+            'min_length' => 'ERR_TASK_ID_INVALID',
+        ],
+        'title' => [
+            'required' => 'ERR_TASK_TITLE_REQUIRED',
+        ],
+        'stack' => [
+            'required' => 'ERR_TASK_STACK_REQUIRED',
+            'min_length' => 'ERR_TASK_STACK_INVALID'
+        ]
+    ];
 }
