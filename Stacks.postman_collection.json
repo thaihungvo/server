@@ -573,6 +573,23 @@
 				}
 			],
 			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Ping",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/ping",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"ping"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [

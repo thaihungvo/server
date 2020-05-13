@@ -20,7 +20,9 @@ class APIAuth implements FilterInterface
 
         if (!strlen($token)) {
             $response->message = 'ERR_AUTH_TOKEN_MISSING';
-            return Services::response()->setJSON($response);
+            return Services::response()
+                ->setStatusCode(401)
+                ->setJSON($response);
         }
 
         $profile = null;
@@ -29,12 +31,16 @@ class APIAuth implements FilterInterface
             $profile = JWT::decode($token, $key, array('HS256'));
         } catch (\Exception $e) {
             $response->message = 'ERR_AUTH_SESSION_EXPIRED';
-            return Services::response()->setJSON($response);
+            return Services::response()
+                ->setStatusCode(401)    
+                ->setJSON($response);
         }
 
         if (!$profile) {
             $response->message = 'ERR_AUTH_PROFILE_NULL';
-            return Services::response()->setJSON($response);
+            return Services::response()
+                ->setStatusCode(401)
+                ->setJSON($response);
         }
 
         $userModel = new UserModel();
@@ -42,7 +48,9 @@ class APIAuth implements FilterInterface
         
         if (!$user) {
             $response->message = 'ERR_AUTH_USER_NOT_FOUND';
-            return Services::response()->setJSON($response);
+            return Services::response()
+                ->setStatusCode(401)
+                ->setJSON($response);
         }
 
         $request->user = $user;

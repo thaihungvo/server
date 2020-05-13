@@ -14,7 +14,7 @@ class BoardsController extends BaseController
         $boardModel = new BoardModel();
         $builder = $boardModel->builder();
 
-        $query = $builder->select('boards.*')->join('boards_members', 'boards_members.board = boards.id')
+        $query = $builder->select('boards.id, boards.title, boards.updated, boards.created')->join('boards_members', 'boards_members.board = boards.id')
             ->where('boards.deleted', NULL)
             ->where('boards.owner', $user->id)
             ->orWhere('boards_members.user', $user->id)
