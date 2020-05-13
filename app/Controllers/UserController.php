@@ -22,16 +22,17 @@ class UserController extends BaseController
 
         $key = JWT_KEY;
         $payload = array(
-            'exp' => time() + (JWT_EXPIRATION_SPAN * 24 * 60 * 60),
             'id' => $user->id,
             'email' => $user->email,
             'first_name' => $user->first_name,
             'last_name' => $user->last_name
         );
 
-        $jwt = JWT::encode($payload, $key);
+        unset($user->password);
+        
+        $user->token = JWT::encode($payload, $key);
 
-        return $this->reply($jwt);
+        return $this->reply($user);
     }
     
     public function register_v1()
