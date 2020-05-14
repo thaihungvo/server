@@ -14,10 +14,13 @@ class BoardsController extends BaseController
         $boardModel = new BoardModel();
         $builder = $boardModel->builder();
 
-        $query = $builder->select('boards.id, boards.title, boards.updated, boards.created')->join('boards_members', 'boards_members.board = boards.id')
+        $query = $builder->select('boards.id, boards.title, boards.updated, boards.created')
+            ->join('boards_members', 'boards_members.board = boards.id', 'left')
             ->where('boards.deleted', NULL)
-            ->where('boards.owner', $user->id)
-            ->orWhere('boards_members.user', $user->id)
+            ->groupStart()
+                ->where('boards.owner', $user->id)
+                ->orWhere('boards_members.user', $user->id)
+            ->groupEnd()
             ->get();
 
         $boards = $query->getResult();
@@ -38,20 +41,22 @@ class BoardsController extends BaseController
         $stackModel = new StackModel();
         $board->stacks = $stackModel->where('board', $board->id)->findAll();
 
-        $stacksIDs = [];
-        foreach ($board->stacks as $stack) {
-            $stacksIDs[] = $stack->id;
-        }
+        if (count($board->stacks)) {
+            $stacksIDs = [];
+            foreach ($board->stacks as $stack) {
+                $stacksIDs[] = $stack->id;
+            }
 
-        // load all tasks
-        $taskModel = new TaskModel();
-        $tasks = $taskModel->whereIn('stack', $stacksIDs)->findAll();
+            // load all tasks
+            $taskModel = new TaskModel();
+            $tasks = $taskModel->whereIn('stack', $stacksIDs)->findAll();
 
-        foreach ($board->stacks as &$stack) {
-            $stack->tasks = [];
-            foreach ($tasks as $task) {
-                if ($task->stack === $stack->id) {
-                    $stack->tasks[] = $task;
+            foreach ($board->stacks as &$stack) {
+                $stack->tasks = [];
+                foreach ($tasks as $task) {
+                    if ($task->stack === $stack->id) {
+                        $stack->tasks[] = $task;
+                    }
                 }
             }
         }
@@ -66,21 +71,17 @@ class BoardsController extends BaseController
 
         helper('uuid');
 
-        $data = [
-            'id' => uuid(),
-            'title' => $boardData->title,
-            'owner' => $user->id,
-            'archived_order' => 'title-asc'
-        ];
-
-        if (isset($boardData->id)) {
-            $data['id'] = $boardData->id;
+        if (!isset($boardData->id)) {
+            $boardData->id = uuid();
         }
+
+        $boardData->owner = $user->id;
+        $boardData->archived_order = 'title-asc';
 
         $boardModel = new BoardModel();
 
         try {
-            if ($boardModel->insert($data) === false) {
+            if ($boardModel->insert($boardData) === false) {
                 $errors = $boardModel->errors();
                 return $this->reply($errors, 500, "ERR_BOARD_CREATE");
             }
@@ -88,9 +89,7 @@ class BoardsController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR_BOARD_CREATE");
         }
 
-        $board = $boardModel->find($boardData->id);
-
-        return $this->reply($board, 200, "OK_BOARD_CREATE_SUCCESS");
+        return $this->reply($boardData, 200, "OK_BOARD_CREATE_SUCCESS");
     }
 
     public function update_v1($id)

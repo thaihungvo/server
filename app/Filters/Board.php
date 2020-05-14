@@ -18,11 +18,14 @@ class Board implements FilterInterface
         $boardModel = new BoardModel();
 
         $builder = $boardModel->builder();
-        $query = $builder->select('boards.*')->join('boards_members', 'boards_members.board = boards.id')
+        $query = $builder->select('boards.*')
+            ->join('boards_members', 'boards_members.board = boards.id', 'left')
             ->where('boards.deleted', NULL)
-            ->where('boards.id', $request->uri->getSegment(3))
-            ->where('boards.owner', $user->id)
-            ->orWhere('boards_members.user', $user->id)
+            ->where('boards.id', $request->uri->getSegment(4))
+            ->groupStart()
+                ->where('boards.owner', $user->id)
+                ->orWhere('boards_members.user', $user->id)
+            ->groupEnd()
             ->limit(1)
             ->get();
 
