@@ -10,7 +10,9 @@ class StacksController extends BaseController
         $board = $this->request->board;
 
         $stackModel = new StackModel();
-        $stacks = $stackModel->where('board', $board->id)->findAll();
+        $stacks = $stackModel->where('board', $board->id)
+            ->orderBy('order', 'asc')
+            ->findAll();
 
         return $this->reply($stacks);
     }
@@ -33,15 +35,25 @@ class StacksController extends BaseController
         try {
             if ($stackModel->insert($stackData) === false) {
                 $errors = $stackModel->errors();
-                return $this->reply($errors, 500, "ERR_STACK_CREATE");
+                return $this->reply($errors, 500, "ERR-STACK-CREATE");
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR_STACK_CREATE");
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
 
-        $stack = $stackModel->find($data['id']);
+        // get the max order no. from all the stacks of the same board
+        // $builder = $stackModel->builder();
+        // $query = $builder->selectMax("order")->get();
+        // $maxStacks = $query->getResult();
 
-        return $this->reply($stack, 200, "OK_STACK_CREATE_SUCCESS");
+        // if (count($maxStacks)) {
+        //     // set the max order no. + 1
+        //     $stackData->order = (int)$maxStacks[0]->order + 1;
+        // }
+
+        $stack = $stackModel->find($stackData->id);
+
+        return $this->reply($stack, 200, "OK-STACK-CREATE-SUCCESS");
     }
 
     public function update_v1($idBoard, $idStack)
@@ -54,17 +66,15 @@ class StacksController extends BaseController
             ->find($idStack);
 
         if (!$stack) {
-            return $this->reply(null, 404, "ERR_STACK_NOT_FOUND_MSG");
+            return $this->reply(null, 404, "ERR-STACK-NOT-FOUND-MSG");
         }
 
         $stackData = $this->request->getJSON();
 
-        $stack->title = $stackData->title;
-
-        if ($stackModel->update($stack->id, $stack) === false) {
-            return $this->reply(null, 404, "ERR_STACK_UPDATE");
+        if ($stackModel->update($stack->id, $stackData) === false) {
+            return $this->reply(null, 404, "ERR-STACK-UPDATE");
         }
 
-        return $this->reply(null, 200, "OK_STACK_UPDATE_SUCCESS");
+        return $this->reply(null, 200, "OK-STACK-UPDATE-SUCCESS");
     }
 }

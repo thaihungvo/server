@@ -246,7 +246,7 @@
 								"id": "6e603917-a6df-44d4-a0d9-93ff31f0d6aa",
 								"exec": [
 									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"authToken\", \"Bearer \" + jsonData.data);"
+									"pm.environment.set(\"authToken\", \"Bearer \" + jsonData.data.token);"
 								],
 								"type": "text/javascript"
 							}

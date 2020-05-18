@@ -39,7 +39,14 @@ class BoardsController extends BaseController
 
         // load board stacks
         $stackModel = new StackModel();
-        $board->stacks = $stackModel->where('board', $board->id)->findAll();
+        $stacksBuilder = $stackModel->builder();
+        $stacksQuery = $stacksBuilder->select("stacks.*")
+            ->join('stacks_order', 'stacks_order.id = stacks.id', 'left')
+            ->where('stacks.board', $board->id)
+            ->where('stacks.deleted', NULL)
+            ->orderBy('stacks_order.`order`', 'ASC')
+            ->get();
+        $board->stacks = $stacksQuery->getResult();
 
         if (count($board->stacks)) {
             $stacksIDs = [];
@@ -49,17 +56,27 @@ class BoardsController extends BaseController
 
             // load all tasks
             $taskModel = new TaskModel();
-            $tasks = $taskModel->whereIn('stack', $stacksIDs)->findAll();
+            $tasks = $taskModel->whereIn('stack', $stacksIDs)
+                ->orderBy('order', 'asc')
+                ->findAll();
 
             foreach ($board->stacks as &$stack) {
+                // remove the order property from the stack
+                unset($stack->order);
+
                 $stack->tasks = [];
-                foreach ($tasks as $task) {
+                foreach ($tasks as &$task) {
+                    // remove the order property from the task
+                    unset($task->order);
+                    
                     if ($task->stack === $stack->id) {
                         $stack->tasks[] = $task;
                     }
                 }
             }
         }
+
+        $board->archived = [];
 
         return $this->reply($board);
     }
@@ -86,10 +103,10 @@ class BoardsController extends BaseController
                 return $this->reply($errors, 500, "ERR_BOARD_CREATE");
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR_BOARD_CREATE");
+            return $this->reply($e->getMessage(), 500, "ERR-BOARD-CREATE");
         }
 
-        return $this->reply($boardData, 200, "OK_BOARD_CREATE_SUCCESS");
+        return $this->reply($boardData, 200, "OK-BOARD-CREATE-SUCCESS");
     }
 
     public function update_v1($id)
@@ -102,7 +119,7 @@ class BoardsController extends BaseController
             ->find($id);
 
         if (!$board) {
-            return $this->reply(null, 404, "ERR_BOARDS_NOT_FOUND_MSG");
+            return $this->reply(null, 404, "ERR-BOARDS-NOT-FOUND-MSG");
         }
 
         $boardData = $this->request->getJSON();
@@ -110,7 +127,7 @@ class BoardsController extends BaseController
         unset($boardData->id);
 
         if ($boardModel->update($board->id, $boardData) === false) {
-            return $this->reply(null, 404, "ERR_BOARDS_UPDATE");
+            return $this->reply(null, 404, "ERR-BOARDS-UPDATE");
         }
 
         return $this->reply();
