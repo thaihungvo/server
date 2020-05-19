@@ -33,7 +33,9 @@ class Board implements FilterInterface
         
         if (!count($boards)) {
             $response->message = 'ERR_BOARDS_NOT_FOUND_MSG';
-            return Services::response()->setJSON($response);
+            return Services::response()
+                ->setStatusCode(404)
+                ->setJSON($response);
         }
 
         $request->board = $boards[0];
