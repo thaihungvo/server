@@ -98,6 +98,8 @@ class TasksController extends BaseController
             $taskData->id = uuid();
         }
 
+        $taskData->archived = null;
+
         try {
             if ($taskModel->insert($taskData) === false) {
                 $errors = $taskModel->errors();
@@ -140,6 +142,7 @@ class TasksController extends BaseController
         $taskData = $this->request->getJSON();
 
         unset($taskData->id);
+        $taskData->archived = null;
 
         if ($taskModel->update($taskID, $taskData) === false) {
             return $this->reply(null, 404, "ERR-TASK-UPDATE");

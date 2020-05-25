@@ -41,14 +41,14 @@ class BoardsController extends BaseController
 
         // load board stacks
         $stackModel = new StackModel();
-        $stacksBuilder = $stackModel->builder();
-        $stacksQuery = $stacksBuilder->select("stacks.*")
+        $stackBuilder = $stackModel->builder();
+        $stackQuery = $stackBuilder->select("stacks.*")
             ->join('stacks_order', 'stacks_order.stack = stacks.id', 'left')
             ->where('stacks.board', $board->id)
             ->where('stacks.deleted', NULL)
             ->orderBy('stacks_order.`order`', 'ASC')
             ->get();
-        $board->stacks = $stacksQuery->getResult();
+        $board->stacks = $stackQuery->getResult();
 
         if (count($board->stacks)) {
             $stacksIDs = [];
@@ -58,9 +58,15 @@ class BoardsController extends BaseController
 
             // load all tasks
             $taskModel = new TaskModel();
-            $tasks = $taskModel->whereIn('stack', $stacksIDs)
-                ->orderBy('order', 'asc')
-                ->findAll();
+            $taskBuilder = $taskModel->builder();
+
+            $taskQuery = $taskBuilder->select("tasks.*, tasks_order.order")
+                ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
+                ->whereIn('tasks.stack', $stacksIDs)
+                ->where('tasks.deleted', NULL)
+                ->orderBy('tasks_order.`order`', 'ASC')
+                ->get();
+            $tasks = $taskQuery->getResult();
 
             foreach ($board->stacks as &$stack) {
                 // remove the order property from the stack
