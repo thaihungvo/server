@@ -2,15 +2,15 @@
 
 use CodeIgniter\Model;
 
-class StackOrderModel extends Model
+class TaskOrderModel extends Model
 {
-    protected $table      = 'stacks_order';
-    protected $primaryKey = 'stack';
+    protected $table      = 'tasks_order';
+    protected $primaryKey = 'task';
     protected $returnType = 'object';
 
     protected $useSoftDeletes = false;
 
-    protected $allowedFields = ['board', 'stack', 'order'];
+    protected $allowedFields = ['board', 'stack', 'task', 'order'];
 
     protected $useTimestamps = false;
     protected $createdField  = '';
@@ -20,6 +20,7 @@ class StackOrderModel extends Model
     protected $validationRules = [
         'board' => 'required|min_length[35]',
         'stack' => 'required|min_length[35]',
+        'task' => 'required|min_length[35]',
         'order' => 'required|integer'
     ];
 
@@ -31,6 +32,10 @@ class StackOrderModel extends Model
         'stack' => [
             'required' => 'ERR-STACK-ID-REQUIRED',
             'min_length' => 'ERR-STACK-ID-INVALID',
+        ],
+        'task' => [
+            'required' => 'ERR-TASK-ID-REQUIRED',
+            'min_length' => 'ERR-TASK-ID-INVALID',
         ],
         'order' => [
             'required' => 'ERR-ORDER-REQUIRED',

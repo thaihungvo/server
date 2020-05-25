@@ -230,6 +230,78 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Stacks order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\"60166fa5-918c-485c-9bea-4ce4ffefea47\", \"9b8004ea-89e8-11ea-be55-2474dae7f827\"]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/order-stacks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"order-stacks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tasks order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"stackA\": [\"A\", \"B\", \"C\"],\n\t\"stackB\": [\"X\", \"Y\", \"Z\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/order-tasks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"order-tasks"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}
@@ -511,7 +583,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"title\": \"New task\",\n\t\"stack\": \"9b8004ea-89e8-11ea-be55-2474dae7f827\",\n\t\"lol\": \"LOOOL\"\n}",
+							"raw": "{\n\t\"title\": \"New task\",\n\t\"stack\": \"9b8004ea-89e8-11ea-be55-2474dae7f827\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
