@@ -18,6 +18,14 @@ class TasksController extends BaseController
             ->get();
 
         $tasks = $query->getResult();
+
+        foreach ($tasks as &$task) {
+            $task->cover = (bool)$task->done;
+            $task->done = (bool)$task->done;
+            $task->altTags = (bool)$task->altTags;
+            $task->progress = (int)$task->progress;
+        }
+
         return $this->reply($tasks);
     }
 
@@ -36,6 +44,14 @@ class TasksController extends BaseController
             ->get();
 
         $tasks = $query->getResult();
+
+        foreach ($tasks as &$task) {
+            $task->cover = (bool)$task->done;
+            $task->done = (bool)$task->done;
+            $task->altTags = (bool)$task->altTags;
+            $task->progress = (int)$task->progress;
+        }
+
         return $this->reply($tasks);
     }
 
@@ -57,10 +73,17 @@ class TasksController extends BaseController
         $tasks = $query->getResult();
 
         if (!count($tasks)) {
-            return $this->reply(null, 404, "ERR_TASKS_NOT_FOUND_MSG");
+            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND-MSG");
         }
 
-        return $this->reply($tasks[0]);
+        $task = $tasks[0];
+
+        $task->cover = (bool)$task->done;
+        $task->done = (bool)$task->done;
+        $task->altTags = (bool)$task->altTags;
+        $task->progress = (int)$task->progress;
+
+        return $this->reply($tasks);
     }
 
     public function add_v1($id)
@@ -70,6 +93,7 @@ class TasksController extends BaseController
 
         helper('uuid');
         
+        // enforce an id in case there's none
         if (!isset($taskData->id)) {
             $taskData->id = uuid();
         }
@@ -77,15 +101,19 @@ class TasksController extends BaseController
         try {
             if ($taskModel->insert($taskData) === false) {
                 $errors = $taskModel->errors();
-                return $this->reply($errors, 500, "ERR_TASK_CREATE");
+                return $this->reply($errors, 500, "ERR-TASK-CREATE");
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR_TASK_CREATE");
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-CREATE");
         }
 
         $task = $taskModel->find($taskData->id);
+        $task->cover = (bool)$task->done;
+        $task->done = (bool)$task->done;
+        $task->altTags = (bool)$task->altTags;
+        $task->progress = (int)$task->progress;
 
-        return $this->reply($task, 200, "OK_TASK_CREATE_SUCCESS");
+        return $this->reply($task, 200, "OK-TASK-CREATE-SUCCESS");
     }
 
     public function update_v1($boardID, $taskID)
@@ -106,7 +134,7 @@ class TasksController extends BaseController
         $tasks = $query->getResult();
 
         if (!count($tasks)) {
-            return $this->reply(null, 404, "ERR_TASK_NOT_FOUND_MSG");
+            return $this->reply(null, 404, "ERR-TASK-NOT-FOUND-MSG");
         }
 
         $taskData = $this->request->getJSON();
@@ -114,9 +142,9 @@ class TasksController extends BaseController
         unset($taskData->id);
 
         if ($taskModel->update($taskID, $taskData) === false) {
-            return $this->reply(null, 404, "ERR_TASK_UPDATE");
+            return $this->reply(null, 404, "ERR-TASK-UPDATE");
         }
 
-        return $this->reply(null, 200, "OK_TASK_UPDATE_SUCCESS");
+        return $this->reply(null, 200, "OK-TASK-UPDATE-SUCCESS");
     }
 }

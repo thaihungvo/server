@@ -59,6 +59,8 @@ $routes->get('/api/v1/boards', 'BoardsController::all_v1');
 $routes->post('/api/v1/boards', 'BoardsController::add_v1');
 $routes->get('/api/v1/boards/(:any)', 'BoardsController::one_v1/$1');
 $routes->put('/api/v1/boards/(:any)', 'BoardsController::update_v1/$1');
+$routes->post('/api/v1/boards/(:any)/order', 'BoardsController::order_stacks_v1/$1');
+$routes->post('/api/v1/boards/(:any)/order/(:any)', 'BoardsController::order_tasks_v1/$1/$2');
 
 /**
  * --------------------------------------------------------------------
