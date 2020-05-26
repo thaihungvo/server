@@ -24,6 +24,12 @@ class TasksController extends BaseController
             $task->done = (bool)$task->done;
             $task->altTags = (bool)$task->altTags;
             $task->progress = (int)$task->progress;
+            if (is_string($task->tags)) {
+                $task->tags = json_decode($task->tags);
+            }
+            if (is_string($task->info)) {
+                $task->info = json_decode($task->info);
+            }
         }
 
         return $this->reply($tasks);
@@ -50,6 +56,12 @@ class TasksController extends BaseController
             $task->done = (bool)$task->done;
             $task->altTags = (bool)$task->altTags;
             $task->progress = (int)$task->progress;
+            if (is_string($task->tags)) {
+                $task->tags = json_decode($task->tags);
+            }
+            if (is_string($task->info)) {
+                $task->info = json_decode($task->info);
+            }
         }
 
         return $this->reply($tasks);
@@ -82,6 +94,12 @@ class TasksController extends BaseController
         $task->done = (bool)$task->done;
         $task->altTags = (bool)$task->altTags;
         $task->progress = (int)$task->progress;
+        if (is_string($task->tags)) {
+            $task->tags = json_decode($task->tags);
+        }
+        if (is_string($task->info)) {
+            $task->info = json_decode($task->info);
+        }
 
         return $this->reply($tasks);
     }
@@ -114,6 +132,12 @@ class TasksController extends BaseController
         $task->done = (bool)$task->done;
         $task->altTags = (bool)$task->altTags;
         $task->progress = (int)$task->progress;
+        if (is_string($task->tags)) {
+            $task->tags = json_decode($task->tags);
+        }
+        if (is_string($task->info)) {
+            $task->info = json_decode($task->info);
+        }
 
         return $this->reply($task, 200, "OK-TASK-CREATE-SUCCESS");
     }

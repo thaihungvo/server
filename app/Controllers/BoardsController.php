@@ -64,6 +64,7 @@ class BoardsController extends BaseController
                 ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
                 ->whereIn('tasks.stack', $stacksIDs)
                 ->where('tasks.deleted', NULL)
+                ->where('tasks.archived', NULL)
                 ->orderBy('tasks_order.`order`', 'ASC')
                 ->get();
             $tasks = $taskQuery->getResult();
@@ -81,6 +82,12 @@ class BoardsController extends BaseController
                     $task->done = (bool)$task->done;
                     $task->altTags = (bool)$task->altTags;
                     $task->progress = (int)$task->progress;
+                    if (is_string($task->tags)) {
+                        $task->tags = json_decode($task->tags);
+                    }
+                    if (is_string($task->info)) {
+                        $task->info = json_decode($task->info);
+                    }
                     
                     if ($task->stack === $stack->id) {
                         $stack->tasks[] = $task;
