@@ -2,6 +2,7 @@
 
 use App\Models\StackModel;
 use App\Models\BoardModel;
+use App\Models\StackOrderModel;
 
 class StacksController extends BaseController
 {
@@ -42,14 +43,32 @@ class StacksController extends BaseController
         }
 
         // get the max order no. from all the stacks of the same board
-        // $builder = $stackModel->builder();
-        // $query = $builder->selectMax("order")->get();
-        // $maxStacks = $query->getResult();
+        $stackOrderModel = new StackOrderModel();
+        $builderStackOrderBuilder = $stackOrderModel->builder();
+        $query = $builderStackOrderBuilder
+            ->selectMax("order")
+            ->where("board", $board->id)
+            ->get();
+        $maxStacks = $query->getResult();
 
-        // if (count($maxStacks)) {
-        //     // set the max order no. + 1
-        //     $stackData->order = (int)$maxStacks[0]->order + 1;
-        // }
+        $order = new \stdClass();
+        $order->board = $board->id;
+        $order->stack = $stackData->id;
+        $order->order = 1;
+
+        if (count($maxStacks)) {
+            // set the max order no. + 1
+            $order->order = (int)$maxStacks[0]->order + 1; 
+        }
+
+        try {
+            if ($builderStackOrderBuilder->insert($order) === false) {
+                $errors = $stackOrderModel->errors();
+                return $this->reply($errors, 500, "ERR-STACK-ORDER");    
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-ORDER");
+        }
 
         $stack = $stackModel->find($stackData->id);
 

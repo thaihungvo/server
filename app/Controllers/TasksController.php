@@ -1,6 +1,8 @@
 <?php namespace App\Controllers;
 
 use App\Models\TaskModel;
+use App\Models\TaskOrderModel;
+use App\Models\StackModel;
 
 class TasksController extends BaseController
 {
@@ -104,8 +106,9 @@ class TasksController extends BaseController
         return $this->reply($tasks);
     }
 
-    public function add_v1($id)
+    public function add_v1($id, $position)
     {
+        $board = $this->request->board;
         $taskModel = new TaskModel();
         $taskData = $this->request->getJSON();
 
@@ -118,6 +121,17 @@ class TasksController extends BaseController
 
         $taskData->archived = null;
 
+        // TODO: check if the stack connected to this task is one of the users
+        // check if the stack exists
+        $stackModel = new StackModel();
+        $stacks = $stackModel->where('board', $board->id)
+            ->where('id', $taskData->stack)
+            ->findAll();
+
+        if (!count($stacks)) {
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-CREATE");
+        }
+
         try {
             if ($taskModel->insert($taskData) === false) {
                 $errors = $taskModel->errors();
@@ -125,6 +139,72 @@ class TasksController extends BaseController
             }
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-TASK-CREATE");
+        }
+
+        $taskOrderModel = new TaskOrderModel();
+        $builderTaskOrderBuilder = $taskOrderModel->builder();
+        
+        $order = new \stdClass();
+        $order->board = $board->id;
+        $order->stack = $taskData->stack;
+        $order->task = $taskData->id;
+        $order->order = 1;
+
+        // get the max order no. from all the stacks of the same board
+        if ($position === "bottom") {
+            $query = $builderTaskOrderBuilder
+                ->selectMax("order")
+                ->where("board", $board->id)
+                ->where("stack", $taskData->stack)
+                ->get();
+            $maxTasks = $query->getResult();
+
+            if (count($maxStacks)) {
+                // set the max order no. + 1
+                $order->order = (int)$maxStacks[0]->order + 1; 
+            }
+
+            try {
+                if ($builderTaskOrderBuilder->insert($order) === false) {
+                    $errors = $taskOrderModel->errors();
+                    return $this->reply($errors, 500, "ERR-TASK-ORDER");    
+                }
+            } catch (\Exception $e) {
+                return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER");
+            }
+        } else {
+            $taskOrderQuery = $builderTaskOrderBuilder->select('task')
+                ->where('stack', $taskData->stack)
+                ->orderBy('`order`', 'ASC')
+                ->get();
+            $currentOrder = $taskOrderQuery->getResult();
+
+            $orders = [$order];
+
+            foreach ($currentOrder as $i => $task) {
+                $order = new \stdClass();
+                $order->board = $board->id;
+                $order->stack = $taskData->stack;
+                $order->task = $task->task;
+                $order->order = $i + 2;
+                $orders[] = $order;
+            }
+
+            try {
+                $taskOrderModel->where('stack', $taskData->stack)
+                    ->delete();
+            } catch (\Exception $e) {
+                return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER");
+            }
+
+            try {
+                if ($builderTaskOrderBuilder->insertBatch($orders) === false) {
+                    $errors = $taskOrderModel->errors();
+                    return $this->reply($errors, 500, "ERR-TASK-ORDER");    
+                }
+            } catch (\Exception $e) {
+                return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER");
+            }
         }
 
         $task = $taskModel->find($taskData->id);

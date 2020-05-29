@@ -28,6 +28,7 @@ $routes->setAutoRoute(true);
  * --------------------------------------------------------------------
  */
 
+ 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
@@ -51,7 +52,7 @@ $routes->put('/api/v1/boards/(:any)/stacks/(:any)', 'StacksController::update_v1
 $routes->get('/api/v1/boards/(:any)/stacks/(:any)/tasks', 'TasksController::all_stack_v1/$1/$2');
 $routes->get('/api/v1/boards/(:any)/tasks/(:any)', 'TasksController::one_v1/$1/$2');
 $routes->get('/api/v1/boards/(:any)/tasks', 'TasksController::all_board_v1/$1');
-$routes->post('/api/v1/boards/(:any)/tasks', 'TasksController::add_v1/$1');
+$routes->post('/api/v1/boards/(:any)/tasks/(:any)', 'TasksController::add_v1/$1/$2');
 $routes->put('/api/v1/boards/(:any)/tasks/(:any)', 'TasksController::update_v1/$1/$2');
 
 // BOARDS
