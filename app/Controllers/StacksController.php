@@ -3,6 +3,7 @@
 use App\Models\StackModel;
 use App\Models\BoardModel;
 use App\Models\StackOrderModel;
+use App\Models\TaskModel;
 
 class StacksController extends BaseController
 {
@@ -91,9 +92,61 @@ class StacksController extends BaseController
         $stackData = $this->request->getJSON();
 
         if ($stackModel->update($stack->id, $stackData) === false) {
-            return $this->reply(null, 404, "ERR-STACK-UPDATE");
+            return $this->reply($stackModel->errors(), 404, "ERR-STACK-UPDATE");
         }
 
         return $this->reply(null, 200, "OK-STACK-UPDATE-SUCCESS");
+    }
+
+    public function done_v1($idBoard, $idStack)
+    {
+        $board = $this->request->board;
+
+        $stackModel = new StackModel();
+        $stack = $stackModel
+            ->where('board', $board->id)
+            ->find($idStack);
+
+        if (!$stack) {
+            return $this->reply(null, 404, "ERR-STACK-NOT-FOUND-MSG");
+        }
+
+        $data = [
+            'done' => 1,
+            'progress' => 100
+        ];
+
+        $taskModel = new TaskModel();
+        if ($taskModel->where('stack', $stack->id)->set($data)->update() === false) {
+            return $this->reply($taskModel->errors(), 404, "ERR-STACK-DONE-ERROR");
+        }
+
+        return $this->reply(null, 200, "OK-STACK-DONE-SUCCESS");
+    }
+
+    public function todo_v1($idBoard, $idStack)
+    {
+        $board = $this->request->board;
+
+        $stackModel = new StackModel();
+        $stack = $stackModel
+            ->where('board', $board->id)
+            ->find($idStack);
+
+        if (!$stack) {
+            return $this->reply(null, 404, "ERR-STACK-NOT-FOUND-MSG");
+        }
+
+        $data = [
+            'done' => 0,
+            'progress' => 0
+        ];
+
+        $taskModel = new TaskModel();
+        if ($taskModel->where('stack', $stack->id)->set($data)->update() === false) {
+            return $this->reply($taskModel->errors(), 404, "ERR-STACK-TODO-ERROR");
+        }
+
+        return $this->reply(null, 200, "OK-STACK-TODO-SUCCESS");
     }
 }

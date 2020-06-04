@@ -22,7 +22,7 @@ class TasksController extends BaseController
         $tasks = $query->getResult();
 
         foreach ($tasks as &$task) {
-            $task->cover = (bool)$task->done;
+            $task->cover = (bool)$task->cover;
             $task->done = (bool)$task->done;
             $task->altTags = (bool)$task->altTags;
             $task->progress = (int)$task->progress;
@@ -54,7 +54,7 @@ class TasksController extends BaseController
         $tasks = $query->getResult();
 
         foreach ($tasks as &$task) {
-            $task->cover = (bool)$task->done;
+            $task->cover = (bool)$task->cover;
             $task->done = (bool)$task->done;
             $task->altTags = (bool)$task->altTags;
             $task->progress = (int)$task->progress;
@@ -92,7 +92,7 @@ class TasksController extends BaseController
 
         $task = $tasks[0];
 
-        $task->cover = (bool)$task->done;
+        $task->cover = (bool)$task->cover;
         $task->done = (bool)$task->done;
         $task->altTags = (bool)$task->altTags;
         $task->progress = (int)$task->progress;
@@ -199,8 +199,7 @@ class TasksController extends BaseController
 
             try {
                 if ($builderTaskOrderBuilder->insertBatch($orders) === false) {
-                    $errors = $taskOrderModel->errors();
-                    return $this->reply($errors, 500, "ERR-TASK-ORDER");    
+                    return $this->reply($taskOrderModel->errors(), 500, "ERR-TASK-ORDER");    
                 }
             } catch (\Exception $e) {
                 return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER");
@@ -208,7 +207,7 @@ class TasksController extends BaseController
         }
 
         $task = $taskModel->find($taskData->id);
-        $task->cover = (bool)$task->done;
+        $task->cover = (bool)$task->cover;
         $task->done = (bool)$task->done;
         $task->altTags = (bool)$task->altTags;
         $task->progress = (int)$task->progress;

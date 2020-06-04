@@ -78,7 +78,7 @@ class BoardsController extends BaseController
                     // remove the order property from the task
                     unset($task->order);
 
-                    $task->cover = (bool)$task->done;
+                    $task->cover = (bool)$task->cover;
                     $task->done = (bool)$task->done;
                     $task->altTags = (bool)$task->altTags;
                     $task->progress = (int)$task->progress;

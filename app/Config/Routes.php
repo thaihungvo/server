@@ -47,6 +47,8 @@ $routes->put('/api/v1/boards/(:any)/tags/(:any)', 'TagsController::update_v1/$1/
 $routes->get('/api/v1/boards/(:any)/stacks', 'StacksController::all_v1/$1');
 $routes->post('/api/v1/boards/(:any)/stacks', 'StacksController::add_v1/$1');
 $routes->put('/api/v1/boards/(:any)/stacks/(:any)', 'StacksController::update_v1/$1/$2');
+$routes->get('/api/v1/boards/(:any)/stacks/(:any)/done', 'StacksController::done_v1/$1/$2');
+$routes->get('/api/v1/boards/(:any)/stacks/(:any)/todo', 'StacksController::todo_v1/$1/$2');
 
 // TASKS
 $routes->get('/api/v1/boards/(:any)/stacks/(:any)/tasks', 'TasksController::all_stack_v1/$1/$2');
