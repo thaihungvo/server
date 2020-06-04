@@ -13,11 +13,11 @@ class UserController extends BaseController
         $user = $userModel->where('email', $userData->email)->first();
 
         if (!$user) {
-            return $this->reply(null, 401, "ERR_USER_LOGIN_WRONG_EMAIL_PASS");
+            return $this->reply(null, 401, "ERR-USER-LOGIN-WRONG-EMAIL-PASS");
         }
 
         if (!password_verify($userData->password, $user->password)){
-            return $this->reply(null, 401, "ERR_USER_LOGIN_WRONG_EMAIL_PASS");
+            return $this->reply(null, 401, "ERR-USER-LOGIN-WRONG-EMAIL-PASS");
         }
 
         $key = JWT_KEY;
@@ -44,12 +44,12 @@ class UserController extends BaseController
             !isset($userData->email) ||
             !isset($userData->password)
         ) {
-            return $this->reply(null, 400, "ERR_USER_REGISTRATION_MISSING_DATA");
+            return $this->reply(null, 400, "ERR-USER-REGISTRATION-MISSING-DATA");
         }
 
         // password length under 6 chars
         if (strlen($userData->password) < 6) {
-            return $this->reply(null, 400, "ERR_USER_REGISTRATION_PASSWORD_LENGTH");
+            return $this->reply(null, 400, "ERR-USER-REGISTRATION-PASSWORD-LENGTH");
         }
 
         $userModel = new UserModel();
@@ -57,7 +57,7 @@ class UserController extends BaseController
 
         // username already in use
         if (count($users)) {
-            return $this->reply(null, 400, "ERR_USER_REGISTRATION_USER_EXISTS");
+            return $this->reply(null, 400, "ERR-USER-REGISTRATION-USER-EXISTS");
         }
 
         $options = [
@@ -72,9 +72,9 @@ class UserController extends BaseController
         ];
         
         if (!$userModel->insert($data)) {
-            return $this->reply(null, 500, "ERR_USER_REGISTRATION_SAVE");
+            return $this->reply(null, 500, "ERR-USER-REGISTRATION-SAVE");
         }
 
-        return $this->reply(null, 200, "OK_USER_REGISTRATION_SUCCESS");
+        return $this->reply(null, 200, "OK-USER-REGISTRATION-SUCCESS");
     }
 }
