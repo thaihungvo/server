@@ -35,15 +35,15 @@ class TagsController extends BaseController
         try {
             if ($tagModel->insert($tagData) === false) {
                 $errors = $tagModel->errors();
-                return $this->reply($errors, 500, "ERR_BOARD_TAGS_CREATE");
+                return $this->reply($errors, 500, "ERR-BOARD-TAGS-CREATE");
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR_BOARD_TAGS_CREATE");
+            return $this->reply($e->getMessage(), 500, "ERR-BOARD-TAGS-CREATE");
         }
 
         $tag = $tagModel->find($tagData->id);
 
-        return $this->reply($tag, 200, "OK_BOARD_TAGS_CREATE_SUCCESS");
+        return $this->reply($tag, 200, "OK-BOARD-TAGS-CREATE-SUCCESS");
     }
 
     public function update_v1($idBoard, $idTag)
@@ -57,7 +57,7 @@ class TagsController extends BaseController
             ->find($idTag);
 
         if (!$tag) {
-            return $this->reply(null, 404, "ERR_BOARDS_TAG_NOT_FOUND_MSG");
+            return $this->reply(null, 404, "ERR-BOARDS-TAG-NOT-FOUND-MSG");
         }
 
         $tagData = $this->request->getJSON();
@@ -65,9 +65,9 @@ class TagsController extends BaseController
         unset($tagData->id);
 
         if ($tagModel->update($tag->id, $tagData) === false) {
-            return $this->reply(null, 404, "ERR_BOARDS_TAG_UPDATE");
+            return $this->reply(null, 404, "ERR-BOARDS-TAG-UPDATE");
         }
 
-        return $this->reply(null, 200, "OK_BOARDS_TAG_UPDATE_SUCCESS");
+        return $this->reply(null, 200, "OK-BOARDS-TAG-UPDATE-SUCCESS");
     }
 }

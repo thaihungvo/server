@@ -537,6 +537,65 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Archive All tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks/9b8004ea-89e8-11ea-be55-2474dae7f827/archive",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"stacks",
+								"9b8004ea-89e8-11ea-be55-2474dae7f827",
+								"archive"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Archive done tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks/9b8004ea-89e8-11ea-be55-2474dae7f827/archive/done",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"stacks",
+								"9b8004ea-89e8-11ea-be55-2474dae7f827",
+								"archive",
+								"done"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}

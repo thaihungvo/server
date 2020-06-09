@@ -149,4 +149,54 @@ class StacksController extends BaseController
 
         return $this->reply(null, 200, "OK-STACK-TODO-SUCCESS");
     }
+
+    public function archive_v1($idBoard, $idStack)
+    {
+        $board = $this->request->board;
+
+        $stackModel = new StackModel();
+        $stack = $stackModel
+            ->where('board', $board->id)
+            ->find($idStack);
+
+        if (!$stack) {
+            return $this->reply(null, 404, "ERR-STACK-NOT-FOUND-MSG");
+        }
+
+        $data = [
+            'archived' => date('Y-m-d H:i:s')
+        ];
+
+        $taskModel = new TaskModel();
+        if ($taskModel->where('stack', $stack->id)->set($data)->update() === false) {
+            return $this->reply($taskModel->errors(), 404, "ERR-STACK-ARCHIVE-ALL-ERROR");
+        }
+
+        return $this->reply(null, 200, "OK-STACK-ARCHIVE-ALL-SUCCESS");
+    }
+
+    public function archive_done_v1($idBoard, $idStack)
+    {
+        $board = $this->request->board;
+
+        $stackModel = new StackModel();
+        $stack = $stackModel
+            ->where('board', $board->id)
+            ->find($idStack);
+
+        if (!$stack) {
+            return $this->reply(null, 404, "ERR-STACK-NOT-FOUND-MSG");
+        }
+
+        $data = [
+            'archived' => date('Y-m-d H:i:s')
+        ];
+
+        $taskModel = new TaskModel();
+        if ($taskModel->where('stack', $stack->id)->where('done', 1)->set($data)->update() === false) {
+            return $this->reply($taskModel->errors(), 404, "ERR-STACK-ARCHIVE-DONE-ERROR");
+        }
+
+        return $this->reply(null, 200, "OK-STACK-ARCHIVE-DONE-SUCCESS");
+    }
 }
