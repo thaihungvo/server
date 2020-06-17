@@ -51,6 +51,7 @@ $routes->get('/api/v1/boards/(:any)/stacks/(:any)/todo', 'StacksController::todo
 $routes->put('/api/v1/boards/(:any)/stacks/(:any)', 'StacksController::update_v1/$1/$2');
 $routes->get('/api/v1/boards/(:any)/stacks', 'StacksController::all_v1/$1');
 $routes->post('/api/v1/boards/(:any)/stacks', 'StacksController::add_v1/$1');
+$routes->delete('/api/v1/boards/(:any)/stacks/(:any)', 'StacksController::delete_v1/$1/$2');
 
 // TASKS
 $routes->get('/api/v1/boards/(:any)/stacks/(:any)/tasks', 'TasksController::all_stack_v1/$1/$2');

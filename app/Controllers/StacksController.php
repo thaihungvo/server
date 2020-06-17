@@ -92,7 +92,7 @@ class StacksController extends BaseController
         $stackData = $this->request->getJSON();
 
         if ($stackModel->update($stack->id, $stackData) === false) {
-            return $this->reply($stackModel->errors(), 404, "ERR-STACK-UPDATE");
+            return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
         }
 
         return $this->reply(null, 200, "OK-STACK-UPDATE-SUCCESS");
@@ -118,7 +118,7 @@ class StacksController extends BaseController
 
         $taskModel = new TaskModel();
         if ($taskModel->where('stack', $stack->id)->set($data)->update() === false) {
-            return $this->reply($taskModel->errors(), 404, "ERR-STACK-DONE-ERROR");
+            return $this->reply($taskModel->errors(), 500, "ERR-STACK-DONE-ERROR");
         }
 
         return $this->reply(null, 200, "OK-STACK-DONE-SUCCESS");
@@ -144,7 +144,7 @@ class StacksController extends BaseController
 
         $taskModel = new TaskModel();
         if ($taskModel->where('stack', $stack->id)->set($data)->update() === false) {
-            return $this->reply($taskModel->errors(), 404, "ERR-STACK-TODO-ERROR");
+            return $this->reply($taskModel->errors(), 500, "ERR-STACK-TODO-ERROR");
         }
 
         return $this->reply(null, 200, "OK-STACK-TODO-SUCCESS");
@@ -169,7 +169,7 @@ class StacksController extends BaseController
 
         $taskModel = new TaskModel();
         if ($taskModel->where('stack', $stack->id)->set($data)->update() === false) {
-            return $this->reply($taskModel->errors(), 404, "ERR-STACK-ARCHIVE-ALL-ERROR");
+            return $this->reply($taskModel->errors(), 500, "ERR-STACK-ARCHIVE-ALL-ERROR");
         }
 
         return $this->reply(null, 200, "OK-STACK-ARCHIVE-ALL-SUCCESS");
@@ -194,9 +194,48 @@ class StacksController extends BaseController
 
         $taskModel = new TaskModel();
         if ($taskModel->where('stack', $stack->id)->where('done', 1)->set($data)->update() === false) {
-            return $this->reply($taskModel->errors(), 404, "ERR-STACK-ARCHIVE-DONE-ERROR");
+            return $this->reply($taskModel->errors(), 500, "ERR-STACK-ARCHIVE-DONE-ERROR");
         }
 
         return $this->reply(null, 200, "OK-STACK-ARCHIVE-DONE-SUCCESS");
+    }
+
+    public function delete_v1($idBoard, $idStack)
+    {
+        $board = $this->request->board;
+
+        $stackModel = new StackModel();
+        $stack = $stackModel
+            ->where('board', $board->id)
+            ->find($idStack);
+
+        if (!$stack) {
+            return $this->reply(null, 404, "ERR-STACK-NOT-FOUND-MSG");
+        }
+
+        // delete all tasks attachments
+        // TODO: delete all tasks attachments
+
+        // delete all tasks
+        $taskModel = new TaskModel();
+        try {
+            if ($taskModel->where('stack', $stack->id)->delete() === false) {
+                return $this->reply($taskModel->errors(), 500, "ERR-STACK-DELETE-TASKS-ERROR");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE-TASKS-ERROR");
+        }
+
+        // delete selected stack
+        try {
+            if ($stackModel->delete([$stack->id]) === false) {
+                return $this->reply($stackModel->errors(), 500, "ERR-STACK-DELETE-ERROR");
+            }    
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE-ERROR");
+        }
+        
+
+        return $this->reply(null, 200, "OK-STACK-DELETE-SUCCESS");
     }
 }
