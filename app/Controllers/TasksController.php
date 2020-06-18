@@ -253,4 +253,38 @@ class TasksController extends BaseController
 
         return $this->reply(null, 200, "OK-TASK-UPDATE-SUCCESS");
     }
+
+    public function delete_v1($boardID, $taskID)
+    {
+        $board = $this->request->board;   
+
+        $taskModel = new TaskModel();
+        
+        $builder = $taskModel->builder();
+        $query = $builder->select('tasks.*')
+            ->join('stacks', 'stacks.id = tasks.stack')
+            ->where('tasks.deleted', NULL)
+            ->where('tasks.id', $taskID)
+            ->where('stacks.board', $board->id)
+            ->limit(1)
+            ->get();
+
+        $tasks = $query->getResult();
+
+        if (!count($tasks)) {
+            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND-MSG");
+        }
+
+        $task = $tasks[0];
+
+        try {
+            if ($taskModel->delete([$task->id]) === false) {
+                return $this->reply($taskModel->errors(), 500, "ERR-TASK-DELETE-ERROR");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-ERROR");
+        }
+
+        return $this->reply(null, 200, "OK-TASK-DELETE-SUCCESS");
+    }
 }

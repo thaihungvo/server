@@ -596,6 +596,34 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Delete Stack",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks/9b8004ea-89e8-11ea-be55-2474dae7f827",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"stacks",
+								"9b8004ea-89e8-11ea-be55-2474dae7f827"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}
@@ -756,6 +784,34 @@
 								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
 								"tasks",
 								"fcdb8844-9222-11ea-8c1c-870eb04b6723"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Task",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tasks/f15ce382-8a11-11ea-b94d-a87f862112f6",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"tasks",
+								"f15ce382-8a11-11ea-b94d-a87f862112f6"
 							]
 						}
 					},
