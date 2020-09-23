@@ -45,10 +45,11 @@ class TasksController extends BaseController
 
         $builder = $taskModel->builder();
         $query = $builder->select('tasks.*')
-            ->join('stacks', 'stacks.id = tasks.stack')
+            ->join('tasks_order', 'tasks_order.task = tasks.id')
             ->where('tasks.deleted', NULL)
-            ->where('tasks.stack', $stackID)
-            ->where('stacks.board', $board->id)
+            ->where('tasks_order.stack', $stackID)
+            ->where('tasks_order.board', $board->id)
+            ->orderBy('tasks_order.`order`', 'ASC')
             ->get();
 
         $tasks = $query->getResult();
@@ -229,10 +230,10 @@ class TasksController extends BaseController
 
         $builder = $taskModel->builder();
         $query = $builder->select('tasks.*')
-            ->join('stacks', 'stacks.id = tasks.stack')
+            ->join('tasks_order', 'tasks_order.task = tasks.id')
             ->where('tasks.deleted', NULL)
             ->where('tasks.id', $taskID)
-            ->where('stacks.board', $board->id)
+            ->where('tasks_order.board', $board->id)
             ->limit(1)
             ->get();
 
@@ -245,6 +246,9 @@ class TasksController extends BaseController
         $taskData = $this->request->getJSON();
 
         unset($taskData->id);
+        unset($taskData->order);
+        unset($taskData->stack);
+
         $taskData->archived = null;
 
         if ($taskModel->update($taskID, $taskData) === false) {
@@ -262,10 +266,10 @@ class TasksController extends BaseController
         
         $builder = $taskModel->builder();
         $query = $builder->select('tasks.*')
-            ->join('stacks', 'stacks.id = tasks.stack')
+            ->join('tasks_order', 'tasks_order.task = tasks.id')
             ->where('tasks.deleted', NULL)
             ->where('tasks.id', $taskID)
-            ->where('stacks.board', $board->id)
+            ->where('tasks_order.board', $board->id)
             ->limit(1)
             ->get();
 

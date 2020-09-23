@@ -60,9 +60,9 @@ class BoardsController extends BaseController
             $taskModel = new TaskModel();
             $taskBuilder = $taskModel->builder();
 
-            $taskQuery = $taskBuilder->select("tasks.*, tasks_order.order")
+            $taskQuery = $taskBuilder->select("tasks.*, tasks_order.stack, tasks_order.order")
                 ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
-                ->whereIn('tasks.stack', $stacksIDs)
+                ->whereIn('tasks_order.stack', $stacksIDs)
                 ->where('tasks.deleted', NULL)
                 ->where('tasks.archived', NULL)
                 ->orderBy('tasks_order.`order`', 'ASC')
@@ -222,6 +222,7 @@ class BoardsController extends BaseController
             }
         }
 
+        // updating the tasks order
         try {
             if ($taskOrderBuilder->insertBatch($orders) === false) {
                 $errors = $taskOrderModel->errors();

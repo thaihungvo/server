@@ -14,11 +14,11 @@ class Home extends BaseController
 
         $userModel = new UserModel();
         
-        $data = [
-            'username' => 'darth',
-            'email'    => 'd.vader@theempire.com'
-        ];
-        $userModel->save($data);
+        // $data = [
+        //     'username' => 'darth',
+        //     'email'    => 'd.vader@theempire.com'
+        // ];
+        // $userModel->save($data);
 
         $users = $userModel->findAll();
 
