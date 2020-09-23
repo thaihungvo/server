@@ -218,13 +218,33 @@ class StacksController extends BaseController
 
         // delete all tasks
         $taskModel = new TaskModel();
-        try {
-            if ($taskModel->where('stack', $stack->id)->delete() === false) {
-                return $this->reply($taskModel->errors(), 500, "ERR-STACK-DELETE-TASKS-ERROR");
+        $taskBuilder = $taskModel->builder();
+
+        $taskQuery = $taskBuilder->select("*")
+            ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
+            ->where('tasks_order.stack', $stack->id)
+            ->where('tasks.deleted', NULL)
+            ->get();
+        $tasks = $taskQuery->getResult();
+
+        if (count($tasks)) {
+            $tasksIDs = array();
+            foreach ($tasks as $task) {
+                $tasksIDs[] = $task->id;
             }
-        } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE-TASKS-ERROR");
+
+            try {
+                if ($taskModel->delete($tasksIDs) === false) {
+                    return $this->reply($taskModel->errors(), 500, "ERR-STACK-DELETE-TASKS-ERROR");
+                }
+            } catch (\Exception $e) {
+                return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE-TASKS-ERROR");
+            }
         }
+
+        // we don't need to remove the tasks and stacks order 
+        // since we're not actually removing the items from the db
+        // only marking them as deleted
 
         // delete selected stack
         try {

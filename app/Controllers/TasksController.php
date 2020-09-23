@@ -104,7 +104,7 @@ class TasksController extends BaseController
             $task->info = json_decode($task->info);
         }
 
-        return $this->reply($tasks);
+        return $this->reply($task);
     }
 
     public function add_v1($id, $position)
@@ -281,12 +281,21 @@ class TasksController extends BaseController
 
         $task = $tasks[0];
 
+        // delete selected task
         try {
             if ($taskModel->delete([$task->id]) === false) {
                 return $this->reply($taskModel->errors(), 500, "ERR-TASK-DELETE-ERROR");
             }
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-ERROR");
+        }
+
+        // delete task order
+        $taskOrderModel = new TaskOrderModel();
+        try {
+            $taskOrderModel->where('task', $task->id)->delete();
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER-DELETE-ERROR");
         }
 
         return $this->reply(null, 200, "OK-TASK-DELETE-SUCCESS");
