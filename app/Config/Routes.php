@@ -38,6 +38,9 @@ $routes->get('/ping', 'PingController::index');
 $routes->post('/login', 'UserController::login_v1');
 $routes->post('/register', 'UserController::register_v1');
 
+// MEMBERS
+$routes->get('/api/v1/members', 'MembersController::all_v1/$1');
+
 // TAGS
 $routes->get('/api/v1/boards/(:any)/tags', 'TagsController::all_v1/$1');
 $routes->post('/api/v1/boards/(:any)/tags', 'TagsController::add_v1/$1');

@@ -24,8 +24,8 @@ class UserController extends BaseController
         $payload = array(
             'id' => $user->id,
             'email' => $user->email,
-            'first_name' => $user->first_name,
-            'last_name' => $user->last_name
+            'firstName' => $user->firstName,
+            'lastName' => $user->lastName
         );
 
         unset($user->password);
@@ -42,7 +42,9 @@ class UserController extends BaseController
         // username or password missing
         if (
             !isset($userData->email) ||
-            !isset($userData->password)
+            !isset($userData->password) ||
+            !isset($userData->firstName) ||
+            !isset($userData->lastName)
         ) {
             return $this->reply(null, 400, "ERR-USER-REGISTRATION-MISSING-DATA");
         }
