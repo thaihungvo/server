@@ -45,7 +45,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}",
 							"host": [
 								"{{server}}"
 							],
@@ -53,7 +53,7 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9"
+								"{{board}}"
 							]
 						}
 					},
@@ -61,6 +61,19 @@
 				},
 				{
 					"name": "Create Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c6414b0e-a0bf-4872-9191-ab1ec6717e08",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"board\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -75,7 +88,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"title\": \"Hello Board\"\n}",
+							"raw": "{\n\t\"title\": \"The Board\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -373,6 +386,31 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get all Members",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/members",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"members"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}
@@ -392,7 +430,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks",
 							"host": [
 								"{{server}}"
 							],
@@ -400,7 +438,7 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"stacks"
 							]
 						}
@@ -409,6 +447,19 @@
 				},
 				{
 					"name": "Create Stacks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e4105b1c-9fcb-42ed-8291-6ebd05406b3a",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"stack\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -428,7 +479,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks",
 							"host": [
 								"{{server}}"
 							],
@@ -436,7 +487,7 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"stacks"
 							]
 						}
@@ -464,7 +515,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks/9b8004ea-89e8-11ea-be55-2474dae7f827",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks/{{stack}}",
 							"host": [
 								"{{server}}"
 							],
@@ -472,9 +523,9 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"stacks",
-								"9b8004ea-89e8-11ea-be55-2474dae7f827"
+								"{{stack}}"
 							]
 						}
 					},
@@ -492,7 +543,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks/9b8004ea-89e8-11ea-be55-2474dae7f827/done",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks/{{stack}}/done",
 							"host": [
 								"{{server}}"
 							],
@@ -500,9 +551,9 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"stacks",
-								"9b8004ea-89e8-11ea-be55-2474dae7f827",
+								"{{stack}}",
 								"done"
 							]
 						}
@@ -521,7 +572,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks/9b8004ea-89e8-11ea-be55-2474dae7f827/todo",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks/{{stack}}/todo",
 							"host": [
 								"{{server}}"
 							],
@@ -529,9 +580,9 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"stacks",
-								"9b8004ea-89e8-11ea-be55-2474dae7f827",
+								"{{stack}}",
 								"todo"
 							]
 						}
@@ -550,7 +601,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks/9b8004ea-89e8-11ea-be55-2474dae7f827/archive",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks/{{stack}}/archive",
 							"host": [
 								"{{server}}"
 							],
@@ -558,9 +609,9 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"stacks",
-								"9b8004ea-89e8-11ea-be55-2474dae7f827",
+								"{{stack}}",
 								"archive"
 							]
 						}
@@ -579,7 +630,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks/9b8004ea-89e8-11ea-be55-2474dae7f827/archive/done",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks/{{stack}}/archive/done",
 							"host": [
 								"{{server}}"
 							],
@@ -587,9 +638,9 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"stacks",
-								"9b8004ea-89e8-11ea-be55-2474dae7f827",
+								"{{stack}}",
 								"archive",
 								"done"
 							]
@@ -609,7 +660,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks/9b8004ea-89e8-11ea-be55-2474dae7f827",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks/{{stack}}",
 							"host": [
 								"{{server}}"
 							],
@@ -617,9 +668,9 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"stacks",
-								"9b8004ea-89e8-11ea-be55-2474dae7f827"
+								"{{stack}}"
 							]
 						}
 					},
@@ -643,7 +694,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tasks",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tasks",
 							"host": [
 								"{{server}}"
 							],
@@ -651,7 +702,7 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"tasks"
 							]
 						}
@@ -670,7 +721,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/stacks/9b8004ea-89e8-11ea-be55-2474dae7f827/tasks",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks/{{stack}}/tasks",
 							"host": [
 								"{{server}}"
 							],
@@ -678,9 +729,9 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"stacks",
-								"9b8004ea-89e8-11ea-be55-2474dae7f827",
+								"{{stack}}",
 								"tasks"
 							]
 						}
@@ -699,7 +750,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tasks/f15ce382-8a11-11ea-b94d-a87f862112f6",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tasks/{{task}}",
 							"host": [
 								"{{server}}"
 							],
@@ -707,9 +758,9 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"tasks",
-								"f15ce382-8a11-11ea-b94d-a87f862112f6"
+								"{{task}}"
 							]
 						}
 					},
@@ -717,6 +768,19 @@
 				},
 				{
 					"name": "Add Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "bc8680b6-642e-44e8-9255-dcb420b6b51f",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"task\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -736,7 +800,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tasks/top",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tasks/top",
 							"host": [
 								"{{server}}"
 							],
@@ -744,7 +808,7 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"tasks",
 								"top"
 							]

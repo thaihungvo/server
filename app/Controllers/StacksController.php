@@ -12,9 +12,14 @@ class StacksController extends BaseController
         $board = $this->request->board;
 
         $stackModel = new StackModel();
-        $stacks = $stackModel->where('board', $board->id)
-            ->orderBy('order', 'asc')
-            ->findAll();
+        $stackBuilder = $stackModel->builder();
+        $stackQuery = $stackBuilder->select("stacks.*")
+            ->join('stacks_order', 'stacks_order.stack = stacks.id', 'left')
+            ->where('stacks.board', $board->id)
+            ->where('stacks.deleted', NULL)
+            ->orderBy('stacks_order.`order`', 'ASC')
+            ->get();
+        $stacks = $stackQuery->getResult();
 
         return $this->reply($stacks);
     }

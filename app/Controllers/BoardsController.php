@@ -138,6 +138,14 @@ class BoardsController extends BaseController
         $boardData->owner = $user->id;
         $boardData->archived_order = 'title-asc';
 
+        if (!isset($boardData->hourlyFee)) {
+            $boardData->hourlyFee = 0;
+        }
+
+        if (!isset($boardData->feeCurrency)) {
+            $boardData->feeCurrency = "";
+        }
+
         $boardModel = new BoardModel();
 
         try {

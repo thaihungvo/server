@@ -8,3 +8,15 @@ TASKS:
     ☐ updating task super fast is not found in the db
     ☐ upload file
     ☐ upload cover image
+
+ROUTES:
+    ☐ simplify routes
+
+TRUNCATE stk_boards;
+TRUNCATE stk_boards_members;
+TRUNCATE stk_boards_tags;
+TRUNCATE stk_stacks;
+TRUNCATE `stk_stacks_order`;
+TRUNCATE stk_tasks;
+TRUNCATE `stk_tasks_assignees`;
+TRUNCATE `stk_tasks_order`;
