@@ -36,7 +36,7 @@ class TasksController extends BaseController
         return $this->reply($tasks);
     }
 
-    public function all_stack_v1($boardID, $stackID)
+    public function all_stack_v1($stackID)
     {
         $board = $this->request->board;   
 
@@ -69,7 +69,7 @@ class TasksController extends BaseController
         return $this->reply($tasks);
     }
 
-    public function one_v1($boardID, $taskID)
+    public function one_v1($taskID)
     {
         $board = $this->request->board;   
 
@@ -205,7 +205,7 @@ class TasksController extends BaseController
         return $this->reply($task, 200, "OK-TASK-CREATE-SUCCESS");
     }
 
-    public function update_v1($boardID, $taskID)
+    public function update_v1($taskID)
     {
         $board = $this->request->board;
 
@@ -240,11 +240,13 @@ class TasksController extends BaseController
 
         // generate a list of new assignees
         $assignees = array();
-        foreach ($taskData->assignees as $userID) {
-            $assignee = new \stdClass();
-            $assignee->task = $taskData->id;
-            $assignee->user = $userID;
-            $assignees[] = $assignee;
+        if (isset($taskData->assignees)) {
+            foreach ($taskData->assignees as $userID) {
+                $assignee = new \stdClass();
+                $assignee->task = $taskData->id;
+                $assignee->user = $userID;
+                $assignees[] = $assignee;
+            }
         }
         
         // insert the assignees if any
@@ -271,7 +273,7 @@ class TasksController extends BaseController
         return $this->reply(null, 200, "OK-TASK-UPDATE-SUCCESS");
     }
 
-    public function delete_v1($boardID, $taskID)
+    public function delete_v1($taskID)
     {
         $board = $this->request->board;   
 

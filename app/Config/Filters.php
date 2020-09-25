@@ -12,6 +12,8 @@ class Filters extends BaseConfig
 		'honeypot' => \CodeIgniter\Filters\Honeypot::class,
 		'auth' => \App\Filters\APIAuth::class,
         'board' => \App\Filters\Board::class,
+        'boardstacks' => \App\Filters\BoardStacks::class,
+        'boardtasks' => \App\Filters\BoardTasks::class,
         'task' => \App\Filters\Task::class,
 	];
 
@@ -38,18 +40,27 @@ class Filters extends BaseConfig
 	public $filters = [
         'auth' => ['before' => ['api/*']],
         'task' => ['before' => [
-            '/api/v1/boards/*/tasks',
-            '/api/v1/boards/*/tasks/*'            
+            '/api/*/boards/*/tasks',
+            '/api/*/boards/*/tasks/*'            
         ]],
         'board' => ['before' => [
                 '/api/*/boards/*',
                 '/api/*/boards/*/tags',
                 '/api/*/boards/*/tags/*',
                 '/api/*/boards/*/stacks',
-                '/api/*/boards/*/stacks/*',
-                '/api/*/boards/*/tasks',
-                '/api/*/boards/*/stacks/*/tasks',
-                '/api/*/boards/*/stacks/*/tasks/*'
+                '/api/*/boards/*/tasks'
+            ]
+        ],
+        'boardstacks' => [
+            'before' => [
+                '/api/*/stacks/*',
+                '/api/*/stacks/*/tasks',
+                '/api/*/stacks/*/tasks/*'
+            ]
+        ],
+        'boardtasks' => [
+            'before' => [
+                '/api/*/tasks/*',
             ]
         ]
     ];

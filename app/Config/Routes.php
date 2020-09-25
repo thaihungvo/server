@@ -57,12 +57,18 @@ $routes->post('/api/v1/boards/(:any)/stacks', 'StacksController::add_v1/$1');
 $routes->delete('/api/v1/boards/(:any)/stacks/(:any)', 'StacksController::delete_v1/$1/$2');
 
 // TASKS
-$routes->get('/api/v1/boards/(:any)/stacks/(:any)/tasks', 'TasksController::all_stack_v1/$1/$2');
-$routes->get('/api/v1/boards/(:any)/tasks/(:any)', 'TasksController::one_v1/$1/$2');
-$routes->get('/api/v1/boards/(:any)/tasks', 'TasksController::all_board_v1/$1');
-$routes->post('/api/v1/boards/(:any)/tasks/(:any)', 'TasksController::add_v1/$1/$2');
-$routes->put('/api/v1/boards/(:any)/tasks/(:any)', 'TasksController::update_v1/$1/$2');
-$routes->delete('/api/v1/boards/(:any)/tasks/(:any)', 'TasksController::delete_v1/$1/$2');
+    // tasks by board
+    $routes->get('/api/v1/boards/(:any)/tasks', 'TasksController::all_board_v1/$1');
+    // tasks by stack
+    $routes->get('/api/v1/stacks/(:any)/tasks', 'TasksController::all_stack_v1/$1');
+    // single task
+    $routes->get('/api/v1/tasks/(:any)', 'TasksController::one_v1/$1');
+    // create a task
+    $routes->post('/api/v1/boards/(:any)/tasks/(:any)', 'TasksController::add_v1/$1/$2');
+    // update a task
+    $routes->put('/api/v1/tasks/(:any)', 'TasksController::update_v1/$1');
+    // delete a task
+    $routes->delete('/api/v1/tasks/(:any)', 'TasksController::delete_v1/$1');
 
 // BOARDS
 $routes->get('/api/v1/boards', 'BoardsController::all_v1');
