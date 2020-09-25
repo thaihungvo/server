@@ -57,6 +57,7 @@ class StacksController extends BaseController
             ->get();
         $maxStacks = $query->getResult();
 
+        // created a new stack order object
         $order = new \stdClass();
         $order->board = $board->id;
         $order->stack = $stackData->id;
@@ -67,6 +68,7 @@ class StacksController extends BaseController
             $order->order = (int)$maxStacks[0]->order + 1; 
         }
 
+        // insert the new stack order object
         try {
             if ($builderStackOrderBuilder->insert($order) === false) {
                 $errors = $stackOrderModel->errors();

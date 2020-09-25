@@ -792,7 +792,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"title\": \"New task\",\n\t\"stack\": \"9b8004ea-89e8-11ea-be55-2474dae7f827\"\n}",
+							"raw": "{\n\t\"title\": \"New task\",\n\t\"stack\": \"{{stack}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -837,7 +837,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tasks/fcdb8844-9222-11ea-8c1c-870eb04b6723",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tasks/{{task}}",
 							"host": [
 								"{{server}}"
 							],
@@ -845,9 +845,9 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"tasks",
-								"fcdb8844-9222-11ea-8c1c-870eb04b6723"
+								"{{task}}"
 							]
 						}
 					},
@@ -865,7 +865,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tasks/f15ce382-8a11-11ea-b94d-a87f862112f6",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tasks/{{task}}",
 							"host": [
 								"{{server}}"
 							],
@@ -873,9 +873,9 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"tasks",
-								"f15ce382-8a11-11ea-b94d-a87f862112f6"
+								"{{task}}"
 							]
 						}
 					},

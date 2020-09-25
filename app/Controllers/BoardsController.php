@@ -91,29 +91,17 @@ class BoardsController extends BaseController
                 }
             }
 
+            helper('tasks');
+
             // connect tasks to stacks
             foreach ($board->stacks as &$stack) {
                 // remove the order property from the stack
                 unset($stack->order);
 
                 $stack->tasks = [];
-                foreach ($tasks as &$task) {
-                    // remove the order property from the task
-                    unset($task->order);
-
-                    $task->cover = (bool)$task->cover;
-                    $task->done = (bool)$task->done;
-                    $task->altTags = (bool)$task->altTags;
-                    $task->progress = (int)$task->progress;
-                    if (is_string($task->tags)) {
-                        $task->tags = json_decode($task->tags);
-                    }
-                    if (is_string($task->info)) {
-                        $task->info = json_decode($task->info);
-                    }
-                    
+                foreach ($tasks as &$task) {                    
                     if ($task->stack === $stack->id) {
-                        $stack->tasks[] = $task;
+                        $stack->tasks[] = task_format($task);
                     }
                 }
             }

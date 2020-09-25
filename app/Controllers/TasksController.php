@@ -12,15 +12,13 @@ class TasksController extends BaseController
         $board = $this->request->board;
 
         $taskModel = new TaskModel();
-
-        $builder = $taskModel->builder();
-        $query = $builder->select('tasks.*')
-            ->join('stacks', 'stacks.id = tasks.stack')
+        $taskBuilder = $taskModel->builder();
+        $taskQuery = $taskBuilder->select('tasks.*')
+            ->join('tasks_order', 'tasks_order.task = tasks.id')
             ->where('tasks.deleted', NULL)
-            ->where('stacks.board', $board->id)
+            ->where('tasks_order.board', $board->id)
             ->get();
-
-        $tasks = $query->getResult();
+        $tasks = $taskQuery->getResult();
 
         foreach ($tasks as &$task) {
             $task->cover = (bool)$task->cover;
@@ -76,34 +74,25 @@ class TasksController extends BaseController
         $board = $this->request->board;   
 
         $taskModel = new TaskModel();
-        
-        $builder = $taskModel->builder();
-        $query = $builder->select('tasks.*')
-            ->join('stacks', 'stacks.id = tasks.stack')
+        $taskBuilder = $taskModel->builder();
+        $taskQuery = $taskBuilder->select('tasks.*')
+            ->join('tasks_order', 'tasks_order.task = tasks.id')
             ->where('tasks.deleted', NULL)
             ->where('tasks.id', $taskID)
-            ->where('stacks.board', $board->id)
+            ->where('tasks_order.board', $board->id)
             ->limit(1)
             ->get();
 
-        $tasks = $query->getResult();
+        $tasks = $taskQuery->getResult();
 
         if (!count($tasks)) {
             return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND-MSG");
         }
 
         $task = $tasks[0];
-
-        $task->cover = (bool)$task->cover;
-        $task->done = (bool)$task->done;
-        $task->altTags = (bool)$task->altTags;
-        $task->progress = (int)$task->progress;
-        if (is_string($task->tags)) {
-            $task->tags = json_decode($task->tags);
-        }
-        if (is_string($task->info)) {
-            $task->info = json_decode($task->info);
-        }
+        
+        helper('tasks');
+        $task = task_format($task);
 
         return $this->reply($task);
     }
@@ -209,16 +198,9 @@ class TasksController extends BaseController
         }
 
         $task = $taskModel->find($taskData->id);
-        $task->cover = (bool)$task->cover;
-        $task->done = (bool)$task->done;
-        $task->altTags = (bool)$task->altTags;
-        $task->progress = (int)$task->progress;
-        if (is_string($task->tags)) {
-            $task->tags = json_decode($task->tags);
-        }
-        if (is_string($task->info)) {
-            $task->info = json_decode($task->info);
-        }
+
+        helper('tasks');
+        $task = task_format($task);
 
         return $this->reply($task, 200, "OK-TASK-CREATE-SUCCESS");
     }
