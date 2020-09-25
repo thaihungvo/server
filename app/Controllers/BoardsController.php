@@ -59,7 +59,6 @@ class BoardsController extends BaseController
             // load all tasks
             $taskModel = new TaskModel();
             $taskBuilder = $taskModel->builder();
-
             $taskQuery = $taskBuilder->select("tasks.*, tasks_order.stack, tasks_order.order")
                 ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
                 ->whereIn('tasks_order.stack', $stacksIDs)
@@ -69,6 +68,30 @@ class BoardsController extends BaseController
                 ->get();
             $tasks = $taskQuery->getResult();
 
+            // load task assignees
+            $tasksIDs = array();
+            foreach ($tasks as $task) {
+                $tasksIDs[] = $task->id;
+            }
+
+            helper('assignees');
+            $assignees = tasks_assignees($tasksIDs);
+
+            // connect assignees to tasks
+            foreach ($tasks as &$task) {
+                foreach ($assignees as &$assignee) {
+                    if (!isset($task->assignees)) {
+                        $task->assignees = array();
+                    }
+
+                    if ($assignee->task === $task->id) {
+                        unset($assignee->task);
+                        $task->assignees[] = $assignee;
+                    }
+                }
+            }
+
+            // connect tasks to stacks
             foreach ($board->stacks as &$stack) {
                 // remove the order property from the stack
                 unset($stack->order);

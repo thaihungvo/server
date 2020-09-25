@@ -1,6 +1,6 @@
 <?php
 
-if (! function_exists('uuid'))
+if (!function_exists('uuid'))
 {
     function uuid() 
 	{

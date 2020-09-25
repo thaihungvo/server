@@ -14,8 +14,6 @@ class MembersController extends BaseController
             unset($user->password);
             unset($user->created);
             unset($user->updated);
-
-            $user->initials = ucfirst(substr($user->firstName, 0, 1).substr($user->lastName, 0, 1));
         }
 
         return $this->reply($users);

@@ -3,6 +3,7 @@
 use App\Models\TaskModel;
 use App\Models\TaskOrderModel;
 use App\Models\StackModel;
+use App\Models\TaskAssigneeModel;
 
 class TasksController extends BaseController
 {
@@ -245,10 +246,40 @@ class TasksController extends BaseController
 
         $taskData = $this->request->getJSON();
 
+        // delete all assigned task users
+        $taskAssigneeModel = new TaskAssigneeModel();
+        try {
+            if ($taskAssigneeModel->where('task', $taskData->id)->delete() === false) {
+                return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-DELETE-ASSIGNEES-ERROR");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-ASSIGNEES-ERROR");
+        }
+
+        // generate a list of new assignees
+        $assignees = array();
+        foreach ($taskData->assignees as $userID) {
+            $assignee = new \stdClass();
+            $assignee->task = $taskData->id;
+            $assignee->user = $userID;
+            $assignees[] = $assignee;
+        }
+        
+        // insert the assignees if any
+        if (count($assignees)) {
+            try {
+                if ($taskAssigneeModel->insertBatch($assignees) === false) {
+                    return $this->reply($taskOrderModel->errors(), 500, "ERR-TASK-ASSIGNEES");    
+                }
+            } catch (\Exception $e) {
+                return $this->reply($e->getMessage(), 500, "ERR-TASK-ASSIGNEES");
+            }
+        }
+
         unset($taskData->id);
         unset($taskData->order);
         unset($taskData->stack);
-
+        unset($taskData->assignees);
         $taskData->archived = null;
 
         if ($taskModel->update($taskID, $taskData) === false) {
