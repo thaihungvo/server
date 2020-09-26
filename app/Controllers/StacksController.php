@@ -89,6 +89,7 @@ class StacksController extends BaseController
 
         $stackData = $this->request->getJSON();
 
+        $stackModel = new StackModel();
         if ($stackModel->update($board->stack, $stackData) === false) {
             return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
         }

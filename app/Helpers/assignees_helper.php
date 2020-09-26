@@ -6,6 +6,10 @@ if (!function_exists('tasks_assignees'))
 {
     function tasks_assignees($tasksIDs) 
 	{
+        if (!count($tasksIDs)) {
+            return array();
+        }
+
 		$userModel = new UserModel();
         $userBuilder = $userModel->builder();
         $usersQuery = $userBuilder->select("users.id, users.email, users.nickname, users.firstName, users.lastName, tasks_assignees.task")
