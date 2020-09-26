@@ -5,6 +5,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Filters\FilterInterface;
 use Config\Services;
 use App\Models\BoardModel;
+use App\Models\StackModel;
 
 class BoardStacks implements FilterInterface
 {
@@ -19,14 +20,15 @@ class BoardStacks implements FilterInterface
         $response->code = 404;
         $response->data = null;
 
-        $boardModel = new BoardModel();
+        $stackID = $request->uri->getSegment(4);
 
-        $builder = $boardModel->builder();
-        $query = $builder->select('boards.*')
+        $boardModel = new BoardModel();
+        $boardBuilder = $boardModel->builder();
+        $boardQuery = $boardBuilder->select('boards.*, stacks.deleted AS stackDeleted')
             ->join('boards_members', 'boards_members.board = boards.id', 'left')
             ->join('stacks', 'stacks.board = boards.id', 'left')
             ->where('boards.deleted', NULL)
-            ->where('stacks.id', $request->uri->getSegment(4))
+            ->where('stacks.id', $stackID)
             ->groupStart()
                 ->where('boards.owner', $user->id)
                 ->orWhere('boards_members.user', $user->id)
@@ -34,16 +36,27 @@ class BoardStacks implements FilterInterface
             ->limit(1)
             ->get();
 
-        $boards = $query->getResult();
+        $boards = $boardQuery->getResult();
         
         if (!count($boards)) {
-            $response->message = 'ERR_BOARDS_NOT_FOUND_MSG';
+            $response->message = 'ERR_BOARDS-NOT-FOUND-MSG';
             return Services::response()
                 ->setStatusCode(404)
                 ->setJSON($response);
         }
 
-        $request->board = $boards[0];
+        $board = $boards[0];
+
+        if ($board->stackDeleted) {
+            $response->message = 'ERR-STACK-NOT-FOUND-MSG';
+            return Services::response()
+                ->setStatusCode(404)
+                ->setJSON($response);
+        }
+
+        $request->board = $board;
+        $request->board->stack = $stackID;
+
         return $request;
     }
 

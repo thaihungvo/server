@@ -305,13 +305,13 @@ class TasksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-ERROR");
         }
 
-        // delete task order
-        $taskOrderModel = new TaskOrderModel();
-        try {
-            $taskOrderModel->where('task', $task->id)->delete();
-        } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER-DELETE-ERROR");
-        }
+        // // delete task order
+        // $taskOrderModel = new TaskOrderModel();
+        // try {
+        //     $taskOrderModel->where('task', $task->id)->delete();
+        // } catch (\Exception $e) {
+        //     return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER-DELETE-ERROR");
+        // }
 
         return $this->reply(null, 200, "OK-TASK-DELETE-SUCCESS");
     }

@@ -32,29 +32,44 @@ $routes->setAutoRoute(true);
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
+// used by the client to validate/test the server URL
 $routes->get('/ping', 'PingController::index');
 
 // USER
-$routes->post('/login', 'UserController::login_v1');
-$routes->post('/register', 'UserController::register_v1');
+    // login user
+    $routes->post('/login', 'UserController::login_v1');
+    // register user
+    $routes->post('/register', 'UserController::register_v1');
 
 // MEMBERS
-$routes->get('/api/v1/members', 'MembersController::all_v1/$1');
+    // get all members
+    $routes->get('/api/v1/members', 'MembersController::all_v1/$1');
 
 // TAGS
-$routes->get('/api/v1/boards/(:any)/tags', 'TagsController::all_v1/$1');
-$routes->post('/api/v1/boards/(:any)/tags', 'TagsController::add_v1/$1');
-$routes->put('/api/v1/boards/(:any)/tags/(:any)', 'TagsController::update_v1/$1/$2');
+    // get all boards tags
+    $routes->get('/api/v1/boards/(:any)/tags', 'TagsController::all_v1/$1');
+    // add a new tag
+    $routes->post('/api/v1/boards/(:any)/tags', 'TagsController::add_v1/$1');
+    // update a tag
+    $routes->put('/api/v1/boards/(:any)/tags/(:any)', 'TagsController::update_v1/$1/$2');
 
 // STACKS
-$routes->get('/api/v1/boards/(:any)/stacks/(:any)/archive/done', 'StacksController::archive_done_v1/$1/$2');
-$routes->get('/api/v1/boards/(:any)/stacks/(:any)/archive', 'StacksController::archive_v1/$1/$2');
-$routes->get('/api/v1/boards/(:any)/stacks/(:any)/done', 'StacksController::done_v1/$1/$2');
-$routes->get('/api/v1/boards/(:any)/stacks/(:any)/todo', 'StacksController::todo_v1/$1/$2');
-$routes->put('/api/v1/boards/(:any)/stacks/(:any)', 'StacksController::update_v1/$1/$2');
-$routes->get('/api/v1/boards/(:any)/stacks', 'StacksController::all_v1/$1');
-$routes->post('/api/v1/boards/(:any)/stacks', 'StacksController::add_v1/$1');
-$routes->delete('/api/v1/boards/(:any)/stacks/(:any)', 'StacksController::delete_v1/$1/$2');
+    // archive all completed tasks
+    $routes->get('/api/v1/stacks/(:any)/archive-done', 'StacksController::archive_done_v1/$1');
+    // archive all tasks
+    $routes->get('/api/v1/stacks/(:any)/archive-all', 'StacksController::archive_all_v1/$1');
+    // mark all tasks as complete
+    $routes->get('/api/v1/stacks/(:any)/done', 'StacksController::done_v1/$1');
+    // mark all tasks as to do
+    $routes->get('/api/v1/stacks/(:any)/todo', 'StacksController::todo_v1/$1');
+    // get all stacks in a board
+    $routes->get('/api/v1/boards/(:any)/stacks', 'StacksController::all_v1/$1');
+    // create a stack
+    $routes->post('/api/v1/boards/(:any)/stacks', 'StacksController::add_v1/$1');
+    // update a stack
+    $routes->put('/api/v1/stacks/(:any)', 'StacksController::update_v1/$1');
+    // delete a stack
+    $routes->delete('/api/v1/stacks/(:any)', 'StacksController::delete_v1/$1');
 
 // TASKS
     // tasks by board
@@ -71,12 +86,18 @@ $routes->delete('/api/v1/boards/(:any)/stacks/(:any)', 'StacksController::delete
     $routes->delete('/api/v1/tasks/(:any)', 'TasksController::delete_v1/$1');
 
 // BOARDS
-$routes->get('/api/v1/boards', 'BoardsController::all_v1');
-$routes->post('/api/v1/boards', 'BoardsController::add_v1');
-$routes->get('/api/v1/boards/(:any)', 'BoardsController::one_v1/$1');
-$routes->put('/api/v1/boards/(:any)', 'BoardsController::update_v1/$1');
-$routes->post('/api/v1/boards/(:any)/order-stacks', 'BoardsController::order_stacks_v1/$1');
-$routes->post('/api/v1/boards/(:any)/order-tasks', 'BoardsController::order_tasks_v1/$1/$2');
+    // get all boards
+    $routes->get('/api/v1/boards', 'BoardsController::all_v1');
+    // create a board
+    $routes->post('/api/v1/boards', 'BoardsController::add_v1');
+    // get a specific board
+    $routes->get('/api/v1/boards/(:any)', 'BoardsController::one_v1/$1');
+    // update a board
+    $routes->put('/api/v1/boards/(:any)', 'BoardsController::update_v1/$1');
+    // save stacks order inside a board
+    $routes->post('/api/v1/boards/(:any)/order-stacks', 'BoardsController::order_stacks_v1/$1');
+    // save tasks order inside a board
+    $routes->post('/api/v1/boards/(:any)/order-tasks', 'BoardsController::order_tasks_v1/$1/$2');
 
 /**
  * --------------------------------------------------------------------

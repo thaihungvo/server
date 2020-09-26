@@ -131,7 +131,7 @@ class BoardsController extends BaseController
         }
 
         if (!isset($boardData->feeCurrency)) {
-            $boardData->feeCurrency = "";
+            $boardData->feeCurrency = "USD";
         }
 
         $boardModel = new BoardModel();

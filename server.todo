@@ -1,5 +1,7 @@
 
-
+BOARD:
+    ☐ update the `updated` on every change
+    
 STACKS:
     ☐ copy
     ☐ move
