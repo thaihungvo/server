@@ -15,6 +15,7 @@ if (!function_exists('tasks_assignees'))
         $usersQuery = $userBuilder->select("users.id, users.email, users.nickname, users.firstName, users.lastName, tasks_assignees.task")
             ->join('tasks_assignees', 'tasks_assignees.user = users.id')
             ->whereIn('tasks_assignees.task', $tasksIDs)
+            ->orderBy('users.firstName', 'ASC')
             ->get();
         return $usersQuery->getResult();
     }
@@ -22,13 +23,15 @@ if (!function_exists('tasks_assignees'))
 
 if (!function_exists('tasks_watchers'))
 {
-    function tasks_watchers($taskID) 
+    function tasks_watchers($taskID, $user) 
 	{
 		$userModel = new UserModel();
         $userBuilder = $userModel->builder();
-        $usersQuery = $userBuilder->select("users.id, users.email, users.nickname, users.firstName, users.lastName")
+        $usersQuery = $userBuilder->select("users.id, users.email, users.nickname, users.firstName, users.lastName, tasks_watchers.created")
             ->join('tasks_watchers', 'tasks_watchers.user = users.id')
             ->whereIn('tasks_watchers.task', $taskID)
+            ->where('users.id !=', $user->id)
+            ->orderBy('users.firstName', 'ASC')
             ->get();
         return $usersQuery->getResult();
     }

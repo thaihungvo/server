@@ -322,10 +322,11 @@ class TasksController extends BaseController
 
     public function get_watchers_v1($taskID)
     {
+        $user = $this->request->user;
         $board = $this->request->board;
 
         helper('assignees');
-        $watchers = tasks_watchers($board->task);
+        $watchers = tasks_watchers($board->task, $user);
 
         return $this->reply($watchers, 200, "OK-TASK-WATCHERS-SUCCESS");
     }

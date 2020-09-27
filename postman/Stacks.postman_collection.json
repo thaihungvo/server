@@ -859,6 +859,87 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Task watchers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}/watchers",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"tasks",
+								"{{task}}",
+								"watchers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Task watcher",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}/watch",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"tasks",
+								"{{task}}",
+								"watch"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Task watcher",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}/unwatch",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"tasks",
+								"{{task}}",
+								"unwatch"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}
