@@ -72,6 +72,12 @@ $routes->get('/ping', 'PingController::index');
     $routes->delete('/api/v1/stacks/(:any)', 'StacksController::delete_v1/$1');
 
 // TASKS
+    // get watchers for the task
+    $routes->get('/api/v1/tasks/(:any)/watchers', 'TasksController::get_watchers_v1/$1');
+    // add the current user to the task watch list
+    $routes->get('/api/v1/tasks/(:any)/watch', 'TasksController::add_watcher_v1/$1');
+    // remove the current user from the watch list
+    $routes->get('/api/v1/tasks/(:any)/unwatch', 'TasksController::remove_watcher_v1/$1');
     // tasks by board
     $routes->get('/api/v1/boards/(:any)/tasks', 'TasksController::all_board_v1/$1');
     // tasks by stack
@@ -84,6 +90,7 @@ $routes->get('/ping', 'PingController::index');
     $routes->put('/api/v1/tasks/(:any)', 'TasksController::update_v1/$1');
     // delete a task
     $routes->delete('/api/v1/tasks/(:any)', 'TasksController::delete_v1/$1');
+    
 
 // BOARDS
     // get all boards

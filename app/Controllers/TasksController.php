@@ -4,6 +4,7 @@ use App\Models\TaskModel;
 use App\Models\TaskOrderModel;
 use App\Models\StackModel;
 use App\Models\TaskAssigneeModel;
+use App\Models\TaskWatcherModel;
 
 class TasksController extends BaseController
 {
@@ -99,7 +100,9 @@ class TasksController extends BaseController
 
     public function add_v1($id, $position)
     {
+        $user = $this->request->user;
         $board = $this->request->board;
+
         $taskModel = new TaskModel();
         $taskData = $this->request->getJSON();
 
@@ -111,6 +114,7 @@ class TasksController extends BaseController
         }
 
         $taskData->archived = null;
+        $taskData->owner = $user->id;
 
         // TODO: check if the stack connected to this task is one of the users
         // check if the stack exists
@@ -314,5 +318,60 @@ class TasksController extends BaseController
         // }
 
         return $this->reply(null, 200, "OK-TASK-DELETE-SUCCESS");
+    }
+
+    public function get_watchers_v1($taskID)
+    {
+        $board = $this->request->board;
+
+        helper('assignees');
+        $watchers = tasks_watchers($board->task);
+
+        return $this->reply($watchers, 200, "OK-TASK-WATCHERS-SUCCESS");
+    }
+
+    public function add_watcher_v1($taskID)
+    {
+        $user = $this->request->user;
+
+        $taskWatcherModel = new TaskWatcherModel();
+
+        $watchers = $taskWatcherModel->where('task', $taskID)
+            ->where('user', $user->id)
+            ->findAll();
+
+        if (!count($watchers)) {
+            $watcher = array(
+                'task' => $taskID,
+                'user' => $user->id
+            );
+
+            try {
+                if ($taskWatcherModel->insert($watcher) === false) {
+                    return $this->reply($taskWatcherModel->errors(), 500, "ERR-TASK-ADD-WATCHER-ERROR");
+                }
+            } catch (\Exception $e) {
+                return $this->reply($e->getMessage(), 500, "ERR-TASK-ADD-WATCHER-ERROR");
+            }
+        }
+
+        return $this->reply(null, 200, "OK-TASK-ADD-WATCHERS-SUCCESS");
+    }
+
+    public function remove_watcher_v1($taskID)
+    {
+        $user = $this->request->user;
+
+        $taskWatcherModel = new TaskWatcherModel();
+
+        try {
+            if ($taskWatcherModel->where('user', $user->id)->delete() === false) {
+                return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-DELETE-WATCHER-ERROR");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-WATCHER-ERROR");
+        }
+
+        return $this->reply(null, 200, "OK-TASK-DELETE-WATCHERS-SUCCESS");
     }
 }

@@ -19,3 +19,17 @@ if (!function_exists('tasks_assignees'))
         return $usersQuery->getResult();
     }
 }
+
+if (!function_exists('tasks_watchers'))
+{
+    function tasks_watchers($taskID) 
+	{
+		$userModel = new UserModel();
+        $userBuilder = $userModel->builder();
+        $usersQuery = $userBuilder->select("users.id, users.email, users.nickname, users.firstName, users.lastName")
+            ->join('tasks_watchers', 'tasks_watchers.user = users.id')
+            ->whereIn('tasks_watchers.task', $taskID)
+            ->get();
+        return $usersQuery->getResult();
+    }
+}
