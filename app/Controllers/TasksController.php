@@ -325,6 +325,17 @@ class TasksController extends BaseController
         $user = $this->request->user;
         $board = $this->request->board;
 
+        // remove all stuck watchers
+        $taskWatcherModel = new TaskWatcherModel();
+        
+        try {
+            if ($taskWatcherModel->where('created <= DATE_SUB(NOW(), INTERVAL 2 HOUR)', NULL, false)->delete() === false) {
+                return $this->reply($taskModel->errors(), 500, "ERR-TASK-CLEAR-WATCHERS-ERROR");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-CLEAR-WATCHERS-ERROR");
+        }
+
         helper('assignees');
         $watchers = tasks_watchers($board->task, $user);
 

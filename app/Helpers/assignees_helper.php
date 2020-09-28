@@ -29,8 +29,10 @@ if (!function_exists('tasks_watchers'))
         $userBuilder = $userModel->builder();
         $usersQuery = $userBuilder->select("users.id, users.email, users.nickname, users.firstName, users.lastName, tasks_watchers.created")
             ->join('tasks_watchers', 'tasks_watchers.user = users.id')
-            ->whereIn('tasks_watchers.task', $taskID)
-            ->where('users.id !=', $user->id)
+            ->groupStart()
+                ->where('tasks_watchers.task', $taskID)
+                ->where('users.id !=', $user->id)
+            ->groupEnd()
             ->orderBy('users.firstName', 'ASC')
             ->get();
         return $usersQuery->getResult();

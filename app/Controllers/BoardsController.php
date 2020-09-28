@@ -151,15 +151,9 @@ class BoardsController extends BaseController
     public function update_v1($id)
 	{
         $user = $this->request->user;
-
+        $board = $this->request->board;
+        
         $boardModel = new BoardModel();
-        $board = $boardModel
-            ->where('owner', $user->id)
-            ->find($id);
-
-        if (!$board) {
-            return $this->reply(null, 404, "ERR-BOARDS-NOT-FOUND-MSG");
-        }
 
         $boardData = $this->request->getJSON();
 
