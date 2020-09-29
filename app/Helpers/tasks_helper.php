@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\TaskModel;
+
 if (!function_exists('task_format'))
 {
     function task_format($task) 
@@ -16,5 +18,27 @@ if (!function_exists('task_format'))
         }
 
         return $task;
+    }
+}
+
+if (!function_exists('task_last_updated'))
+{
+    function task_last_updated($taskID) 
+	{
+		$taskModel = new TaskModel();
+        $taskBuilder = $taskModel->builder();
+
+        $taskQuery = $taskBuilder->select("updated")
+            ->where("id", $taskID)
+            ->limit(1)
+            ->get();
+        
+        $tasks = $taskQuery->getResult();
+
+        if (!count($tasks)) {
+            return null;
+        }
+
+        return $tasks[0]->updated;
     }
 }

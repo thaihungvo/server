@@ -35,6 +35,12 @@ $routes->get('/', 'Home::index');
 // used by the client to validate/test the server URL
 $routes->get('/ping', 'PingController::index');
 
+// POLLING
+    $routes->get('/updates/v1/watchers', 'UpdatesController::task_watchers_v1');    
+    $routes->get('/updates/v1/task', 'UpdatesController::task_v1');
+    $routes->get('/updates/v1/board', 'UpdatesController::board_v1');
+    $routes->get('/updates/v1/boards', 'UpdatesController::boards_v1');
+
 // USER
     // login user
     $routes->post('/login', 'UserController::login_v1');

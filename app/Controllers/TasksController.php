@@ -231,6 +231,7 @@ class TasksController extends BaseController
         }
 
         $taskData = $this->request->getJSON();
+        $taskData->info = json_encode($taskData->info);
 
         // delete all assigned task users
         $taskAssigneeModel = new TaskAssigneeModel();
@@ -325,18 +326,7 @@ class TasksController extends BaseController
         $user = $this->request->user;
         $board = $this->request->board;
 
-        // remove all stuck watchers
-        $taskWatcherModel = new TaskWatcherModel();
-        
-        try {
-            if ($taskWatcherModel->where('created <= DATE_SUB(NOW(), INTERVAL 2 HOUR)', NULL, false)->delete() === false) {
-                return $this->reply($taskModel->errors(), 500, "ERR-TASK-CLEAR-WATCHERS-ERROR");
-            }
-        } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-TASK-CLEAR-WATCHERS-ERROR");
-        }
-
-        helper('assignees');
+        helper('watchers');
         $watchers = tasks_watchers($board->task, $user);
 
         return $this->reply($watchers, 200, "OK-TASK-WATCHERS-SUCCESS");
@@ -365,6 +355,15 @@ class TasksController extends BaseController
             } catch (\Exception $e) {
                 return $this->reply($e->getMessage(), 500, "ERR-TASK-ADD-WATCHER-ERROR");
             }
+        }
+
+        // remove all stuck watchers        
+        try {
+            if ($taskWatcherModel->where('created <= DATE_SUB(NOW(), INTERVAL 2 HOUR)', NULL, false)->delete() === false) {
+                return $this->reply($taskModel->errors(), 500, "ERR-TASK-CLEAR-WATCHERS-ERROR");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-CLEAR-WATCHERS-ERROR");
         }
 
         return $this->reply(null, 200, "OK-TASK-ADD-WATCHERS-SUCCESS");

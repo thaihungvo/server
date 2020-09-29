@@ -38,7 +38,7 @@ class Filters extends BaseConfig
 	// that they should run on, like:
 	//    'isLoggedIn' => ['before' => ['account/*', 'profiles/*']],
 	public $filters = [
-        'auth' => ['before' => ['api/*']],
+        'auth' => ['before' => ['api/*', 'updates/*']],
         'task' => ['before' => [
             '/api/*/boards/*/tasks',
             '/api/*/boards/*/tasks/*'            
@@ -60,7 +60,7 @@ class Filters extends BaseConfig
         ],
         'boardtasks' => [
             'before' => [
-                '/api/*/tasks/*',
+                '/api/*/tasks/*'
             ]
         ]
     ];

@@ -18,6 +18,10 @@ class APIAuth implements FilterInterface
         $tokenRaw = $request->getHeaderLine('Authorization');
         $token = str_replace('Bearer ', '', $tokenRaw);
 
+        if (!strlen($token) && $request->getGet("auth")) {
+            $token = $request->getGet("auth");
+        }
+
         if (!strlen($token)) {
             $response->message = 'ERR-AUTH-TOKEN-MISSING';
             return Services::response()
