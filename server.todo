@@ -14,6 +14,7 @@ TASKS:
 ROUTES:
     ☐ simplify routes
 
+TRUNCATE stk_activities;
 TRUNCATE stk_boards;
 TRUNCATE stk_boards_members;
 TRUNCATE stk_boards_tags;

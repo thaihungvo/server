@@ -1,5 +1,6 @@
 <?php namespace App\Controllers;
 
+use CodeIgniter\Events\Events;
 use App\Models\TaskModel;
 use App\Models\TaskOrderModel;
 use App\Models\StackModel;
@@ -113,8 +114,10 @@ class TasksController extends BaseController
             $taskData->id = uuid();
         }
 
+        $taskData->updated = null;
         $taskData->archived = null;
         $taskData->owner = $user->id;
+        $taskData->board = $board->id;
 
         // TODO: check if the stack connected to this task is one of the users
         // check if the stack exists
@@ -206,13 +209,15 @@ class TasksController extends BaseController
         helper('tasks');
         $task = task_format($task);
 
+        Events::trigger("AFTER_task_ADD", $taskData->id);
+
         return $this->reply($task, 200, "OK-TASK-CREATE-SUCCESS");
     }
 
     public function update_v1($taskID)
     {
         $board = $this->request->board;
-
+        // TODO get task from board instead of a new query
         $taskModel = new TaskModel();
 
         $builder = $taskModel->builder();
@@ -275,6 +280,8 @@ class TasksController extends BaseController
             return $this->reply(null, 404, "ERR-TASK-UPDATE");
         }
 
+        Events::trigger("AFTER_task_UPDATE", $taskID);
+
         return $this->reply(null, 200, "OK-TASK-UPDATE-SUCCESS");
     }
 
@@ -318,6 +325,8 @@ class TasksController extends BaseController
         //     return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER-DELETE-ERROR");
         // }
 
+        Events::trigger("AFTER_task_DELETE", $task->id);
+
         return $this->reply(null, 200, "OK-TASK-DELETE-SUCCESS");
     }
 
@@ -342,12 +351,12 @@ class TasksController extends BaseController
             ->where('user', $user->id)
             ->findAll();
 
-        if (!count($watchers)) {
-            $watcher = array(
-                'task' => $taskID,
-                'user' => $user->id
-            );
+        $watcher = array(
+            'task' => $taskID,
+            'user' => $user->id
+        );
 
+        if (!count($watchers)) {
             try {
                 if ($taskWatcherModel->insert($watcher) === false) {
                     return $this->reply($taskWatcherModel->errors(), 500, "ERR-TASK-ADD-WATCHER-ERROR");
@@ -366,6 +375,8 @@ class TasksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-TASK-CLEAR-WATCHERS-ERROR");
         }
 
+        Events::trigger("AFTER_task_watcher_ADD", $taskID);
+
         return $this->reply(null, 200, "OK-TASK-ADD-WATCHERS-SUCCESS");
     }
 
@@ -382,6 +393,8 @@ class TasksController extends BaseController
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-WATCHER-ERROR");
         }
+
+        Events::trigger("AFTER_task_watcher_REMOVE", $taskID);
 
         return $this->reply(null, 200, "OK-TASK-DELETE-WATCHERS-SUCCESS");
     }

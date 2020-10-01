@@ -10,7 +10,7 @@ class BoardModel extends Model
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ['id', 'title', 'owner', 'hourlyFee', 'feeCurrency', 'archived_order'];
+    protected $allowedFields = ['id', 'title', 'owner', 'everyone', 'hourlyFee', 'feeCurrency', 'archived_order'];
 
     protected $useTimestamps = true;
     protected $createdField  = 'created';

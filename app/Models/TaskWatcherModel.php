@@ -10,7 +10,7 @@ class TaskWatcherModel extends Model
 
     protected $useSoftDeletes = false;
 
-    protected $allowedFields = ['task', 'user'];
+    protected $allowedFields = ['board', 'task', 'user'];
 
     protected $useTimestamps = true;
     protected $createdField  = 'created';

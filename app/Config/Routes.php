@@ -36,10 +36,7 @@ $routes->get('/', 'Home::index');
 $routes->get('/ping', 'PingController::index');
 
 // POLLING
-    $routes->get('/updates/v1/watchers', 'UpdatesController::task_watchers_v1');    
-    $routes->get('/updates/v1/task', 'UpdatesController::task_v1');
-    $routes->get('/updates/v1/board', 'UpdatesController::board_v1');
-    $routes->get('/updates/v1/boards', 'UpdatesController::boards_v1');
+    $routes->get('/api/v1/updates', 'UpdatesController::updates_v1');
 
 // USER
     // login user

@@ -1,6 +1,8 @@
 <?php namespace App\Controllers;
 
+use CodeIgniter\Events\Events;
 use App\Models\BoardModel;
+use App\Models\BoardMemberModel;
 use App\Models\TagModel;
 use App\Models\StackModel;
 use App\Models\TaskModel;
@@ -14,18 +16,20 @@ class BoardsController extends BaseController
         $user = $this->request->user;
 
         $boardModel = new BoardModel();
-        $builder = $boardModel->builder();
+        $boardBuilder = $boardModel->builder();
 
-        $query = $builder->select('boards.id, boards.title, boards.updated, boards.created')
+        $boardQuery = $boardBuilder->select('boards.id, boards.title, boards.updated, boards.created')
             ->join('boards_members', 'boards_members.board = boards.id', 'left')
             ->where('boards.deleted', NULL)
             ->groupStart()
                 ->where('boards.owner', $user->id)
                 ->orWhere('boards_members.user', $user->id)
+                ->orWhere('boards.everyone', 1)
             ->groupEnd()
+            ->groupBy('boards.id')
             ->get();
 
-        $boards = $query->getResult();
+        $boards = $boardQuery->getResult();
 
         return $this->reply($boards);
 	}
@@ -134,6 +138,18 @@ class BoardsController extends BaseController
             $boardData->feeCurrency = "USD";
         }
 
+        if (!isset($boardData->everyone)) {
+            $boardData->everyone = 1;
+        } else {
+            $boardData->everyone = intval($boardData->everyone);
+        }
+
+        $membersIDs = array();
+        if (isset($boardData->members)) {
+            $membersIDs = $boardData->members;
+            $boardData->everyone = 0;
+        }
+
         $boardModel = new BoardModel();
 
         try {
@@ -144,6 +160,31 @@ class BoardsController extends BaseController
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-BOARD-CREATE");
         }
+
+        // if members are defined then assigned them to the board
+        if (count($membersIDs)) {
+            $boardMemberModel = new BoardMemberModel();
+            $boardMemberBuilder = $boardMemberModel->builder();
+
+            $members = array();
+            foreach ($membersIDs as $userID) {
+                $members[] = [
+                    'board' => $boardData->id,
+                    'user' => $userID
+                ];
+            }
+
+            try {
+                if ($boardMemberBuilder->insertBatch($members) === false) {
+                    $errors = $stackOrderModel->errors();
+                    return $this->reply($errors, 500, "ERR-BOARD-MEMBERS");    
+                }
+            } catch (\Exception $e) {
+                return $this->reply($e->getMessage(), 500, "ERR-BOARD-MEMBERS");
+            }
+        }
+
+        Events::trigger("AFTER_board_ADD", $boardData->id);
 
         return $this->reply($boardData, 200, "OK-BOARD-CREATE-SUCCESS");
     }
