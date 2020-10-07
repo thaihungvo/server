@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.26)
 # Database: stacks
-# Generation Time: 2020-05-25 20:01:14 +0000
+# Generation Time: 2020-10-07 14:24:24 +0000
 # ************************************************************
 
 
@@ -20,6 +20,34 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
+# Dump of table stk_activities
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `stk_activities`;
+
+CREATE TABLE `stk_activities` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `user` int(11) unsigned NOT NULL,
+  `board` varchar(37) NOT NULL,
+  `item` varchar(37) DEFAULT NULL,
+  `action` enum('CREATE','UPDATE','DELETE','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
+  `section` enum('BOARDS','BOARD','TASK','STACK','WATCHER','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
+  `created` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+LOCK TABLES `stk_activities` WRITE;
+/*!40000 ALTER TABLE `stk_activities` DISABLE KEYS */;
+
+INSERT INTO `stk_activities` (`id`, `user`, `board`, `item`, `action`, `section`, `created`)
+VALUES
+	(1,1,'39a76f8f-c3dc-4463-8493-849bfef2f2f7','39a76f8f-c3dc-4463-8493-849bfef2f2f7','CREATE','BOARDS','2020-10-06 23:05:44'),
+	(2,1,'39a76f8f-c3dc-4463-8493-849bfef2f2f7','0d47e3f3-2161-487b-bcb4-fb8dcd422559','CREATE','TASK','2020-10-06 23:06:44');
+
+/*!40000 ALTER TABLE `stk_activities` ENABLE KEYS */;
+UNLOCK TABLES;
+
+
 # Dump of table stk_boards
 # ------------------------------------------------------------
 
@@ -27,8 +55,11 @@ DROP TABLE IF EXISTS `stk_boards`;
 
 CREATE TABLE `stk_boards` (
   `id` varchar(37) NOT NULL DEFAULT '',
+  `everyone` tinyint(1) NOT NULL DEFAULT '1',
   `owner` int(11) NOT NULL,
   `title` varchar(100) NOT NULL DEFAULT '',
+  `hourlyFee` float DEFAULT NULL,
+  `feeCurrency` varchar(10) DEFAULT NULL,
   `archived_order` enum('title-asc','title-desc','created-asc','created-desc','updated-asc','updated-desc','archived-asc','archived-desc') NOT NULL DEFAULT 'title-asc',
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
@@ -39,10 +70,9 @@ CREATE TABLE `stk_boards` (
 LOCK TABLES `stk_boards` WRITE;
 /*!40000 ALTER TABLE `stk_boards` DISABLE KEYS */;
 
-INSERT INTO `stk_boards` (`id`, `owner`, `title`, `archived_order`, `created`, `updated`, `deleted`)
+INSERT INTO `stk_boards` (`id`, `everyone`, `owner`, `title`, `hourlyFee`, `feeCurrency`, `archived_order`, `created`, `updated`, `deleted`)
 VALUES
-	('35436ec7-d32b-4f50-bba5-b5f276f289f9',1,'Server board','title-asc','2020-04-25 13:21:17','2020-04-28 12:44:39',NULL),
-	('7dbabff3-b4d0-46da-8862-d95db6c803f6',1,'Another server board','title-asc','2020-05-19 01:49:45','2020-05-19 01:49:45',NULL);
+	('39a76f8f-c3dc-4463-8493-849bfef2f2f7',1,1,'The Board',0,'USD','title-asc','2020-10-06 23:05:44','2020-10-07 09:44:43',NULL);
 
 /*!40000 ALTER TABLE `stk_boards` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -56,6 +86,7 @@ DROP TABLE IF EXISTS `stk_boards_members`;
 CREATE TABLE `stk_boards_members` (
   `board` varchar(37) NOT NULL DEFAULT '',
   `user` varchar(37) NOT NULL DEFAULT '',
+  `created` datetime DEFAULT NULL,
   PRIMARY KEY (`board`,`user`),
   UNIQUE KEY `board` (`board`,`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -63,9 +94,10 @@ CREATE TABLE `stk_boards_members` (
 LOCK TABLES `stk_boards_members` WRITE;
 /*!40000 ALTER TABLE `stk_boards_members` DISABLE KEYS */;
 
-INSERT INTO `stk_boards_members` (`board`, `user`)
+INSERT INTO `stk_boards_members` (`board`, `user`, `created`)
 VALUES
-	('35436ec7-d32b-4f50-bba5-b5f276f289f9','1');
+	('39a76f8f-c3dc-4463-8493-849bfef2f2f7','2',NULL),
+	('39a76f8f-c3dc-4463-8493-849bfef2f2f7','3',NULL);
 
 /*!40000 ALTER TABLE `stk_boards_members` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -86,22 +118,6 @@ CREATE TABLE `stk_boards_tags` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-LOCK TABLES `stk_boards_tags` WRITE;
-/*!40000 ALTER TABLE `stk_boards_tags` DISABLE KEYS */;
-
-INSERT INTO `stk_boards_tags` (`id`, `title`, `color`, `board`, `created`, `updated`)
-VALUES
-	('1','Bugs','#FF6C35','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
-	('2','Doing','#92D632','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
-	('3','High Priority','#FFDC00','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
-	('4','Missing Info','#FF9C00','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
-	('5','Idle','#B7C3C8','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
-	('6','On Hold','#32BAF5','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
-	('7','Complete','#00E6B2','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-04-25 13:21:47',NULL),
-	('8decf5f4-91c7-11ea-b366-0d4c57d00ccc','Update New Tag','#ffffff','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-05-09 02:34:45','2020-05-09 02:35:11');
-
-/*!40000 ALTER TABLE `stk_boards_tags` ENABLE KEYS */;
-UNLOCK TABLES;
 
 
 # Dump of table stk_stacks
@@ -124,8 +140,7 @@ LOCK TABLES `stk_stacks` WRITE;
 
 INSERT INTO `stk_stacks` (`id`, `title`, `board`, `created`, `updated`, `deleted`)
 VALUES
-	('60166fa5-918c-485c-9bea-4ce4ffefea47','test','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-05-16 02:47:55','2020-05-18 10:38:24',NULL),
-	('9b8004ea-89e8-11ea-be55-2474dae7f827','Updated Stack 2','35436ec7-d32b-4f50-bba5-b5f276f289f9','2020-05-18 21:00:00','2020-05-18 22:00:00',NULL);
+	('93422604-5fae-4f70-802e-6c18d35ea8d5','To Do','39a76f8f-c3dc-4463-8493-849bfef2f2f7','2020-10-06 23:06:19','2020-10-06 23:06:19',NULL);
 
 /*!40000 ALTER TABLE `stk_stacks` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -150,8 +165,7 @@ LOCK TABLES `stk_stacks_order` WRITE;
 
 INSERT INTO `stk_stacks_order` (`board`, `stack`, `order`)
 VALUES
-	('35436ec7-d32b-4f50-bba5-b5f276f289f9','60166fa5-918c-485c-9bea-4ce4ffefea47',1),
-	('35436ec7-d32b-4f50-bba5-b5f276f289f9','9b8004ea-89e8-11ea-be55-2474dae7f827',2);
+	('39a76f8f-c3dc-4463-8493-849bfef2f2f7','93422604-5fae-4f70-802e-6c18d35ea8d5',1);
 
 /*!40000 ALTER TABLE `stk_stacks_order` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -176,10 +190,9 @@ CREATE TABLE `stk_tasks` (
   `estimate` varchar(100) DEFAULT NULL,
   `spent` varchar(100) DEFAULT NULL,
   `progress` tinyint(3) DEFAULT NULL,
-  `user` int(11) DEFAULT NULL,
-  `assignee` int(11) DEFAULT NULL,
-  `stack` varchar(37) NOT NULL,
-  `order` int(10) DEFAULT NULL,
+  `hourlyFee` float DEFAULT NULL,
+  `owner` int(11) DEFAULT NULL,
+  `board` varchar(37) DEFAULT NULL,
   `archived` datetime DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
@@ -190,14 +203,26 @@ CREATE TABLE `stk_tasks` (
 LOCK TABLES `stk_tasks` WRITE;
 /*!40000 ALTER TABLE `stk_tasks` DISABLE KEYS */;
 
-INSERT INTO `stk_tasks` (`id`, `title`, `content`, `tags`, `info`, `startdate`, `duedate`, `cover`, `done`, `altTags`, `estimate`, `spent`, `progress`, `user`, `assignee`, `stack`, `order`, `archived`, `created`, `updated`, `deleted`)
+INSERT INTO `stk_tasks` (`id`, `title`, `content`, `tags`, `info`, `startdate`, `duedate`, `cover`, `done`, `altTags`, `estimate`, `spent`, `progress`, `hourlyFee`, `owner`, `board`, `archived`, `created`, `updated`, `deleted`)
 VALUES
-	('ce8d16f6-9222-11ea-8c1c-870eb04b6723','New task 2','hello world','[\"1\",\"2\",\"3\",\"4\",\"5\"]',NULL,'2020-05-06 20:00:00','2020-06-06 20:00:00',0,0,0,'2d',NULL,0,NULL,NULL,'9b8004ea-89e8-11ea-be55-2474dae7f827',1,NULL,'2020-05-09 13:27:58','2020-05-25 11:47:09',NULL),
-	('f15ce382-8a11-11ea-b94d-a87f862112f6','Hello world','The content here',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'9b8004ea-89e8-11ea-be55-2474dae7f827',2,NULL,NULL,NULL,NULL),
-	('fcdb8844-9222-11ea-8c1c-870eb04b6723','Updated title','',NULL,NULL,NULL,'2020-05-21 07:04:15',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'9b8004ea-89e8-11ea-be55-2474dae7f827',3,'2020-05-21 23:12:14','2020-05-09 13:29:15','2020-05-21 02:11:49',NULL);
+	('0d47e3f3-2161-487b-bcb4-fb8dcd422559','New task','',NULL,'null',NULL,NULL,0,0,0,NULL,NULL,0,NULL,1,'39a76f8f-c3dc-4463-8493-849bfef2f2f7',NULL,'2020-10-06 23:06:44','2020-10-07 07:44:43',NULL);
 
 /*!40000 ALTER TABLE `stk_tasks` ENABLE KEYS */;
 UNLOCK TABLES;
+
+
+# Dump of table stk_tasks_assignees
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `stk_tasks_assignees`;
+
+CREATE TABLE `stk_tasks_assignees` (
+  `task` varchar(37) NOT NULL DEFAULT '',
+  `user` int(11) NOT NULL,
+  PRIMARY KEY (`task`,`user`),
+  UNIQUE KEY `task` (`task`,`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 
 # Dump of table stk_tasks_order
@@ -218,12 +243,25 @@ LOCK TABLES `stk_tasks_order` WRITE;
 
 INSERT INTO `stk_tasks_order` (`board`, `stack`, `task`, `order`)
 VALUES
-	('35436ec7-d32b-4f50-bba5-b5f276f289f9','60166fa5-918c-485c-9bea-4ce4ffefea47','ce8d16f6-9222-11ea-8c1c-870eb04b6723',1),
-	('35436ec7-d32b-4f50-bba5-b5f276f289f9','60166fa5-918c-485c-9bea-4ce4ffefea47','f15ce382-8a11-11ea-b94d-a87f862112f6',2),
-	('35436ec7-d32b-4f50-bba5-b5f276f289f9','60166fa5-918c-485c-9bea-4ce4ffefea47','fcdb8844-9222-11ea-8c1c-870eb04b6723',3);
+	('39a76f8f-c3dc-4463-8493-849bfef2f2f7','93422604-5fae-4f70-802e-6c18d35ea8d5','0d47e3f3-2161-487b-bcb4-fb8dcd422559',1);
 
 /*!40000 ALTER TABLE `stk_tasks_order` ENABLE KEYS */;
 UNLOCK TABLES;
+
+
+# Dump of table stk_tasks_watchers
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `stk_tasks_watchers`;
+
+CREATE TABLE `stk_tasks_watchers` (
+  `task` varchar(37) NOT NULL DEFAULT '',
+  `user` int(11) NOT NULL,
+  `created` datetime NOT NULL,
+  PRIMARY KEY (`task`,`user`),
+  UNIQUE KEY `task` (`task`,`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 
 # Dump of table stk_tasks_widgets
@@ -251,8 +289,8 @@ CREATE TABLE `stk_users` (
   `email` varchar(320) NOT NULL,
   `password` varchar(255) NOT NULL,
   `nickname` varchar(255) NOT NULL,
-  `first_name` varchar(255) NOT NULL DEFAULT '',
-  `last_name` varchar(255) DEFAULT NULL,
+  `firstName` varchar(255) NOT NULL DEFAULT '',
+  `lastName` varchar(255) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -261,9 +299,11 @@ CREATE TABLE `stk_users` (
 LOCK TABLES `stk_users` WRITE;
 /*!40000 ALTER TABLE `stk_users` DISABLE KEYS */;
 
-INSERT INTO `stk_users` (`id`, `email`, `password`, `nickname`, `first_name`, `last_name`, `created`, `updated`)
+INSERT INTO `stk_users` (`id`, `email`, `password`, `nickname`, `firstName`, `lastName`, `created`, `updated`)
 VALUES
-	(1,'admin@stacks.rocks','$2y$12$264650655ea6f3258cc5bukTLXMfwH3TxLERG5JtSHF0CkD7q9m2S','admin','Admin','Stacks','2020-04-24 09:10:18','2020-04-24 09:10:18');
+	(1,'admin@stacks.server','$2y$12$264650655ea6f3258cc5bukTLXMfwH3TxLERG5JtSHF0CkD7q9m2S','admin','Admin','Stacks','2020-04-24 09:10:18','2020-04-24 09:10:18'),
+	(2,'l.skywalker@resistance.com','$2y$12$264650655ea6f3258cc5bukTLXMfwH3TxLERG5JtSHF0CkD7q9m2S','skywalker','Luke','Skywalker','2020-09-18 08:20:13','2020-09-18 08:20:13'),
+	(3,'d.vader@theempire.com','$2y$12$264650655ea6f3258cc5bukTLXMfwH3TxLERG5JtSHF0CkD7q9m2S','vader','Darth','Vader','2020-09-22 08:13:51','2020-09-22 08:13:51');
 
 /*!40000 ALTER TABLE `stk_users` ENABLE KEYS */;
 UNLOCK TABLES;

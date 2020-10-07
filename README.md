@@ -39,8 +39,15 @@ Download the repository by going in the [Releases](https://github.com/stacks-tas
 ### Database
 Import the latest `sql` file from the `db` folder either using [phpMyAdmin](https://www.phpmyadmin.net/) or any other `MySQL` client of your choosing.
 
+The databse comes prepacked with 3 test users:
+
+* `admin@stacks.server` - `12345`
+* `l.skywalker@resistance.com` - `12345`
+* `d.vader@theempire.com` - `12345`
+
 ### Permissions
 Make sure all your files are using a permission of `644` for the files an `755` for the folders. The `writable` folder used for storing `cache`, `logs`, `session` data and `uploads` should be set to either `775` or `776`.
+
 
 ## Client configuration
 **Stacks Client** can add and connect to multiple **Stack Servers** by enabling the `Beta Features` option from the `Preferences`. Follow these steps to enable the `Beta Features` and connect to your **Stacks Server**:
