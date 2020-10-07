@@ -79,8 +79,7 @@ defined('EXIT__AUTO_MAX')      || define('EXIT__AUTO_MAX', 125); // highest auto
 
 /*
 |--------------------------------------------------------------------------
-| SERVER
+| Authentication Tokens
 |--------------------------------------------------------------------------
 */
 define('JWT_KEY', '14867d23-2cc9-4977-a467-444af962b0b5');
-define('JWT_EXPIRATION_SPAN', 7);
