@@ -198,7 +198,9 @@ class BoardsController extends BaseController
 
         $boardData = $this->request->getJSON();
 
-        unset($boardData->id);
+        unset($boardData->id); // we enforce this in another way
+        unset($boardData->deleted); // this should pass via the designated route
+        unset($boardData->owner); // this should pass via the designated route
 
         try {
             if ($boardModel->update($board->id, $boardData) === false) {
@@ -207,6 +209,8 @@ class BoardsController extends BaseController
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-BOARD-UPDATE");
         }
+
+        Events::trigger("AFTER_board_UPDATE", $board->id);
 
         return $this->reply();
     }
@@ -244,6 +248,8 @@ class BoardsController extends BaseController
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-STACK-ORDER");
         }
+
+        Events::trigger("AFTER_stacks_ORDER", $board->id);
 
         return $this->reply(null, 200, "OK-STACK-ORDER");
     }
@@ -285,6 +291,8 @@ class BoardsController extends BaseController
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER");
         }
+
+        Events::trigger("AFTER_tasks_ORDER", $board->id);
 
         return $this->reply(null, 200, "OK-TASK-ORDER");
     }

@@ -8,16 +8,17 @@ if (!function_exists('get_activities'))
 	{
 		$activityModel = new ActivityModel();
         $activityBuilder = $activityModel->builder();
-        $activityQuery = $activityBuilder->select("*")
+        $activityQuery = $activityBuilder->select("activities.*, users.id AS uid, users.email, users.nickname, users.firstName, users.lastName")
+            ->join('users', 'users.id = activities.user', 'left')
             ->groupStart()
-                ->where("board", $board)
+                ->where("activities.board", $board)
                 ->orGroupStart()    
-                    ->where("section", "BOARDS")
+                    ->where("activities.section", "BOARDS")
                 ->groupEnd()
             ->groupEnd()
-            ->where('user !=', $user)
-            ->where('created >', $date)
-            ->orderBy('created', 'DESC')
+            ->where('activities.user !=', $user)
+            ->where('activities.created >', $date)
+            ->orderBy('activities.created', 'DESC')
             ->get();
         return $activityQuery->getResult();
     }

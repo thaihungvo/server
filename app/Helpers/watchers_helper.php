@@ -10,7 +10,7 @@ if (!function_exists('tasks_watchers'))
 		$userModel = new UserModel();
         $userBuilder = $userModel->builder();
         $usersQuery = $userBuilder->select("users.id, users.email, users.nickname, users.firstName, users.lastName, tasks_watchers.created")
-            ->join('tasks_watchers', 'tasks_watchers.user = users.id')
+            ->join('tasks_watchers', 'tasks_watchers.user = users.id', 'left')
             ->groupStart()
                 ->where('tasks_watchers.task', $taskID)
                 ->where('users.id !=', $user->id)

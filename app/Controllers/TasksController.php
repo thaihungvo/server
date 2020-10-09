@@ -210,6 +210,7 @@ class TasksController extends BaseController
         $task = task_format($task);
 
         Events::trigger("AFTER_task_ADD", $taskData->id);
+        Events::trigger("update_board", $board->id);
 
         return $this->reply($task, 200, "OK-TASK-CREATE-SUCCESS");
     }
@@ -281,6 +282,7 @@ class TasksController extends BaseController
         }
 
         Events::trigger("AFTER_task_UPDATE", $taskID);
+        Events::trigger("update_board", $board->id);
 
         return $this->reply(null, 200, "OK-TASK-UPDATE-SUCCESS");
     }

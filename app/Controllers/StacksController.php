@@ -1,5 +1,6 @@
 <?php namespace App\Controllers;
 
+use CodeIgniter\Events\Events;
 use App\Models\StackModel;
 use App\Models\BoardModel;
 use App\Models\StackOrderModel;
@@ -93,6 +94,8 @@ class StacksController extends BaseController
         if ($stackModel->update($board->stack, $stackData) === false) {
             return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
         }
+
+        Events::trigger("AFTER_stack_UPDATE", $board->stack, $board->id);
 
         return $this->reply(null, 200, "OK-STACK-UPDATE-SUCCESS");
     }

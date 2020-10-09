@@ -55,6 +55,13 @@ class UpdatesController extends BaseController
                         }
 
                         $activitiesGrouped[$activity->section][$activity->item][strtolower($activity->action)] = $activity->created;
+                        $activitiesGrouped[$activity->section][$activity->item]["user"] = array(
+                            "id" => $activity->uid,
+                            "email" => $activity->email, 
+                            "nickname" => $activity->nickname, 
+                            "firstName" => $activity->firstName, 
+                            "lastName" => $activity->lastName
+                        );
                     }
 
                     foreach ($activitiesGrouped as $section => $activity) {

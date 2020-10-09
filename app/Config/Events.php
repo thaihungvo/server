@@ -70,7 +70,26 @@ Events::on('pre_system', function () {
         Events::trigger('activity', $board, "CREATE", "BOARDS", $board);
     });
 
+    Events::on('AFTER_board_UPDATE', function($board) {
+        Events::trigger('activity', $board, "UPDATE", "BOARD", $board);
+    });
+
+    // Stacks
+    Events::on('AFTER_stacks_ORDER', function($board) {
+        Events::trigger('activity', $board, "UPDATE", "BOARD", $board);
+    });
+
+    // Stack
+    Events::on('AFTER_stack_UPDATE', function($stack, $board) {
+        Events::trigger('activity', $stack, "UPDATE", "STACK", $board);
+    });
+
     // Tasks
+    Events::on('AFTER_tasks_ORDER', function($board) {
+        Events::trigger('activity', $board, "UPDATE", "BOARD", $board);
+    });
+
+    // Task
     Events::on('AFTER_task_ADD', function($task) {
         Events::trigger('activity', $task, "CREATE", "TASK");
     });
