@@ -191,6 +191,8 @@ class BoardsController extends BaseController
 
     public function update_v1($id)
 	{
+        $this->lock();
+
         $user = $this->request->user;
         $board = $this->request->board;
         
@@ -217,6 +219,8 @@ class BoardsController extends BaseController
 
     public function order_stacks_v1($id)
     {
+        $this->lock();
+
         $board = $this->request->board;
         $orderData = $this->request->getJSON();
 
@@ -256,6 +260,8 @@ class BoardsController extends BaseController
 
     public function order_tasks_v1($boardID, $stackID)
     {
+        $this->lock();
+        
         $board = $this->request->board;
         $orderData = $this->request->getJSON();
 

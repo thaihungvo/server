@@ -217,6 +217,8 @@ class TasksController extends BaseController
 
     public function update_v1($taskID)
     {
+        $this->lock();
+
         $board = $this->request->board;
         // TODO get task from board instead of a new query
         $taskModel = new TaskModel();
@@ -289,6 +291,8 @@ class TasksController extends BaseController
 
     public function delete_v1($taskID)
     {
+        $this->lock();
+        
         $board = $this->request->board;   
 
         $taskModel = new TaskModel();

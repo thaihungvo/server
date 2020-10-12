@@ -27,6 +27,8 @@ class StacksController extends BaseController
 
     public function add_v1($id)
     {
+        $this->lock();
+
         $board = $this->request->board;
 
         $stackModel = new StackModel();
@@ -86,6 +88,8 @@ class StacksController extends BaseController
 
     public function update_v1($idStack)
     {
+        $this->lock();
+
         $board = $this->request->board;
 
         $stackData = $this->request->getJSON();
@@ -102,6 +106,8 @@ class StacksController extends BaseController
 
     public function done_v1($idStack)
     {
+        $this->lock();
+
         $board = $this->request->board;
 
         $taskModel = new TaskModel();
@@ -137,6 +143,8 @@ class StacksController extends BaseController
 
     public function todo_v1($idStack)
     {
+        $this->lock();
+
         $board = $this->request->board;
 
         $taskModel = new TaskModel();
@@ -172,6 +180,8 @@ class StacksController extends BaseController
 
     public function archive_all_v1($idStack)
     {
+        $this->lock();
+
         $board = $this->request->board;
 
         // get all tasks connected to this stack
@@ -207,6 +217,8 @@ class StacksController extends BaseController
 
     public function archive_done_v1($idStack)
     {
+        $this->lock();
+
         $board = $this->request->board;
 
         // get all completed tasks connected to this stack
@@ -243,6 +255,8 @@ class StacksController extends BaseController
 
     public function delete_v1($idStack)
     {
+        $this->lock();
+
         $board = $this->request->board;
 
         // get all tasks connected to this stack

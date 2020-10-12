@@ -26,7 +26,7 @@ class BaseController extends Controller
 	 *
 	 * @var array
 	 */
-	protected $helpers = [];
+    protected $helpers = [];
 
 	/**
 	 * Constructor.
@@ -43,12 +43,35 @@ class BaseController extends Controller
 		// $this->session = \Config\Services::session();
 	}
 
-    public function reply($data = null, $code = 200, $msg = null) {
+    public function reply($data = null, $code = 200, $msg = null, $unlock = true) {
         $response = new \stdClass();
         $response->message = $msg;
         $response->code = $code;
         $response->data = $data;
 
+        if ($unlock) {
+            $this->unlock();
+        }
+
         return $this->response->setStatusCode($code)->setJSON($response);
+    }
+
+    protected function lock() {
+        $board = $this->request->board;
+        $user = $this->request->user;
+
+        $lockedBy = cache($board->id);
+
+        if ($lockedBy) {
+            $this->reply($lockedBy, 423, "WRN-BOARD-LOCKED", false)->send();
+            die();
+        }
+
+        cache()->save($board->id, $user, 60);
+    }
+
+    protected function unlock() {
+        $board = $this->request->board;
+        cache()->delete($board->id);
     }
 }

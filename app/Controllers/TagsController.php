@@ -18,6 +18,8 @@ class TagsController extends BaseController
 
     public function add_v1($id)
     {
+        $this->lock();
+        
         $user = $this->request->user;
         $board = $this->request->board;
 

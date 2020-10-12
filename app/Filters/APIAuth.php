@@ -49,6 +49,8 @@ class APIAuth implements FilterInterface
 
         $userModel = new UserModel();
         $user = $userModel->find($profile->id);
+
+        unset($user->password);
         
         if (!$user) {
             $response->message = 'ERR-AUTH-USER-NOT-FOUND';
