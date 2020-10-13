@@ -72,6 +72,8 @@ class BaseController extends Controller
 
     protected function unlock() {
         $board = $this->request->board;
-        cache()->delete($board->id);
+        if ($board && $board->id) {
+            cache()->delete($board->id);
+        }
     }
 }
