@@ -20,17 +20,19 @@ class UserController extends BaseController
             return $this->reply(null, 401, "ERR-USER-LOGIN-WRONG-EMAIL-PASS");
         }
 
-        $key = JWT_KEY;
+        helper('uuid');
+
         $payload = array(
-            'id' => $user->id,
-            'email' => $user->email,
-            'firstName' => $user->firstName,
-            'lastName' => $user->lastName
+            "id" => $user->id,
+            "email" => $user->email,
+            "firstName" => $user->firstName,
+            "lastName" => $user->lastName,
+            "instance" => uuid()
         );
 
         unset($user->password);
         
-        $user->token = JWT::encode($payload, $key);
+        $user->token = JWT::encode($payload, JWT_KEY);
 
         return $this->reply($user);
     }

@@ -50,6 +50,9 @@ class APIAuth implements FilterInterface
         $userModel = new UserModel();
         $user = $userModel->find($profile->id);
 
+        // the instance UUID is generated on login
+        // used when polling for updates for the same user logged in on different platforms/clients
+        $user->instance = $profile->instance;
         unset($user->password);
         
         if (!$user) {

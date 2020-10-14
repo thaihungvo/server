@@ -37,7 +37,7 @@ class UpdatesController extends BaseController
         do {
             //  && (!$lastCachedTimestamp || $lastCachedTimestamp > $lastTimestamp)
             if ($lastDate) {
-                $activities = get_activities($lastDate, $user->id, $board);
+                $activities = get_activities($lastDate, $user, $board);
 
                 if (count($activities)) {
                     $activitiesGrouped = array();

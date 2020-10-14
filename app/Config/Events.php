@@ -55,8 +55,8 @@ Events::on('pre_system', function () {
         }
         
         $query = array(
-            "INSERT INTO ". $db->prefixTable("activities") ." (`user`, `board`, `item`, `action`, `section`, `created`)",
-            "VALUES ('".$db->escapeString($user->id)."', '".$db->escapeString($board)."', '".$db->escapeString($item)."', '".$db->escapeString($action)."', '".$db->escapeString($section)."', NOW())"
+            "INSERT INTO ". $db->prefixTable("activities") ." (`user`, `instance`, `board`, `item`, `action`, `section`, `created`)",
+            "VALUES ('".$db->escapeString($user->id)."', '".$db->escapeString($user->instance)."', '".$db->escapeString($board)."', '".$db->escapeString($item)."', '".$db->escapeString($action)."', '".$db->escapeString($section)."', NOW())"
         );
 
         $db->query(implode(" ", $query));
