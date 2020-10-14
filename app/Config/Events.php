@@ -82,6 +82,7 @@ Events::on('pre_system', function () {
     // Stack
     Events::on('AFTER_stack_UPDATE', function($stack, $board) {
         Events::trigger('activity', $stack, "UPDATE", "STACK", $board);
+        Events::trigger('activity', $board, "UPDATE", "BOARD", $board);
     });
 
     // Tasks
