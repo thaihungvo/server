@@ -23,7 +23,6 @@ class AttachmentModel extends Model
         'title' => 'required|string',
         'content' => 'required|string',
         'extension' => 'required|string',
-        'hash' => 'required|string',
         'size' => 'required|integer',
         'type' => 'required|string'
     ];

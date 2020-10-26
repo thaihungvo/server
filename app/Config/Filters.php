@@ -62,7 +62,8 @@ class Filters extends BaseConfig
         "boardtasks" => [
             "before" => [
                 "/api/*/tasks/*",
-                "/api/*/files/*"
+                "/api/*/upload/*",
+                "/api/*/link/*"
             ]
         ]
     ];

@@ -1041,7 +1041,7 @@
 			"name": "5. Files",
 			"item": [
 				{
-					"name": "Upload attachment",
+					"name": "Upload attachment - only in the client",
 					"event": [
 						{
 							"listen": "test",
@@ -1079,15 +1079,49 @@
 							]
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/files/upload/{{task}}",
+							"raw": "{{server}}/api/{{ver}}/upload/{{task}}",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"files",
 								"upload",
+								"{{task}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Attach link",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Stacks\",\n    \"url\": \"https://stacks.rocks\"\n}",
+							"options": {
+								"raw": {
+									"language": "javascript"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/link/{{task}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"link",
 								"{{task}}"
 							]
 						}

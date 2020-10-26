@@ -7,7 +7,7 @@ class FilesController extends BaseController
 {
 	public function upload_v1($taskID)
 	{
-        $task = $this->request->task;
+        $task = $this->request->board->task;
         $user = $this->request->user;
 
         $chunk = $this->request->getBody();
@@ -29,7 +29,7 @@ class FilesController extends BaseController
 
         if (file_exists($uploadPath)) {
             // the current user tries to upload a file that's already on the server
-            $savedAttachment = $this->saveAttachment($task->id, $fileName, $fileSize, $fileHash);
+            $savedAttachment = $this->saveAttachment($task, $fileName, $fileSize, $fileHash);
             if ($savedAttachment === false) {
                 return $this->reply(null, 500, "ERR-ATTACHMENT-CREATE");
             }
@@ -65,7 +65,7 @@ class FilesController extends BaseController
             return $this->reply(null, 500, "ERR-FILE-RENAME");
         }
 
-        $savedAttachment = $this->saveAttachment($task->id, $fileName, $fileSize, $fileHash);
+        $savedAttachment = $this->saveAttachment($task, $fileName, $fileSize, $fileHash);
         if ($savedAttachment === false) {
             return $this->reply(null, 500, "ERR-ATTACHMENT-CREATE");
         }
@@ -76,7 +76,17 @@ class FilesController extends BaseController
 
     public function link_v1()
     {
+        $task = $this->request->board->task;
+        $user = $this->request->user;
+        $data = $this->request->getJSON();
 
+        $savedLink = $this->saveLink($task, $data->title, $data->url);
+        if ($savedLink === false) {
+            return $this->reply(null, 500, "ERR-LINK-CREATE");
+        }
+
+        // add the new record to the db
+        return $this->reply($savedLink, 200);
     }
 
     public function delete_v1()
@@ -91,7 +101,7 @@ class FilesController extends BaseController
 
     public function update_v1()
     {
-        
+
     }
 
     private function saveAttachment($taskID, $fileName, $fileSize, $fileHash)
@@ -103,12 +113,43 @@ class FilesController extends BaseController
         $attachment = new \stdClass();
         $attachment->owner = $user->id;
         $attachment->task = $taskID;
-        $attachment->filename = $fileName;
+        $attachment->title = $fileName;
         $attachment->content = $fileName;
         $attachment->hash = $fileHash;
         $attachment->extension = pathinfo($fileName, PATHINFO_EXTENSION);
         $attachment->size = $fileSize;
         $attachment->type = "file";
+
+        try {
+            if ($attachmentModel->insert($attachment) === false) {
+                // $errors = $attachmentModel->errors();
+                // return $this->reply($errors, 500, "ERR-ATTACHMENT-CREATE");
+                return false;
+            }
+        } catch (\Exception $e) {
+            // return $this->reply($e->getMessage(), 500, "ERR-ATTACHMENT-CREATE");
+            return false;
+        }
+
+        $attachment->id = $attachmentModel->insertID;
+
+        return $attachment;
+    }
+
+    private function saveLink($taskID, $title, $url)
+    {
+        $user = $this->request->user;
+
+        $attachmentModel = new AttachmentModel();
+
+        $attachment = new \stdClass();
+        $attachment->owner = $user->id;
+        $attachment->task = $taskID;
+        $attachment->title = $title;
+        $attachment->content = $url;
+        $attachment->extension = "lnk";
+        $attachment->size = 0;
+        $attachment->type = "link";
 
         try {
             if ($attachmentModel->insert($attachment) === false) {

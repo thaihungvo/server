@@ -112,15 +112,17 @@ $routes->get("/ping", "PingController::index");
 
 // FILES
     // upload a file
-    $routes->post("/api/v1/files/upload/(:any)", "FilesController::upload_v1/$1");
+    $routes->post("/api/v1/upload/(:any)", "FilesController::upload_v1/$1");
     // attach a link
-    $routes->post("/api/v1/files/link/(:any)", "FilesController::link_v1/$1");
+    $routes->post("/api/v1/link/(:any)", "FilesController::link_v1/$1");
     // delete a file or a link
-    $routes->delete("/api/v1/files/(:any)", "FilesController::delete_v1/$1");
+    $routes->delete("/api/v1/attachment/(:any)", "FilesController::delete_v1/$1");
+    // delete all files and links for the specific task
+    $routes->delete("/api/v1/attachments/(:any)", "FilesController::delete_all_v1/$1");
     // download an attachment or redirect in case of a link
-    $routes->get("/api/v1/files/(:any)", "FilesController::download_v1/$1");
+    $routes->get("/api/v1/download/(:any)", "FilesController::download_v1/$1");
     // update the attachments title
-    $routes->put("/api/v1/files/(:any)", "FilesController::update_v1/$1");
+    $routes->put("/api/v1/attachment/(:any)", "FilesController::update_v1/$1");
 
 /**
  * --------------------------------------------------------------------
