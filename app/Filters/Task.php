@@ -25,10 +25,6 @@ class Task implements FilterInterface
         if (is_array($body->tags)) {
             $body->tags = json_encode($body->tags);
         }
-
-        if (is_array($body->info)) {
-            $body->info = json_encode($body->info);
-        }
         
         $request->setBody(json_encode($body));
 

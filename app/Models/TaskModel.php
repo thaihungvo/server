@@ -10,7 +10,7 @@ class TaskModel extends Model
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ['id', 'title', 'content', 'tags', 'duedate', 'startdate', 'cover', 'done', 'altTags', 'estimate', 'spent', 'progress', 'user', 'info', 'hourlyFee', 'owner', 'board', 'archived', 'created', 'updated'];
+    protected $allowedFields = ['id', 'title', 'content', 'tags', 'duedate', 'startdate', 'cover', 'done', 'altTags', 'estimate', 'spent', 'progress', 'user', 'hourlyFee', 'owner', 'board', 'archived', 'created', 'updated'];
 
     protected $useTimestamps = true;
     protected $createdField  = 'created';

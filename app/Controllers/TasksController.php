@@ -6,6 +6,7 @@ use App\Models\TaskOrderModel;
 use App\Models\StackModel;
 use App\Models\TaskAssigneeModel;
 use App\Models\TaskWatcherModel;
+use App\Models\TaskExtensionModel;
 
 class TasksController extends BaseController
 {
@@ -197,7 +198,7 @@ class TasksController extends BaseController
 
             try {
                 if ($builderTaskOrderBuilder->insertBatch($orders) === false) {
-                    return $this->reply($taskOrderModel->errors(), 500, "ERR-TASK-ORDER");    
+                    return $this->reply($builderTaskOrderBuilder->errors(), 500, "ERR-TASK-ORDER");    
                 }
             } catch (\Exception $e) {
                 return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER");
@@ -239,7 +240,60 @@ class TasksController extends BaseController
         }
 
         $taskData = $this->request->getJSON();
-        $taskData->info = json_encode($taskData->info);
+
+        helper('uuid');
+        
+        // Managing extensions
+        // delete the current task extensions
+        $taskExtensionModel = new TaskExtensionModel();
+        try {
+            if ($taskExtensionModel->where('task', $taskData->id)->delete() === false) {
+                return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-DELETE-EXTENSIONS-ERROR");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-EXTENSIONS-ERROR");
+        }
+
+        // generate list of new extensions
+        $extensions = array();
+        if (isset($taskData->extensions)) {
+            foreach ($taskData->extensions as $ext) {
+                $extension = new \stdClass();
+                $extension->task = $taskID;
+                $extension->title = $ext->title;
+                $extension->type = $ext->type;
+
+                if ($extension->type == "attachments") {
+                    $extension->content = "[]"; // just save a simple JSON array
+                } else {
+                    $extension->content = json_encode($ext->content);
+                }
+                $extension->options = json_encode($ext->options);
+
+                if (!isset($ext->id)) {
+                    $extension->id = uuid();  
+                } else {
+                    $extension->id = $ext->id;
+                }
+
+                $extensions[] = $extension;
+            }
+
+            if (count($extensions)) {    
+                try {
+                    if ($taskExtensionModel->insertBatch($extensions) === false) {
+                        return $this->reply($taskExtensionModel->errors(), 500, "ERR-TASK-CREATE-EXTENSIONS-ERROR");    
+                    }
+                } catch (\Exception $e) {
+                    return $this->reply($e->getMessage(), 500, "ERR-TASK-CREATE-EXTENSIONS-ERROR");
+                }
+            }
+        }
+
+        // TODO: deprecated - remove in future versions
+        if (isset($taskData->info)) {
+            unset($taskData->info);
+        }
 
         // delete all assigned task users
         $taskAssigneeModel = new TaskAssigneeModel();
@@ -277,6 +331,7 @@ class TasksController extends BaseController
         unset($taskData->order);
         unset($taskData->stack);
         unset($taskData->assignees);
+        unset($taskData->info);
         $taskData->archived = null;
 
         if ($taskModel->update($taskID, $taskData) === false) {
