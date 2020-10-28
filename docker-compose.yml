@@ -1,0 +1,40 @@
+version: '3.1'
+services:
+  www:
+    build: .
+    ports:
+      - '8888:80'
+    volumes:
+      - ./www:/var/www/html/
+    links:
+      - stacksdb
+    networks:
+      - default
+  stacksdb:
+    image: mysql:8.0
+    ports:
+      - '8889:3306'
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: stacks
+      MYSQL_USER: stacks
+      MYSQL_PASSWORD: stacks
+      MYSQL_ROOT_PASSWORD: stacks
+    volumes:
+      - ./dump:/docker-entrypoint-initdb.d
+      - ./conf:/etc/mysql/conf.d
+      - persistent:/var/lib/mysql
+    networks:
+      - default
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - stacksdb:db
+    ports:
+      - 8887:80
+    environment:
+      MYSQL_USER: stacks
+      MYSQL_PASSWORD: stacks
+      MYSQL_ROOT_PASSWORD: stacks
+volumes:
+  persistent:
