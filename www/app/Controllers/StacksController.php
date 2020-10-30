@@ -22,6 +22,10 @@ class StacksController extends BaseController
             ->get();
         $stacks = $stackQuery->getResult();
 
+        foreach ($stacks as &$stack) {
+            $stack->tag = json_decode($stack->tag);
+        }
+
         return $this->reply($stacks);
     }
 
@@ -33,6 +37,10 @@ class StacksController extends BaseController
 
         $stackModel = new StackModel();
         $stackData = $this->request->getJSON();
+
+        if (isset($stackData->tag)) {
+            $stackData->tag = json_encode($stackData->tag);
+        }
 
         helper('uuid');
 
@@ -93,6 +101,12 @@ class StacksController extends BaseController
         $board = $this->request->board;
 
         $stackData = $this->request->getJSON();
+
+        if (isset($stackData->tag)) {
+            $stackData->tag = json_encode($stackData->tag);
+        } else {
+            $stackData->tag = "";
+        }
 
         $stackModel = new StackModel();
         if ($stackModel->update($board->stack, $stackData) === false) {
