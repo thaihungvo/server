@@ -40,8 +40,7 @@ class BoardsController extends BaseController
         $board = $this->request->board;
 
         // load board tags
-        $tagModel = new TagModel();
-        $board->tags = $tagModel->where('board', $board->id)->findAll();
+        $board->tags = $this->get_tags($board->id);
 
         // load board stacks
         $stackModel = new StackModel();
@@ -56,8 +55,10 @@ class BoardsController extends BaseController
 
         if (count($board->stacks)) {
             $stacksIDs = [];
-            foreach ($board->stacks as $stack) {
+            foreach ($board->stacks as &$stack) {
                 $stacksIDs[] = $stack->id;
+
+                $stack->tag = json_decode($stack->tag);
             }
 
             helper('tasks');
@@ -110,6 +111,12 @@ class BoardsController extends BaseController
             $boardData->everyone = 1;
         } else {
             $boardData->everyone = intval($boardData->everyone);
+        }
+
+        if (isset($boardData->tags)) {
+            if (!$this->set_tags($boardData->id, $boardData->tags)) {
+                return $this->reply(null, 500, "ERR-BOARD-TAGS");   
+            }
         }
 
         $membersIDs = array();
@@ -168,9 +175,14 @@ class BoardsController extends BaseController
 
         $boardData = $this->request->getJSON();
 
+        if (!$this->set_tags($board->id, $boardData->tags)) {
+            return $this->reply(null, 500, "ERR-BOARD-TAGS");   
+        }
+
         unset($boardData->id); // we enforce this in another way
         unset($boardData->deleted); // this should pass via the designated route
         unset($boardData->owner); // this should pass via the designated route
+        unset($boardData->tags);
 
         try {
             if ($boardModel->update($board->id, $boardData) === false) {
@@ -269,5 +281,46 @@ class BoardsController extends BaseController
         Events::trigger("AFTER_tasks_ORDER", $board->id);
 
         return $this->reply(null, 200, "OK-TASK-ORDER");
+    }
+
+    private function set_tags($boardID, $tags) 
+    {
+        $tagModel = new TagModel();
+
+        // delete previously saved tags
+        try {
+            if ($tagModel->where("board", $boardID)->delete() === false) {
+                return false;
+            }
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        foreach ($tags as &$tag) {
+            $tag->board = $boardID;
+        }
+
+        // recreate them
+        try {
+            if ($tagModel->insertBatch($tags) === false) {
+                return false;
+            }
+        } catch (\Exception $e) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    private function get_tags($boardID) 
+    {
+        $tagModel = new TagModel();
+        $tags = $tagModel->where('board', $boardID)->findAll();
+
+        foreach ($tags as &$tag) {
+            unset($tag->board);
+        }
+
+        return $tags;
     }
 }
