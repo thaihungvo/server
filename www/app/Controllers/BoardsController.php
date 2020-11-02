@@ -45,13 +45,18 @@ class BoardsController extends BaseController
         // load board stacks
         $stackModel = new StackModel();
         $stackBuilder = $stackModel->builder();
-        $stackQuery = $stackBuilder->select("stacks.*")
+        $stackQuery = $stackBuilder->select("stacks.*, stacks_collapsed.collapsed")
             ->join('stacks_order', 'stacks_order.stack = stacks.id', 'left')
+            ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id', 'left')
             ->where('stacks.board', $board->id)
             ->where('stacks.deleted', NULL)
             ->orderBy('stacks_order.`order`', 'ASC')
             ->get();
         $board->stacks = $stackQuery->getResult();
+
+        foreach ($board->stacks as &$stack) {
+            $stack->collapsed = boolval($stack->collapsed);
+        }
 
         if (count($board->stacks)) {
             $stacksIDs = [];

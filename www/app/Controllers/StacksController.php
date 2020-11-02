@@ -5,6 +5,7 @@ use App\Models\StackModel;
 use App\Models\BoardModel;
 use App\Models\StackOrderModel;
 use App\Models\TaskModel;
+use App\Models\StackCollapsedModel;
 
 class StacksController extends BaseController
 {
@@ -14,13 +15,18 @@ class StacksController extends BaseController
 
         $stackModel = new StackModel();
         $stackBuilder = $stackModel->builder();
-        $stackQuery = $stackBuilder->select("stacks.*")
+        $stackQuery = $stackBuilder->select("stacks.*, stacks_collapsed.collapsed")
             ->join('stacks_order', 'stacks_order.stack = stacks.id', 'left')
+            ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id', 'left')
             ->where('stacks.board', $board->id)
             ->where('stacks.deleted', NULL)
             ->orderBy('stacks_order.`order`', 'ASC')
             ->get();
         $stacks = $stackQuery->getResult();
+
+        foreach ($stacks as &$stack) {
+            $stack->collapsed = boolval($stack->collapsed);
+        }
 
         foreach ($stacks as &$stack) {
             $stack->tag = json_decode($stack->tag);
@@ -34,6 +40,7 @@ class StacksController extends BaseController
         $this->lock();
 
         $board = $this->request->board;
+        $user = $this->request->user;
 
         $stackModel = new StackModel();
         $stackData = $this->request->getJSON();
@@ -91,6 +98,23 @@ class StacksController extends BaseController
 
         $stack = $stackModel->find($stackData->id);
 
+        // create a default collapsed state
+        $collapsed = [
+            "stack" => $stack->id,
+            "collapsed" => 0,
+            "user" => $user->id
+        ];
+
+        $stackCollapsedModel = new StackCollapsedModel();
+        try {
+            if ($stackCollapsedModel->insert($collapsed) === false) {
+                $errors = $stackOrderModel->errors();
+                return $this->reply($errors, 500, "ERR-STACK-COLLAPSED");    
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-COLLAPSED");
+        }
+
         return $this->reply($stack, 200, "OK-STACK-CREATE-SUCCESS");
     }
 
@@ -99,15 +123,45 @@ class StacksController extends BaseController
         $this->lock();
 
         $board = $this->request->board;
+        $user = $this->request->user;
 
         $stackData = $this->request->getJSON();
 
+        // saving stack tag/tint color
         if (isset($stackData->tag)) {
             $stackData->tag = json_encode($stackData->tag);
         } else {
             $stackData->tag = "";
         }
 
+        // saving collapsed state of the stack for the current user
+        if (isset($stackData->collapsed)) {
+            $stackCollapsedModel = new StackCollapsedModel();
+            try {
+                if (
+                    $stackCollapsedModel
+                        ->where("user", $user->id)
+                        ->where("stack", $stackData->id)
+                        ->delete() === false
+                ) {
+                    $errors = $stackOrderModel->errors();
+                    return $this->reply($errors, 500, "ERR-STACK-COLLAPSED");
+                }
+                    
+                if ($stackCollapsedModel->insert([
+                    "stack" => $stackData->id,
+                    "collapsed" => intval($stackData->collapsed),
+                    "user" => $user->id
+                ]) === false) {
+                    $errors = $stackOrderModel->errors();
+                    return $this->reply($errors, 500, "ERR-STACK-COLLAPSED");
+                }
+            } catch (\Exception $e) {
+                return $this->reply($e->getMessage(), 500, "ERR-STACK-COLLAPSED");
+            }
+        }
+
+        // update the stack data
         $stackModel = new StackModel();
         if ($stackModel->update($board->stack, $stackData) === false) {
             return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
