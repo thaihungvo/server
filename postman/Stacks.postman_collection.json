@@ -6,6 +6,49 @@
 	},
 	"item": [
 		{
+			"name": "0. Ping",
+			"item": [
+				{
+					"name": "Ping",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "738e86da-c5ca-4d8c-a071-3373020a7e80",
+								"exec": [
+									"pm.test(\"Ping status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Ping pong\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.equal(\"pong\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/ping",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"ping"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
 			"name": "1. User",
 			"item": [
 				{
@@ -17,7 +60,16 @@
 								"id": "6e603917-a6df-44d4-a0d9-93ff31f0d6aa",
 								"exec": [
 									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"authToken\", \"Bearer \" + jsonData.data.token);"
+									"pm.environment.set(\"authToken\", \"Bearer \" + jsonData.data.token);",
+									"",
+									"pm.test(\"Login status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Login user test\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data.id).to.equal(\"1\");",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -75,6 +127,26 @@
 				},
 				{
 					"name": "Get all Members",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1800d560-73a2-4e82-bc28-7544e80c2d62",
+								"exec": [
+									"pm.test(\"Get members status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get members results\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    const length = responseJson.data.length > 0;",
+									"    pm.expect(length).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -104,6 +176,56 @@
 		{
 			"name": "2. Boards",
 			"item": [
+				{
+					"name": "Create Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c6414b0e-a0bf-4872-9191-ab1ec6717e08",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"board\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"The Board\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards"
+							]
+						}
+					},
+					"response": []
+				},
 				{
 					"name": "Get Boards list",
 					"request": {
@@ -150,56 +272,6 @@
 								"{{ver}}",
 								"boards",
 								"{{board}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Board",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "c6414b0e-a0bf-4872-9191-ab1ec6717e08",
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"board\", jsonData.data.id);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"title\": \"The Board\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards"
 							]
 						}
 					},
@@ -288,7 +360,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tags",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tags",
 							"host": [
 								"{{server}}"
 							],
@@ -296,7 +368,7 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"tags"
 							]
 						}
@@ -324,7 +396,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tags/8decf5f4-91c7-11ea-b366-0d4c57d00ccc",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tags/8decf5f4-91c7-11ea-b366-0d4c57d00ccc",
 							"host": [
 								"{{server}}"
 							],
@@ -332,7 +404,7 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"tags",
 								"8decf5f4-91c7-11ea-b366-0d4c57d00ccc"
 							]
@@ -389,7 +461,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"60166fa5-918c-485c-9bea-4ce4ffefea47\": [\"ce8d16f6-9222-11ea-8c1c-870eb04b6723\", \"f15ce382-8a11-11ea-b94d-a87f862112f6\", \"fcdb8844-9222-11ea-8c1c-870eb04b6723\"]\n}",
+							"raw": "{\n    // stack: [taskID, taskID, ...]\n\t\"60166fa5-918c-485c-9bea-4ce4ffefea47\": [\"ce8d16f6-9222-11ea-8c1c-870eb04b6723\", \"f15ce382-8a11-11ea-b94d-a87f862112f6\", \"fcdb8844-9222-11ea-8c1c-870eb04b6723\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -397,7 +469,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/order-tasks",
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/order-tasks",
 							"host": [
 								"{{server}}"
 							],
@@ -405,8 +477,29 @@
 								"api",
 								"{{ver}}",
 								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{board}}",
 								"order-tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Board member/s",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/members",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"{{board}}",
+								"members"
 							]
 						}
 					},
@@ -418,33 +511,6 @@
 		{
 			"name": "3. Stacks",
 			"item": [
-				{
-					"name": "Get Stacks list",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"{{board}}",
-								"stacks"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Create Stacks",
 					"event": [
@@ -478,6 +544,33 @@
 								}
 							}
 						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"{{board}}",
+								"stacks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stacks list",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks",
 							"host": [
@@ -670,6 +763,56 @@
 			"name": "4. Tasks",
 			"item": [
 				{
+					"name": "Add Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "bc8680b6-642e-44e8-9255-dcb420b6b51f",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"task\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"New task\",\n\t\"stack\": \"{{stack}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tasks/top",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"{{board}}",
+								"tasks",
+								"top"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "All Tasks by Board",
 					"request": {
 						"method": "GET",
@@ -750,56 +893,6 @@
 					"response": []
 				},
 				{
-					"name": "Add Task",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "bc8680b6-642e-44e8-9255-dcb420b6b51f",
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"task\", jsonData.data.id);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"title\": \"New task\",\n\t\"stack\": \"{{stack}}\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tasks/top",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"{{board}}",
-								"tasks",
-								"top"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Update Task",
 					"request": {
 						"method": "PUT",
@@ -819,32 +912,6 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"tasks",
-								"{{task}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Task",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
 						"url": {
 							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}",
 							"host": [
@@ -940,26 +1007,129 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Delete Task",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"tasks",
+								"{{task}}"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}
 		},
 		{
-			"name": "Ping",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{server}}/ping",
-					"host": [
-						"{{server}}"
+			"name": "5. Files",
+			"item": [
+				{
+					"name": "Upload attachment - only in the client",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a6a87594-ff77-44f3-b9ef-918ceda81e45",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
 					],
-					"path": [
-						"ping"
-					]
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "attachment",
+									"type": "file",
+									"src": "/Users/cristian/Downloads/Group 10.png"
+								},
+								{
+									"key": "test",
+									"value": "Hello world",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/upload/{{task}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"upload",
+								"{{task}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Attach link",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Stacks\",\n    \"url\": \"https://stacks.rocks\"\n}",
+							"options": {
+								"raw": {
+									"language": "javascript"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/link/{{task}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"link",
+								"{{task}}"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			],
+			"protocolProfileBehavior": {}
 		}
 	],
 	"event": [
