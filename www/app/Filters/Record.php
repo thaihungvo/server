@@ -4,9 +4,9 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Filters\FilterInterface;
 use Config\Services;
-use App\Models\BoardModel;
+use App\Models\RecordModel;
 
-class Board implements FilterInterface
+class Record implements FilterInterface
 {
     public function before(RequestInterface $request)
     {
@@ -15,31 +15,31 @@ class Board implements FilterInterface
         $response->code = 404;
         $response->data = null;
 
-        $boardModel = new BoardModel();
+        $recordModel = new RecordModel();
 
-        $builder = $boardModel->builder();
-        $query = $builder->select('boards.*')
-            ->join('boards_members', 'boards_members.board = boards.id', 'left')
-            ->where('boards.deleted', NULL)
-            ->where('boards.id', $request->uri->getSegment(4))
+        $recordBuilder = $recordModel->builder();
+        $recordQuery = $recordBuilder->select("records.*")
+            ->join("records_members", "records_members.record = records.id", "left")
+            ->where("records.deleted", NULL)
+            ->where("records.id", $request->uri->getSegment(4))
             ->groupStart()
-                ->where('boards.owner', $user->id)
-                ->orWhere('boards_members.user', $user->id)
-                ->orWhere('boards.everyone', 1)
+                ->where("records.owner", $user->id)
+                ->orWhere("records_members.user", $user->id)
+                ->orWhere("records.everyone", 1)
             ->groupEnd()
             ->limit(1)
             ->get();
 
-        $boards = $query->getResult();
+        $records = $recordQuery->getResult();
         
-        if (!count($boards)) {
-            $response->message = 'ERR-BOARDS-NOT-FOUND-MSG';
+        if (!count($records)) {
+            $response->message = "ERR-RECORDS-NOT-FOUND-MSG";
             return Services::response()
                 ->setStatusCode(404)
                 ->setJSON($response);
         }
 
-        $request->board = $boards[0];
+        $request->record = $records[0];
         return $request;
     }
 

@@ -11,7 +11,7 @@ class Filters extends BaseConfig
 		"toolbar"  => \CodeIgniter\Filters\DebugToolbar::class,
 		"honeypot" => \CodeIgniter\Filters\Honeypot::class,
 		"auth" => \App\Filters\APIAuth::class,
-        "board" => \App\Filters\Board::class,
+        "record" => \App\Filters\Record::class,
         "boardstacks" => \App\Filters\BoardStacks::class,
         "boardtasks" => \App\Filters\BoardTasks::class,
         "task" => \App\Filters\Task::class,
@@ -45,7 +45,8 @@ class Filters extends BaseConfig
             "/api/*/boards/*/tasks",
             "/api/*/boards/*/tasks/*"            
         ]],
-        "board" => ["before" => [
+        "record" => ["before" => [
+                "/api/*/records/*",
                 "/api/*/boards/*",
                 "/api/*/boards/*/tags",
                 "/api/*/boards/*/tags/*",

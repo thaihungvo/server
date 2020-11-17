@@ -54,7 +54,10 @@ class UpdatesController extends BaseController
                             $activitiesGrouped[$activity->section][$activity->item] = array();
                         }
 
+                        $activitiesGrouped[$activity->section][$activity->item]["type"] = strtolower($activity->section);
                         $activitiesGrouped[$activity->section][$activity->item][strtolower($activity->action)] = $activity->created;
+                        $activitiesGrouped[$activity->section][$activity->item]["id"] = $activity->item;
+                        $activitiesGrouped[$activity->section][$activity->item]["action"] = strtolower($activity->action);
                         $activitiesGrouped[$activity->section][$activity->item]["user"] = array(
                             "id" => $activity->uid,
                             "email" => $activity->email, 
@@ -67,7 +70,7 @@ class UpdatesController extends BaseController
                     foreach ($activitiesGrouped as $section => $activity) {
                         foreach (array_reverse($activity) as $item => $changes) {
                             echo "id: ". strtolower($item) . PHP_EOL;
-                            echo "event: ". strtolower($section) .PHP_EOL;
+                            echo "event: update".PHP_EOL;
                             echo "data: ". json_encode($changes) . PHP_EOL;
                             echo PHP_EOL;
 

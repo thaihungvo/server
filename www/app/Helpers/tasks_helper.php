@@ -110,9 +110,10 @@ if (!function_exists('task_format'))
         if (is_string($task->tags)) {
             $task->tags = json_decode($task->tags);
         }
-        // if (is_string($task->info)) {
-        //     $task->info = json_decode($task->info);
-        // }
+
+        unset($task->order);
+        unset($task->stack);
+        unset($task->deleted);
 
         return $task;
     }
