@@ -93,12 +93,10 @@ $routes->get("/ping", "PingController::index");
     $routes->put("/api/v1/tasks/(:any)", "TasksController::update_v1/$1");
     // delete a task
     $routes->delete("/api/v1/tasks/(:any)", "TasksController::delete_v1/$1");
-    
-// TREE
-    // get all records
-    $routes->get("/api/v1/tree", "TreeController::all_v1");
 
 // RECORDS
+    // get all records
+    $routes->get("/api/v1/records", "RecordsController::all_v1");
     // get a specific record
     $routes->get("/api/v1/records/(:any)", "RecordsController::one_v1/$1");
     // update a record

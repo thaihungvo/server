@@ -14,7 +14,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "738e86da-c5ca-4d8c-a071-3373020a7e80",
 								"exec": [
 									"pm.test(\"Ping status test\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -45,8 +44,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "1. User",
@@ -57,7 +55,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "6e603917-a6df-44d4-a0d9-93ff31f0d6aa",
 								"exec": [
 									"var jsonData = pm.response.json();",
 									"pm.environment.set(\"authToken\", \"Bearer \" + jsonData.data.token);",
@@ -131,7 +128,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "1800d560-73a2-4e82-bc28-7544e80c2d62",
 								"exec": [
 									"pm.test(\"Get members status test\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -170,8 +166,63 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
+		},
+		{
+			"name": "3. Records",
+			"item": [
+				{
+					"name": "Get All Records",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/tree",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"tree"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Record",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/records/5114bbde-0a1c-4a6c-8d10-d00631188104",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"records",
+								"5114bbde-0a1c-4a6c-8d10-d00631188104"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		},
 		{
 			"name": "2. Boards",
@@ -182,7 +233,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "c6414b0e-a0bf-4872-9191-ab1ec6717e08",
 								"exec": [
 									"var jsonData = pm.response.json();",
 									"pm.environment.set(\"board\", jsonData.data.id);"
@@ -505,8 +555,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "3. Stacks",
@@ -517,7 +566,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e4105b1c-9fcb-42ed-8291-6ebd05406b3a",
 								"exec": [
 									"var jsonData = pm.response.json();",
 									"pm.environment.set(\"stack\", jsonData.data.id);"
@@ -756,8 +804,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "4. Tasks",
@@ -768,7 +815,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "bc8680b6-642e-44e8-9255-dcb420b6b51f",
 								"exec": [
 									"var jsonData = pm.response.json();",
 									"pm.environment.set(\"task\", jsonData.data.id);"
@@ -1034,8 +1080,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "5. Files",
@@ -1046,7 +1091,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a6a87594-ff77-44f3-b9ef-918ceda81e45",
 								"exec": [
 									""
 								],
@@ -1128,15 +1172,13 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		}
 	],
 	"event": [
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "16c47681-cbc9-4282-946f-d2fd95d12d8e",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -1146,13 +1188,11 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "7e550fb4-3265-4e4b-941d-1b060668fee2",
 				"type": "text/javascript",
 				"exec": [
 					""
 				]
 			}
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }
