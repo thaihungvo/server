@@ -150,14 +150,6 @@ class DocumentsController extends BaseController
     {
         $orderData = $this->request->getJSON();
         $db = db_connect();
-        /*
-        INSERT INTO stk_folders (id, `order`)
-        VALUES ('7d2ea375-725f-402f-a152-a0a3afd36a12', 100),
-        ('d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7', 444)
-        ON DUPLICATE KEY UPDATE 
-        id=VALUES(id), 
-        `order`=VALUES(`order`);
-        */
 
         // get all folders
         $folderModel = new FolderModel();
