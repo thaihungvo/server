@@ -94,15 +94,17 @@ $routes->get("/ping", "PingController::index");
     // delete a task
     $routes->delete("/api/v1/tasks/(:any)", "TasksController::delete_v1/$1");
 
-// RECORDS
-    // get all records
-    $routes->get("/api/v1/records", "RecordsController::all_v1");
-    // get a specific record
-    $routes->get("/api/v1/records/(:any)", "RecordsController::one_v1/$1");
-    // update a record
-    $routes->put("/api/v1/records/(:any)", "RecordsController::update_v1");
-    // create a record
-    $routes->post("/api/v1/records", "RecordsController::add_v1");
+// DOCUMENTS
+    // get all documents
+    $routes->get("/api/v1/documents", "DocumentsController::all_v1");
+    // get a specific document
+    $routes->get("/api/v1/documents/(:any)", "DocumentsController::one_v1/$1");
+    // update a document
+    $routes->put("/api/v1/documents", "DocumentsController::update_v1");
+    // create a document
+    $routes->post("/api/v1/documents", "DocumentsController::add_v1");
+    // reorder documents
+    $routes->post("/api/v1/documents/order", "DocumentsController::order_v1");
 
 // BOARDS
     // get a specific board

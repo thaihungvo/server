@@ -2,15 +2,15 @@
 
 use CodeIgniter\Model;
 
-class FolderModel extends Model
+class DocumentModel extends Model
 {
-    protected $table      = "folders";
+    protected $table      = "documents";
     protected $primaryKey = "id";
     protected $returnType = "object";
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ["id", "title", "owner", "order"];
+    protected $allowedFields = ["id", "title", "owner", "everyone", "type", "order"];
 
     protected $useTimestamps = true;
     protected $createdField  = "created";
@@ -20,7 +20,8 @@ class FolderModel extends Model
     protected $validationRules = [
         "id" => "required|min_length[35]",
         "title" => "required|alpha_numeric_punct",
-        "owner" => "required",
+        "owner" => "required|integer",
+        "type" => "required",
         "order" => "required|numeric"
     ];
 
@@ -33,10 +34,13 @@ class FolderModel extends Model
             "required" => "Missing required field `title`",
         ],
         "owner" => [
-            "required" => "Missing required field `owner`"
+            "required" => "Missing required field `owner`",
+        ],
+        "type" => [
+            "required" => "Missing required field `type`",
         ],
         "order" => [
-            "required" => "Missing required field `order`"
-        ]
+            "required" => "Missing required field `order`",
+        ],
     ];
 }

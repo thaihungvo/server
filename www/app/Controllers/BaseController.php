@@ -56,18 +56,20 @@ class BaseController extends Controller
         return $this->response->setStatusCode($code)->setJSON($response);
     }
 
-    protected function lock() {
-        $board = $this->request->board;
+    protected function lock($id) {
+        if (!isset($id)) {
+            $id = $this->request->board->id; 
+        }
         $user = $this->request->user;
 
-        $lockedBy = cache($board->id);
+        $lockedBy = cache($id->id);
 
         if ($lockedBy) {
-            $this->reply($lockedBy, 423, "WRN-BOARD-LOCKED", false)->send();
+            $this->reply($lockedBy, 423, "WRN-RESOURCE-LOCKED", false)->send();
             die();
         }
 
-        cache()->save($board->id, $user, 60);
+        cache()->save($id, $user, 60);
     }
 
     protected function unlock() {
