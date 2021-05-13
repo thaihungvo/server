@@ -1,6 +1,8 @@
 <?php
 namespace App\Controllers;
 
+use CodeIgniter\Events\Events;
+
 /**
  * Class BaseController
  *
@@ -27,6 +29,28 @@ class BaseController extends Controller
 	 * @var array
 	 */
     protected $helpers = [];
+    protected $lockId = null;
+
+    const TYPE_FOLDER = "folder";
+    const TYPE_PROJECT = "project";
+    const TYPE_NOTEPAD = "notepad";
+    const TYPE_PEOPLE = "people";
+
+    const ACTION_CREATE = "CREATE";
+    const ACTION_UPDATE = "UPDATE";
+    const ACTION_DELETE = "DELETE";
+    const ACTION_UNKNOWN = "UNKNOWN";
+
+    const SECTION_DOCUMENTS = "DOCUMENTS";
+    const SECTION_FOLDER = "FOLDER";
+    const SECTION_DOCUMENT = "DOCUMENT";
+    const SECTION_PROJECT = "PROJECT";
+    const SECTION_NOTEPAD = "NOTEPAD";
+    const SECTION_PEOPLE = "PEOPLE";
+    const SECTION_TASK = "TASK";
+    const SECTION_STACK = "STACK";
+    const SECTION_WATCHER = "WATCHER";
+    const SECTION_UNKNOWN = "UNKNOWN";
 
 	/**
 	 * Constructor.
@@ -43,7 +67,8 @@ class BaseController extends Controller
 		// $this->session = \Config\Services::session();
 	}
 
-    public function reply($data = null, $code = 200, $msg = null, $unlock = true) {
+    public function reply($data = null, $code = 200, $msg = null, $unlock = true)
+    {
         $response = new \stdClass();
         $response->message = $msg;
         $response->code = $code;
@@ -56,26 +81,29 @@ class BaseController extends Controller
         return $this->response->setStatusCode($code)->setJSON($response);
     }
 
-    protected function lock($id) {
-        if (!isset($id)) {
-            $id = $this->request->board->id; 
-        }
+    protected function lock($id)
+    {
         $user = $this->request->user;
 
-        $lockedBy = cache($id->id);
+        $lockedBy = cache($id);
 
         if ($lockedBy) {
             $this->reply($lockedBy, 423, "WRN-RESOURCE-LOCKED", false)->send();
             die();
         }
-
+        $this->lockId = $id;
         cache()->save($id, $user, 60);
     }
 
-    protected function unlock() {
-        $board = $this->request->board;
-        if ($board && $board->id) {
-            cache()->delete($board->id);
+    protected function unlock()
+    {
+        if ($this->lockId) {
+            cache()->delete($this->lockId);
         }
+    }
+
+    protected function addActivity($parent = "", $item, $action, $section)
+    {
+        Events::trigger('activity', $parent, $action, $section, $item);
     }
 }

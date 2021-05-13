@@ -169,7 +169,7 @@
 			]
 		},
 		{
-			"name": "3. Documents",
+			"name": "2. Documents",
 			"item": [
 				{
 					"name": "Get All Documents",
@@ -198,6 +198,18 @@
 				},
 				{
 					"name": "Get Single Document",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"project\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -392,31 +404,11 @@
 						}
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "2. Boards",
-			"item": [
+				},
 				{
-					"name": "Create Board",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"board\", jsonData.data.id);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
+					"name": "Delete Document/Folder",
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
+						"method": "DELETE",
 						"header": [
 							{
 								"key": "Authorization",
@@ -424,31 +416,28 @@
 								"type": "text"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"title\": \"The Board\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards",
+							"raw": "{{server}}/api/{{ver}}/documents/5114bbde-0a1c-4a6c-8d10-d00631188104",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"boards"
+								"documents",
+								"5114bbde-0a1c-4a6c-8d10-d00631188104"
 							]
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "2. Projects",
+			"item": [
 				{
-					"name": "Get Single Board",
+					"name": "Get Project",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -459,22 +448,22 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}",
+							"raw": "{{server}}/api/{{ver}}/projects/5114bbde-0a1c-4a6c-8d10-d00631188104",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"boards",
-								"{{board}}"
+								"projects",
+								"5114bbde-0a1c-4a6c-8d10-d00631188104"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Update Board",
+					"name": "Update Project",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -494,208 +483,15 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9",
+							"raw": "{{server}}/api/{{ver}}/projects/35436ec7-d32b-4f50-bba5-b5f276f289f9",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"boards",
+								"projects",
 								"35436ec7-d32b-4f50-bba5-b5f276f289f9"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Tags",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/tags",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
-								"tags"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add Tag",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"title\": \"New Tag\",\n\t\"color\": \"#000000\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tags",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"{{board}}",
-								"tags"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Tag",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"title\": \"Update New Tag\",\n\t\"color\": \"#ffffff\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tags/8decf5f4-91c7-11ea-b366-0d4c57d00ccc",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"{{board}}",
-								"tags",
-								"8decf5f4-91c7-11ea-b366-0d4c57d00ccc"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Stacks order",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "[\"60166fa5-918c-485c-9bea-4ce4ffefea47\", \"9b8004ea-89e8-11ea-be55-2474dae7f827\"]",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/35436ec7-d32b-4f50-bba5-b5f276f289f9/order-stacks",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
-								"order-stacks"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Tasks order",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    // stack: [taskID, taskID, ...]\n\t\"60166fa5-918c-485c-9bea-4ce4ffefea47\": [\"ce8d16f6-9222-11ea-8c1c-870eb04b6723\", \"f15ce382-8a11-11ea-b94d-a87f862112f6\", \"fcdb8844-9222-11ea-8c1c-870eb04b6723\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/order-tasks",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"{{board}}",
-								"order-tasks"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add Board member/s",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/members",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"{{board}}",
-								"members"
 							]
 						}
 					},
@@ -749,6 +545,42 @@
 								"boards",
 								"{{board}}",
 								"stacks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Stacks order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\"60166fa5-918c-485c-9bea-4ce4ffefea47\", \"9b8004ea-89e8-11ea-be55-2474dae7f827\"]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/projects/35436ec7-d32b-4f50-bba5-b5f276f289f9/order-stacks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"projects",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"order-stacks"
 							]
 						}
 					},
@@ -955,6 +787,42 @@
 		{
 			"name": "4. Tasks",
 			"item": [
+				{
+					"name": "Tasks order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    // stack: [taskID, taskID, ...]\n\t\"60166fa5-918c-485c-9bea-4ce4ffefea47\": [\"ce8d16f6-9222-11ea-8c1c-870eb04b6723\", \"f15ce382-8a11-11ea-b94d-a87f862112f6\", \"fcdb8844-9222-11ea-8c1c-870eb04b6723\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/order-tasks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"{{board}}",
+								"order-tasks"
+							]
+						}
+					},
+					"response": []
+				},
 				{
 					"name": "Add Task",
 					"event": [
@@ -1319,6 +1187,145 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Tags",
+			"item": [
+				{
+					"name": "Get Tags",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/projects/35436ec7-d32b-4f50-bba5-b5f276f289f9/tags",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"projects",
+								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"tags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Tag",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"New Tag\",\n\t\"color\": \"#000000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/projects/{{board}}/tags",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"projects",
+								"{{board}}",
+								"tags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Tag",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Update New Tag\",\n\t\"color\": \"#ffffff\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/projects/{{board}}/tags/8decf5f4-91c7-11ea-b366-0d4c57d00ccc",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"projects",
+								"{{board}}",
+								"tags",
+								"8decf5f4-91c7-11ea-b366-0d4c57d00ccc"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Members",
+			"item": [
+				{
+					"name": "Add Project member/s",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/members",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"projects",
+								"{{project}}",
+								"members"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "People",
+			"item": []
+		},
+		{
+			"name": "Notepad",
+			"item": []
 		}
 	],
 	"event": [

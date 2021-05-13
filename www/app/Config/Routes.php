@@ -32,17 +32,33 @@ $routes->setAutoRoute(true);
 // We get a performance increase by specifying the default
 // route since we don"t have to scan directories.
 $routes->get("/", "Home::index");
+
+// 0. PING
 // used by the client to validate/test the server URL
 $routes->get("/ping", "PingController::index");
 
 // POLLING
     $routes->get("/api/v1/updates", "UpdatesController::updates_v1");
 
-// USER
+// 1. USER
     // login user
     $routes->post("/login", "UserController::login_v1");
     // register user
     $routes->post("/register", "UserController::register_v1");
+
+// 2. DOCUMENTS
+    // get all documents
+    $routes->get("/api/v1/documents", "DocumentsController::all_v1");
+    // get a specific document
+    $routes->get("/api/v1/documents/(:any)", "DocumentsController::one_v1/$1");
+    // update a document
+    $routes->put("/api/v1/documents", "DocumentsController::update_v1");
+    // create a document
+    $routes->post("/api/v1/documents", "DocumentsController::add_v1");
+    // reorder documents
+    $routes->post("/api/v1/documents/order", "DocumentsController::order_v1");
+    // delete a document or folder
+    $routes->delete("/api/v1/documents/(:any)", "DocumentsController::delete_v1/$1");
 
 // MEMBERS
     // get all members
@@ -73,6 +89,10 @@ $routes->get("/ping", "PingController::index");
     $routes->put("/api/v1/stacks/(:any)", "StacksController::update_v1/$1");
     // delete a stack
     $routes->delete("/api/v1/stacks/(:any)", "StacksController::delete_v1/$1");
+    // save stacks order inside a project
+    $routes->post("/api/v1/projects/(:any)/order-stacks", "BoardsController::order_stacks_v1/$1");
+    // save tasks order inside a project
+    $routes->post("/api/v1/projects/(:any)/order-tasks", "BoardsController::order_tasks_v1/$1/$2");
 
 // TASKS
     // get watchers for the task
@@ -94,27 +114,11 @@ $routes->get("/ping", "PingController::index");
     // delete a task
     $routes->delete("/api/v1/tasks/(:any)", "TasksController::delete_v1/$1");
 
-// DOCUMENTS
-    // get all documents
-    $routes->get("/api/v1/documents", "DocumentsController::all_v1");
-    // get a specific document
-    $routes->get("/api/v1/documents/(:any)", "DocumentsController::one_v1/$1");
-    // update a document
-    $routes->put("/api/v1/documents", "DocumentsController::update_v1");
-    // create a document
-    $routes->post("/api/v1/documents", "DocumentsController::add_v1");
-    // reorder documents
-    $routes->post("/api/v1/documents/order", "DocumentsController::order_v1");
-
-// BOARDS
-    // get a specific board
-    $routes->get("/api/v1/boards/(:any)", "BoardsController::one_v1/$1");
-    // update a board
-    $routes->put("/api/v1/boards/(:any)", "BoardsController::update_v1/$1");
-    // save stacks order inside a board
-    $routes->post("/api/v1/boards/(:any)/order-stacks", "BoardsController::order_stacks_v1/$1");
-    // save tasks order inside a board
-    $routes->post("/api/v1/boards/(:any)/order-tasks", "BoardsController::order_tasks_v1/$1/$2");
+// PROJECT
+    // retreives a project
+    $routes->get("/api/v1/projects/(:any)", "ProjectsController::one_v1/$1");
+    // update a project
+    $routes->put("/api/v1/projects/(:any)", "ProjectsController::update_v1/$1");
 
 
 // FILES

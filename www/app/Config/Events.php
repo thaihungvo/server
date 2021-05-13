@@ -44,70 +44,20 @@ Events::on('pre_system', function () {
 		// Services::toolbar()->respond();
     }
 
-    Events::on('activity', function($item, $action, $section, $board = "") {
+    Events::on('activity', function($item, $action, $section, $parent = "") {
         $db = \Config\Database::connect();
 
         $request = \Config\Services::request();
         $user = $request->user;
-
-        if (!strlen($board)) {
-            $board = $request->board->id;
-        }
         
         $query = array(
-            "INSERT INTO ". $db->prefixTable("activities") ." (`user`, `instance`, `board`, `item`, `action`, `section`, `created`)",
-            "VALUES ('".$db->escapeString($user->id)."', '".$db->escapeString($user->instance)."', '".$db->escapeString($board)."', '".$db->escapeString($item)."', '".$db->escapeString($action)."', '".$db->escapeString($section)."', NOW())"
+            "INSERT INTO ". $db->prefixTable("activities") ." (`user`, `instance`, `parent`, `item`, `action`, `section`, `created`)",
+            "VALUES ('".$db->escapeString($user->id)."', '".$db->escapeString($user->instance)."', '".$db->escapeString($parent)."', '".$db->escapeString($item)."', '".$db->escapeString($action)."', '".$db->escapeString($section)."', NOW())"
         );
 
         $db->query(implode(" ", $query));
         $db->close();
 
         cache()->save("last-update", strtotime("now"));
-    });
-
-    // Boards
-    Events::on('AFTER_board_ADD', function($board) {
-        Events::trigger('activity', $board, "CREATE", "BOARDS", $board);
-    });
-
-    Events::on('AFTER_board_UPDATE', function($board) {
-        Events::trigger('activity', $board, "UPDATE", "BOARD", $board);
-    });
-
-    // Stacks
-    Events::on('AFTER_stacks_ORDER', function($board) {
-        Events::trigger('activity', $board, "UPDATE", "BOARD", $board);
-    });
-
-    // Stack
-    Events::on('AFTER_stack_UPDATE', function($stack, $board) {
-        Events::trigger('activity', $stack, "UPDATE", "STACK", $board);
-        Events::trigger('activity', $board, "UPDATE", "BOARD", $board);
-    });
-
-    // Tasks
-    Events::on('AFTER_tasks_ORDER', function($board) {
-        Events::trigger('activity', $board, "UPDATE", "BOARD", $board);
-    });
-
-    // Task
-    Events::on('AFTER_task_ADD', function($task) {
-        Events::trigger('activity', $task, "CREATE", "TASK");
-    });
-
-    Events::on('AFTER_task_DELETE', function($task) {
-        Events::trigger('activity', $task, "DELETE", "TASK");
-    });
-
-    Events::on('AFTER_task_UPDATE', function($task) {
-        Events::trigger('activity', $task, "UPDATE", "TASK");
-    });
-
-    Events::on('AFTER_task_watcher_ADD', function($task) {
-        Events::trigger('activity', $task, "CREATE", "WATCHER");
-    });
-
-    Events::on('AFTER_task_watcher_REMOVE', function($task) {
-        Events::trigger('activity', $task, "DELETE", "WATCHER");
     });
 });

@@ -137,17 +137,17 @@ if (!function_exists('documents_load_document'))
 {
     function documents_load_document($recordID, $user)
     {
-        $DocumentModel = new DocumentModel();
+        $documentModel = new DocumentModel();
 
-        $recordBuilder = $DocumentModel->builder();
-        $recordQuery = $recordBuilder->select("records.*")
-            ->join("documents_members", "documents_members.record = records.id", "left")
-            ->where("records.deleted", NULL)
-            ->where("records.id", $recordID)
+        $recordBuilder = $documentModel->builder();
+        $recordQuery = $recordBuilder->select("documents.*")
+            ->join("documents_members", "documents_members.document = documents.id", "left")
+            ->where("documents.deleted", NULL)
+            ->where("documents.id", $recordID)
             ->groupStart()
-                ->where("records.owner", $user->id)
+                ->where("documents.owner", $user->id)
                 ->orWhere("documents_members.user", $user->id)
-                ->orWhere("records.everyone", 1)
+                ->orWhere("documents.everyone", 1)
             ->groupEnd()
             ->limit(1)
             ->get();
@@ -159,5 +159,23 @@ if (!function_exists('documents_load_document'))
         }
 
         return $records[0];
+    }
+}
+
+if (!function_exists('documents_delete'))
+{
+    function documents_delete($record)
+    {
+        $documentModel = new DocumentModel();
+
+        try {
+            if ($documentModel->delete([$record->id]) === false) {
+                return $documentModel->errors();
+            }    
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+
+        return true;
     }
 }

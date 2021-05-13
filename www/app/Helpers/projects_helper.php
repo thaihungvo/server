@@ -83,3 +83,35 @@ if (!function_exists('projects_load'))
         return $record;
     }
 }
+
+if (!function_exists('projects_update'))
+{
+    function projects_update($project)
+    {
+        // $user = $this->request->user;
+        // $board = $this->request->board;
+        
+        // $boardModel = new BoardModel();
+
+        // $boardData = $this->request->getJSON();
+
+        // if (!$this->set_tags($board->id, $boardData->tags)) {
+        //     return $this->reply(null, 500, "ERR-BOARD-TAGS");   
+        // }
+
+        // unset($boardData->id); // we enforce this in another way
+        // unset($boardData->deleted); // this should pass via the designated route
+        // unset($boardData->owner); // this should pass via the designated route
+        // unset($boardData->tags);
+
+        // try {
+        //     if ($boardModel->update($board->id, $boardData) === false) {
+        //         return $this->reply(null, 404, "ERR-BOARDS-UPDATE");
+        //     }
+        // } catch (\Exception $e) {
+        //     return $this->reply($e->getMessage(), 500, "ERR-BOARD-UPDATE");
+        // }
+
+        // Events::trigger("AFTER_board_UPDATE", $board->id);
+    }
+}

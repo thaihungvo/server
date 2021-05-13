@@ -67,20 +67,8 @@ class DocumentsController extends BaseController
         helper("documents");
 
         $document = documents_load_document($id, $user);
-        $data = null;
 
-        switch ($document->type) {
-            case "project":
-                helper("projects");
-                $data = projects_load($document);
-                break;
-            
-            default:
-                # code...
-                break;
-        }
-
-        return $this->reply($data);
+        return $this->reply($document);
     }
 
     public function add_v1()
@@ -96,23 +84,34 @@ class DocumentsController extends BaseController
             return $this->reply("Document type missing or not valid", 500, "ERR-DOCUMENTS-CREATE");
         }
 
-        if ($recordData->type === "folder") {
-            $result = documents_create_folder($recordData);
-        } else {
-            if (!isset($recordData->folder)) {
-                return $this->reply("Missing folder id", 500, "ERR-DOCUMENTS-CREATE");
-            }
-
-            // TODO: check permission on folder
-
-            $result = documents_create_document($recordData);
+        if ($recordData->type !== $this::TYPE_FOLDER && !isset($recordData->folder)) {
+            return $this->reply("Missing folder id", 500, "ERR-DOCUMENTS-CREATE");
         }
 
-        if ($result === true) {
-            return $this->reply(true);
+        switch ($recordData->type) {
+            case $this::TYPE_FOLDER:
+                $result = documents_create_folder($recordData);
+                break;
+            case $this::TYPE_PROJECT:
+                // TODO: check permission on folder
+                $result = documents_create_document($recordData);
+                break;
         }
 
-        return $this->reply($result, 500, "ERR-DOCUMENTS-CREATE");
+        if ($result !== true) {
+            return $this->reply($result, 500, "ERR-DOCUMENTS-CREATE");
+        }
+        
+        switch ($recordData->type) {
+            case $this::TYPE_FOLDER:
+                $this->addActivity($recordData->folder, $recordData->id, $this::ACTION_CREATE, $this::SECTION_FOLDER);
+                break;
+            case $this::TYPE_PROJECT:
+                $this->addActivity($recordData->folder, $recordData->id, $this::ACTION_CREATE, $this::SECTION_DOCUMENT);
+                break;
+        }
+        
+        return $this->reply(true);
     }
 
     public function update_v1()
@@ -132,11 +131,14 @@ class DocumentsController extends BaseController
             return $this->reply("Document `type` missing or not valid", 500, "ERR-DOCUMENTS-CREATE");
         }
 
-        if ($recordData->type === "folder") {
-            // TODO: check for folder permission to edit
-            $result = documents_update_folder($recordData);
-        } else {
-            $result = documents_update_document($recordData);
+        switch ($recordData->type) {
+            case $this::TYPE_FOLDER:
+                // TODO: check for folder permission to edit
+                $result = documents_update_folder($recordData);
+                break;
+            case $this::TYPE_PROJECT:
+                $result = documents_update_document($recordData);
+                break;
         }
 
         if ($result === true) {
@@ -237,6 +239,27 @@ class DocumentsController extends BaseController
         return $this->reply(true);
     }
 
+    public function delete_v1($id)
+    {
+        $user = $this->request->user;
+        helper("documents");
+
+        $document = documents_load_document($id, $user);
+
+        if (!isset($document->id)) {
+            return $this->reply("Document not found", 404, "ERR-DOCUMENTS-DELETE");
+        }
+
+        $result = documents_delete($document);
+
+        if ($result !== true) {
+            return $this->reply($result, 500, "ERR-DOCUMENTS-DELETE");
+        }
+
+        return $this->reply(true);
+    }
+
+    /*
     private function add_update_v1($update = false)
     {
         helper('uuid');
@@ -323,23 +346,23 @@ class DocumentsController extends BaseController
             $recordOrder->record = $record->id;
             $recordOrder->order = 1;
 
-            $recordOrderModel = new RecordOrderModel();
-            $lastOrder = $recordOrderModel->where("folder", $recordData->folder)
-                ->orderBy("order", "desc")
-                ->first();
+            // $recordOrderModel = new RecordOrderModel();
+            // $lastOrder = $recordOrderModel->where("folder", $recordData->folder)
+            //     ->orderBy("order", "desc")
+            //     ->first();
 
-            if ($lastOrder) {
-                $recordOrder->order = intval($lastOrder->order) + 1;
-            }
+            // if ($lastOrder) {
+            //     $recordOrder->order = intval($lastOrder->order) + 1;
+            // }
 
-            try {
-                if ($recordOrderModel->insert($recordOrder) === false) {
-                    $errors = $recordOrderModel->errors();
-                    return $this->reply($errors, 500, "ERR-RECORD-ORDER");
-                }
-            } catch (\Exception $e) {
-                return $this->reply($e->getMessage(), 500, "ERR-RECORD-ORDER");
-            }
+            // try {
+            //     if ($recordOrderModel->insert($recordOrder) === false) {
+            //         $errors = $recordOrderModel->errors();
+            //         return $this->reply($errors, 500, "ERR-RECORD-ORDER");
+            //     }
+            // } catch (\Exception $e) {
+            //     return $this->reply($e->getMessage(), 500, "ERR-RECORD-ORDER");
+            // }
 
             // if members are defined then assigned them to the board
             if (count($membersIDs)) {
@@ -369,4 +392,5 @@ class DocumentsController extends BaseController
 
         return $this->reply($record, 200, "OK-RECORD-CREATE-SUCCESS");
     }
+    */
 }
