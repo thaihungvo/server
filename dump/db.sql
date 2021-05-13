@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.26)
 # Database: stacks
-# Generation Time: 2021-05-11 06:23:22 +0000
+# Generation Time: 2021-05-13 13:01:04 +0000
 # ************************************************************
 
 
@@ -29,23 +29,14 @@ CREATE TABLE `stk_activities` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user` int(10) unsigned NOT NULL,
   `instance` char(36) NOT NULL DEFAULT '',
-  `board` char(36) NOT NULL DEFAULT '',
+  `parent` char(36) NOT NULL DEFAULT '',
   `item` char(36) DEFAULT NULL,
   `action` enum('CREATE','UPDATE','DELETE','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
-  `section` enum('BOARDS','BOARD','TASK','STACK','WATCHER','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
+  `section` enum('DOCUMENTS','FOLDER','DOCUMENT','PROJECT','NOTEPAD','PEOPLE','TASK','STACK','WATCHER','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
   `created` datetime NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-LOCK TABLES `stk_activities` WRITE;
-/*!40000 ALTER TABLE `stk_activities` DISABLE KEYS */;
-
-INSERT INTO `stk_activities` (`id`, `user`, `instance`, `board`, `item`, `action`, `section`, `created`)
-VALUES
-	(1,1,'19e78267-9c73-4009-befd-f0c8dbce8421','5114bbde-0a1c-4a6c-8d10-d00631188104','5114bbde-0a1c-4a6c-8d10-d00631188104','CREATE','BOARDS','2020-11-12 12:28:53');
-
-/*!40000 ALTER TABLE `stk_activities` ENABLE KEYS */;
-UNLOCK TABLES;
 
 
 # Dump of table stk_attachments
@@ -95,7 +86,7 @@ LOCK TABLES `stk_documents` WRITE;
 
 INSERT INTO `stk_documents` (`id`, `title`, `type`, `owner`, `everyone`, `folder`, `order`, `created`, `updated`, `deleted`)
 VALUES
-	('5114bbde-0a1c-4a6c-8d10-d00631188104','Hello world 2','project',1,1,'d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',2,'2020-11-12 12:28:53','2021-04-20 16:27:07',NULL),
+	('5114bbde-0a1c-4a6c-8d10-d00631188104','Hello world 2','project',1,1,'d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',2,'2020-11-12 12:28:53','2021-05-13 14:59:13','2021-05-13 14:59:13'),
 	('a00b4007-ec02-4d15-921d-43d45e35909e','Untitled board','project',1,1,'7d2ea375-725f-402f-a152-a0a3afd36a12',1,'2020-11-13 23:03:14','2020-11-13 23:03:14',NULL),
 	('d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Some project 2','project',1,1,'d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',1,'2021-04-20 14:54:45','2021-04-20 16:20:39',NULL);
 
