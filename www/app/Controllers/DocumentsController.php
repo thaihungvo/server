@@ -8,23 +8,7 @@ class DocumentsController extends BaseController
 	{
         $user = $this->request->user;
 
-        // // get all the folders
-        // $folderModel = new FolderModel();
-        // $folderBuilder = $folderModel->builder();
-        // $folderQuery = $folderBuilder->select("folders.id, folders.title, folders.created, folders.updated")
-        //     ->join("folders_members", "folders_members.folder = folders.id", "left")
-        //     ->where("folders.deleted", NULL)
-        //     ->groupStart()
-        //         ->where("folders.owner", $user->id)
-        //         ->orWhere("folders_members.user", $user->id)
-        //         ->orWhere("folders.everyone", 1)
-        //     ->groupEnd()
-        //     ->groupBy("folders.id")
-        //     ->orderBy("folders.order", "ASC")
-        //     ->get();
-        // $folders = $folderQuery->getResult();
-
-        // get all the records
+        // get all the documents
         $documentModel = new DocumentModel();
         $documentBuilder = $documentModel->builder();
         $documentQuery = $documentBuilder->select("documents.id, documents.title, documents.type, documents.updated, documents.created, documents.folder, documents.order")
@@ -137,10 +121,6 @@ class DocumentsController extends BaseController
     {
         $orderData = $this->request->getJSON();
         $db = db_connect();
-
-        // get all folders
-        $folderModel = new FolderModel();
-        $folders = $folderModel->orderBy("order", "asc")->findAll();
         
         // get all documents
         $documentModel = new DocumentModel();
@@ -152,10 +132,14 @@ class DocumentsController extends BaseController
         $folderOrder = 1;
         
         foreach ($orderData as $folderID => $documentsOrder) {
-            foreach ($folders as &$currentFolder) {
-                if ($currentFolder->id === $folderID && $currentFolder->order != $folderOrder) {
-                    $currentFolder->order = $folderOrder;
-                    $foldersNeedUpdate[] = $currentFolder;
+            foreach ($documents as &$document) {
+                if (
+                    $document->type === $this::TYPE_FOLDER &&
+                    $document->id === $folderID &&
+                    $document->order != $folderOrder
+                ) {
+                    $document->order = $folderOrder;
+                    $foldersNeedUpdate[] = $document;
                 }
             }
 
@@ -163,7 +147,11 @@ class DocumentsController extends BaseController
 
             foreach ($documentsOrder as $documentID) {
                 foreach ($documents as &$document) {
-                    if ($document->id === $documentID && ($document->order != $documentOrder || $document->folder != $folderID)) {
+                    if (
+                        $document->type !== $this::TYPE_FOLDER &&
+                        $document->id === $documentID &&
+                        ($document->order != $documentOrder || $document->folder != $folderID)
+                    ) {
                         $document->order = $documentOrder;
                         $document->folder = $folderID;
                         $documentsNeedUpdate[] = $document;
@@ -180,7 +168,7 @@ class DocumentsController extends BaseController
         // update folders order
         if (count($foldersNeedUpdate)) {
             $foldersOrderQuery = array(
-                "INSERT INTO ".$db->prefixTable("folders")." (`id`, `order`) VALUES"
+                "INSERT INTO ".$db->prefixTable("documents")." (`id`, `order`) VALUES"
             );
 
             foreach ($foldersNeedUpdate as $i => $folder) {
@@ -226,9 +214,10 @@ class DocumentsController extends BaseController
 
     public function delete_v1($id)
     {
+        $user = $this->request->user;
         helper("documents");
 
-        $document = documents_load($id);
+        $document = documents_load($id, $user);
 
         if (!isset($document->id)) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-DELETE");
