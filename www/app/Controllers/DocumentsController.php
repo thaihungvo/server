@@ -1,9 +1,6 @@
 <?php namespace App\Controllers;
 
-use CodeIgniter\Events\Events;
-use App\Models\FolderModel;
 use App\Models\DocumentModel;
-use App\Models\RecordMemberModel;
 
 class DocumentsController extends BaseController
 {
@@ -11,21 +8,21 @@ class DocumentsController extends BaseController
 	{
         $user = $this->request->user;
 
-        // get all the folders
-        $folderModel = new FolderModel();
-        $folderBuilder = $folderModel->builder();
-        $folderQuery = $folderBuilder->select("folders.id, folders.title, folders.created, folders.updated")
-            ->join("folders_members", "folders_members.folder = folders.id", "left")
-            ->where("folders.deleted", NULL)
-            ->groupStart()
-                ->where("folders.owner", $user->id)
-                ->orWhere("folders_members.user", $user->id)
-                ->orWhere("folders.everyone", 1)
-            ->groupEnd()
-            ->groupBy("folders.id")
-            ->orderBy("folders.order", "ASC")
-            ->get();
-        $folders = $folderQuery->getResult();
+        // // get all the folders
+        // $folderModel = new FolderModel();
+        // $folderBuilder = $folderModel->builder();
+        // $folderQuery = $folderBuilder->select("folders.id, folders.title, folders.created, folders.updated")
+        //     ->join("folders_members", "folders_members.folder = folders.id", "left")
+        //     ->where("folders.deleted", NULL)
+        //     ->groupStart()
+        //         ->where("folders.owner", $user->id)
+        //         ->orWhere("folders_members.user", $user->id)
+        //         ->orWhere("folders.everyone", 1)
+        //     ->groupEnd()
+        //     ->groupBy("folders.id")
+        //     ->orderBy("folders.order", "ASC")
+        //     ->get();
+        // $folders = $folderQuery->getResult();
 
         // get all the records
         $documentModel = new DocumentModel();
@@ -44,13 +41,20 @@ class DocumentsController extends BaseController
             ->get();
         $documents = $documentQuery->getResult();
 
+        $folders = array();
+        foreach ($documents as $document) {
+            if ($document->type === $this::TYPE_FOLDER) {
+                $folders[] = $document;
+            }
+        }
+
         foreach ($folders as &$folder) {
             if (!isset($folder->records)) {
                 $folder->records = array();
             }
-
+            unset($folder->order);
             foreach ($documents as &$document) {
-                if ($document->folder === $folder->id) {
+                if ($document->type !== $this::TYPE_FOLDER && $document->folder === $folder->id) {
                     unset($document->folder);
                     unset($document->order);
                     $folder->records[] = $document;
@@ -66,7 +70,7 @@ class DocumentsController extends BaseController
         $user = $this->request->user;
         helper("documents");
 
-        $document = documents_load_document($id, $user);
+        $document = documents_load($id, $user);
 
         return $this->reply($document);
     }
@@ -88,28 +92,13 @@ class DocumentsController extends BaseController
             return $this->reply("Missing folder id", 500, "ERR-DOCUMENTS-CREATE");
         }
 
-        switch ($recordData->type) {
-            case $this::TYPE_FOLDER:
-                $result = documents_create_folder($recordData);
-                break;
-            case $this::TYPE_PROJECT:
-                // TODO: check permission on folder
-                $result = documents_create_document($recordData);
-                break;
-        }
+        $result = documents_create($recordData);
 
         if ($result !== true) {
             return $this->reply($result, 500, "ERR-DOCUMENTS-CREATE");
         }
         
-        switch ($recordData->type) {
-            case $this::TYPE_FOLDER:
-                $this->addActivity($recordData->folder, $recordData->id, $this::ACTION_CREATE, $this::SECTION_FOLDER);
-                break;
-            case $this::TYPE_PROJECT:
-                $this->addActivity($recordData->folder, $recordData->id, $this::ACTION_CREATE, $this::SECTION_DOCUMENT);
-                break;
-        }
+        $this->addActivity($recordData->folder || "", $recordData->id, $this::ACTION_CREATE, $recordData->type);
         
         return $this->reply(true);
     }
@@ -119,27 +108,23 @@ class DocumentsController extends BaseController
         $recordData = $this->request->getJSON();
         // check for unknown record types
         if (!isset($recordData->id)) {
-            return $this->reply("Document `id` missing or not valid", 500, "ERR-DOCUMENTS-CREATE");
+            return $this->reply("Document `id` missing or not valid", 500, "ERR-DOCUMENTS-UPDATE");
         }
 
-        // $this->lock($recordData->id);
+        $this->lock($recordData->id);
 
         helper("documents");
 
         // check for unknown record types
         if (!documents_validate_type($recordData->type)) {
-            return $this->reply("Document `type` missing or not valid", 500, "ERR-DOCUMENTS-CREATE");
+            return $this->reply("Document `type` missing or not valid", 500, "ERR-DOCUMENTS-UPDATE");
         }
 
-        switch ($recordData->type) {
-            case $this::TYPE_FOLDER:
-                // TODO: check for folder permission to edit
-                $result = documents_update_folder($recordData);
-                break;
-            case $this::TYPE_PROJECT:
-                $result = documents_update_document($recordData);
-                break;
+        if ($recordData->type !== $this::TYPE_FOLDER && !isset($recordData->folder)) {
+            return $this->reply("Document `folder` missing or not valid", 500, "ERR-DOCUMENTS-UPDATE");
         }
+
+        $result = documents_update($recordData);
 
         if ($result === true) {
             return $this->reply(true);
@@ -241,10 +226,9 @@ class DocumentsController extends BaseController
 
     public function delete_v1($id)
     {
-        $user = $this->request->user;
         helper("documents");
 
-        $document = documents_load_document($id, $user);
+        $document = documents_load($id);
 
         if (!isset($document->id)) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-DELETE");
@@ -254,6 +238,14 @@ class DocumentsController extends BaseController
 
         if ($result !== true) {
             return $this->reply($result, 500, "ERR-DOCUMENTS-DELETE");
+        }
+
+        switch ($document->type) {
+            case $this::TYPE_FOLDER:
+                break;
+            case $this::TYPE_PROJECT:
+                $this->addActivity($document->folder, $document->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENT);
+                break;
         }
 
         return $this->reply(true);

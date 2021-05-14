@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.26)
 # Database: stacks
-# Generation Time: 2021-05-13 13:01:04 +0000
+# Generation Time: 2021-05-14 08:03:43 +0000
 # ************************************************************
 
 
@@ -32,11 +32,27 @@ CREATE TABLE `stk_activities` (
   `parent` char(36) NOT NULL DEFAULT '',
   `item` char(36) DEFAULT NULL,
   `action` enum('CREATE','UPDATE','DELETE','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
-  `section` enum('DOCUMENTS','FOLDER','DOCUMENT','PROJECT','NOTEPAD','PEOPLE','TASK','STACK','WATCHER','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
+  `section` varchar(10) NOT NULL DEFAULT 'UNKNOWN',
   `created` datetime NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+LOCK TABLES `stk_activities` WRITE;
+/*!40000 ALTER TABLE `stk_activities` DISABLE KEYS */;
+
+INSERT INTO `stk_activities` (`id`, `user`, `instance`, `parent`, `item`, `action`, `section`, `created`)
+VALUES
+	(1,1,'79b1c371-2772-4603-a27e-78ada82fdae1','5114bbde-0a1c-4a6c-8d10-d00631188104','d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','DELETE','document','2021-05-13 15:11:43'),
+	(2,1,'79b1c371-2772-4603-a27e-78ada82fdae1','c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','','CREATE','folder','2021-05-13 15:23:22'),
+	(3,1,'79b1c371-2772-4603-a27e-78ada82fdae1','d3da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','','CREATE','folder','2021-05-13 15:23:53'),
+	(4,1,'79b1c371-2772-4603-a27e-78ada82fdae1','c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','','CREATE','folder','2021-05-13 15:24:15'),
+	(5,1,'79b1c371-2772-4603-a27e-78ada82fdae1','d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:26:19'),
+	(6,1,'79b1c371-2772-4603-a27e-78ada82fdae1','d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:27:40'),
+	(7,1,'79b1c371-2772-4603-a27e-78ada82fdae1','d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:28:43'),
+	(8,1,'79b1c371-2772-4603-a27e-78ada82fdae1','w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:29:10');
+
+/*!40000 ALTER TABLE `stk_activities` ENABLE KEYS */;
+UNLOCK TABLES;
 
 
 # Dump of table stk_attachments
@@ -70,7 +86,7 @@ DROP TABLE IF EXISTS `stk_documents`;
 CREATE TABLE `stk_documents` (
   `id` char(36) NOT NULL DEFAULT '',
   `title` varchar(100) NOT NULL,
-  `type` enum('project','notepad','people') NOT NULL DEFAULT 'project',
+  `type` enum('folder','project','notepad','people') NOT NULL DEFAULT 'project',
   `owner` int(11) NOT NULL,
   `everyone` tinyint(1) NOT NULL DEFAULT '1',
   `folder` char(36) NOT NULL,
@@ -86,9 +102,9 @@ LOCK TABLES `stk_documents` WRITE;
 
 INSERT INTO `stk_documents` (`id`, `title`, `type`, `owner`, `everyone`, `folder`, `order`, `created`, `updated`, `deleted`)
 VALUES
-	('5114bbde-0a1c-4a6c-8d10-d00631188104','Hello world 2','project',1,1,'d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',2,'2020-11-12 12:28:53','2021-05-13 14:59:13','2021-05-13 14:59:13'),
-	('a00b4007-ec02-4d15-921d-43d45e35909e','Untitled board','project',1,1,'7d2ea375-725f-402f-a152-a0a3afd36a12',1,'2020-11-13 23:03:14','2020-11-13 23:03:14',NULL),
-	('d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Some project 2','project',1,1,'d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',1,'2021-04-20 14:54:45','2021-04-20 16:20:39',NULL);
+	('c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Test Folder','folder',1,1,'',1,'2021-05-13 15:24:15','2021-05-13 15:24:15',NULL),
+	('d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Some project','project',1,1,'c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',1,'2021-05-13 15:28:43','2021-05-13 15:28:43',NULL),
+	('w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Some project 2','project',1,1,'c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',2,'2021-05-13 15:29:10','2021-05-13 15:29:10',NULL);
 
 /*!40000 ALTER TABLE `stk_documents` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -128,51 +144,6 @@ DROP TABLE IF EXISTS `stk_files`;
 CREATE TABLE `stk_files` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-
-# Dump of table stk_folders
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `stk_folders`;
-
-CREATE TABLE `stk_folders` (
-  `id` char(36) NOT NULL DEFAULT '',
-  `title` varchar(200) NOT NULL DEFAULT '',
-  `owner` int(11) NOT NULL,
-  `everyone` tinyint(1) NOT NULL DEFAULT '1',
-  `order` smallint(6) DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `updated` datetime DEFAULT NULL,
-  `deleted` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-LOCK TABLES `stk_folders` WRITE;
-/*!40000 ALTER TABLE `stk_folders` DISABLE KEYS */;
-
-INSERT INTO `stk_folders` (`id`, `title`, `owner`, `everyone`, `order`, `created`, `updated`, `deleted`)
-VALUES
-	('7d2ea375-725f-402f-a152-a0a3afd36a12','Boards 3a',1,1,2,NULL,'2021-04-22 10:23:10',NULL),
-	('d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Some folder 2',1,1,3,'2021-04-20 14:45:43','2021-04-20 16:16:20',NULL),
-	('f828b423-8daf-4f91-879c-9a835c69d346','Cristi',1,1,1,'2021-04-22 10:34:53','2021-04-22 10:35:07',NULL);
-
-/*!40000 ALTER TABLE `stk_folders` ENABLE KEYS */;
-UNLOCK TABLES;
-
-
-# Dump of table stk_folders_members
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `stk_folders_members`;
-
-CREATE TABLE `stk_folders_members` (
-  `folder` char(36) NOT NULL DEFAULT '',
-  `user` int(11) NOT NULL,
-  `created` datetime NOT NULL,
-  PRIMARY KEY (`user`),
-  UNIQUE KEY `folder` (`folder`,`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

@@ -41,16 +41,18 @@ class BaseController extends Controller
     const ACTION_DELETE = "DELETE";
     const ACTION_UNKNOWN = "UNKNOWN";
 
-    const SECTION_DOCUMENTS = "DOCUMENTS";
-    const SECTION_FOLDER = "FOLDER";
-    const SECTION_DOCUMENT = "DOCUMENT";
-    const SECTION_PROJECT = "PROJECT";
-    const SECTION_NOTEPAD = "NOTEPAD";
-    const SECTION_PEOPLE = "PEOPLE";
-    const SECTION_TASK = "TASK";
-    const SECTION_STACK = "STACK";
-    const SECTION_WATCHER = "WATCHER";
-    const SECTION_UNKNOWN = "UNKNOWN";
+    
+    const SECTION_FOLDER = "folder";
+    const SECTION_DOCUMENTS = "documents";
+    const SECTION_DOCUMENT = "document";
+    
+    const SECTION_PROJECT = "project";
+    const SECTION_NOTEPAD = "notepad";
+    const SECTION_PEOPLE = "prople";
+    const SECTION_TASK = "task";
+    const SECTION_STACK = "stack";
+    const SECTION_WATCHER = "watcher";
+    const SECTION_UNKNOWN = "unknown";
 
 	/**
 	 * Constructor.

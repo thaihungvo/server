@@ -10,7 +10,7 @@ class DocumentModel extends Model
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ["id", "title", "owner", "everyone", "type", "order"];
+    protected $allowedFields = ["id", "title", "folder", "owner", "everyone", "type", "order"];
 
     protected $useTimestamps = true;
     protected $createdField  = "created";

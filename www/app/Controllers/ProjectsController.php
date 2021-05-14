@@ -8,7 +8,7 @@ class ProjectsController extends BaseController
         helper("projects");
 
         $user = $this->request->user;
-        $document = documents_load_document($id, $user);
+        $document = documents_load($id, $user);
         
         $data = projects_load($document);
 
@@ -19,6 +19,6 @@ class ProjectsController extends BaseController
 	{
         $this->lock($id);
 
-        
+
 	}
 }
