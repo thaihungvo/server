@@ -33,12 +33,32 @@ if (!function_exists('documents_create'))
             $documentData->order = intval($lastOrder->order) + 1;
         }
 
+        $optionsResult = documents_create_options($documentData);
+        if ($optionsResult !== true) {
+            return $optionsResult;
+        }
+
         try {
             if ($documentModel->insert($documentData) === false) {
                 return $documentModel->errors();
             }
         } catch (\Exception $e) {
             return $e->getMessage();
+        }
+
+        return true;
+    }
+}
+
+if (!function_exists('documents_create_options'))
+{
+    function documents_create_options($documentData)
+    {
+        // PROJECT OPTIONS
+        if ($documentData->type === "project") {
+            helper("projects");
+
+            return projects_add_options($documentData->id, $documentData);
         }
 
         return true;
@@ -68,6 +88,13 @@ if (!function_exists('documents_update'))
         unset($document->type);
         unset($document->created);
 
+        // in case everyone was not set will enforce it to 1
+        if (!isset($document->everyone)) {
+            $document->everyone = 1;
+        } else {
+            $document->everyone = intval($document->everyone);
+        }
+
         try {
             if ($documentModel->update($document->id, $document) === false) {
                 return $documentModel->errors();
@@ -82,7 +109,7 @@ if (!function_exists('documents_update'))
 
 if (!function_exists('documents_load'))
 {
-    function documents_load($recordID, $user)
+    function documents_load($documentID, $user)
     {
         $documentModel = new DocumentModel();
 
@@ -90,7 +117,7 @@ if (!function_exists('documents_load'))
         $recordQuery = $recordBuilder->select("documents.*")
             ->join("documents_members", "documents_members.document = documents.id", "left")
             ->where("documents.deleted", NULL)
-            ->where("documents.id", $recordID)
+            ->where("documents.id", $documentID)
             ->groupStart()
                 ->where("documents.owner", $user->id)
                 ->orWhere("documents_members.user", $user->id)

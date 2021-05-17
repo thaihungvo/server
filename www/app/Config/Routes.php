@@ -73,7 +73,12 @@ $routes->get("/ping", "PingController::index");
     $routes->put("/api/v1/boards/(:any)/tags/(:any)", "TagsController::update_v1/$1/$2");
 
 // STACKS
+    // create a stack
+    $routes->post("/api/v1/projects/(:any)/stacks", "StacksController::add_v1/$1");
     // archive all completed tasks
+    // update a stack
+    $routes->put("/api/v1/projects/(:any)/stacks/(:any)", "StacksController::update_v1/$1/$2");
+    
     $routes->get("/api/v1/stacks/(:any)/archive-done", "StacksController::archive_done_v1/$1");
     // archive all tasks
     $routes->get("/api/v1/stacks/(:any)/archive-all", "StacksController::archive_all_v1/$1");
@@ -81,12 +86,8 @@ $routes->get("/ping", "PingController::index");
     $routes->get("/api/v1/stacks/(:any)/done", "StacksController::done_v1/$1");
     // mark all tasks as to do
     $routes->get("/api/v1/stacks/(:any)/todo", "StacksController::todo_v1/$1");
-    // get all stacks in a board
-    $routes->get("/api/v1/boards/(:any)/stacks", "StacksController::all_v1/$1");
-    // create a stack
-    $routes->post("/api/v1/boards/(:any)/stacks", "StacksController::add_v1/$1");
-    // update a stack
-    $routes->put("/api/v1/stacks/(:any)", "StacksController::update_v1/$1");
+    // get all stacks in a project
+    $routes->get("/api/v1/projects/(:any)/stacks", "StacksController::all_v1/$1");
     // delete a stack
     $routes->delete("/api/v1/stacks/(:any)", "StacksController::delete_v1/$1");
     // save stacks order inside a project

@@ -37,10 +37,11 @@ class StacksController extends BaseController
 
     public function add_v1($id)
     {
-        $this->lock();
+        helper("documents");
+        $this->lock($id);
 
-        $board = $this->request->board;
         $user = $this->request->user;
+        $document = documents_load($id, $user);
 
         $stackModel = new StackModel();
         $stackData = $this->request->getJSON();
@@ -49,11 +50,19 @@ class StacksController extends BaseController
             $stackData->tag = json_encode($stackData->tag);
         }
 
-        helper('uuid');
+        $stackData->project = $document->id;
 
-        $stackData->board = $board->id;
+        if (!isset($stackData->order)) {
+            $lastOrder = $stackModel
+                ->where("project", $document->id)
+                ->orderBy("order", "desc")
+                ->first();
+
+            $stackData->order = intval($lastOrder->order) + 1;
+        }
 
         if (!isset($stackData->id)) {
+            helper('uuid');
             $stackData->id = uuid();
         }
 
@@ -66,56 +75,27 @@ class StacksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
 
-        // get the max order no. from all the stacks of the same board
-        $stackOrderModel = new StackOrderModel();
-        $builderStackOrderBuilder = $stackOrderModel->builder();
-        $query = $builderStackOrderBuilder
-            ->selectMax("order")
-            ->where("board", $board->id)
-            ->get();
-        $maxStacks = $query->getResult();
-
-        // created a new stack order object
-        $order = new \stdClass();
-        $order->board = $board->id;
-        $order->stack = $stackData->id;
-        $order->order = 1;
-
-        if (count($maxStacks)) {
-            // set the max order no. + 1
-            $order->order = (int)$maxStacks[0]->order + 1; 
-        }
-
-        // insert the new stack order object
-        try {
-            if ($builderStackOrderBuilder->insert($order) === false) {
-                $errors = $stackOrderModel->errors();
-                return $this->reply($errors, 500, "ERR-STACK-ORDER");    
-            }
-        } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-STACK-ORDER");
-        }
-
-        $stack = $stackModel->find($stackData->id);
-
+        $stackCollapsedModel = new StackCollapsedModel();
+        
         // create a default collapsed state
         $collapsed = [
-            "stack" => $stack->id,
+            "stack" => $stackData->id,
             "collapsed" => 0,
             "user" => $user->id
         ];
 
-        $stackCollapsedModel = new StackCollapsedModel();
         try {
             if ($stackCollapsedModel->insert($collapsed) === false) {
-                $errors = $stackOrderModel->errors();
-                return $this->reply($errors, 500, "ERR-STACK-COLLAPSED");    
+                $errors = $stackCollapsedModel->errors();
+                return $this->reply($errors, 500, "ERR-STACK-CREATE");    
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-STACK-COLLAPSED");
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
 
-        return $this->reply($stack, 200, "OK-STACK-CREATE-SUCCESS");
+        $stack = $stackModel->find($stackData->id);
+
+        return $this->reply($stack);
     }
 
     public function update_v1($idStack)
@@ -323,7 +303,7 @@ class StacksController extends BaseController
 
     public function delete_v1($idStack)
     {
-        $this->lock();
+        $this->lock($idStack);
 
         $board = $this->request->board;
 
@@ -352,10 +332,6 @@ class StacksController extends BaseController
                 return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE-TASKS-ERROR");
             }
         }
-
-        // we don't need to remove the tasks and stacks order 
-        // since we're not actually removing the items from the db
-        // only marking them as deleted
 
         // delete selected stack
         $stackModel = new StackModel();

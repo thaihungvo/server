@@ -2,6 +2,7 @@
 
 use App\Models\StackModel;
 use App\Models\TagModel;
+use App\Models\ProjectOptionsModel;
 
 if (!function_exists('projects_load_tags'))
 {
@@ -25,11 +26,10 @@ if (!function_exists('projects_load_stacks'))
         $stackModel = new StackModel();
         $stackBuilder = $stackModel->builder();
         $stackQuery = $stackBuilder->select("stacks.*, stacks_collapsed.collapsed")
-            ->join('stacks_order', 'stacks_order.stack = stacks.id', 'left')
             ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id', 'left')
             ->where('stacks.project', $id)
             ->where('stacks.deleted', NULL)
-            ->orderBy('stacks_order.`order`', 'ASC')
+            ->orderBy('`order`', 'ASC')
             ->get();
         $stacks = $stackQuery->getResult();
 
@@ -71,16 +71,55 @@ if (!function_exists('projects_load_stacks'))
 
 if (!function_exists('projects_load'))
 {
-    function projects_load($record)
+    function projects_load($document)
     {
         // load board tags
-        $record->tags = projects_load_tags($record->id);
+        $document->tags = projects_load_tags($document->id);
         // load board stacks
-        $record->stacks = projects_load_stacks($record->id);
+        $document->stacks = projects_load_stacks($document->id);
 
-        $record->archived = [];
+        $document->archived = [];
 
-        return $record;
+        return $document;
+    }
+}
+
+if (!function_exists('projects_add_options'))
+{
+    function projects_add_options($id, $data)
+    {
+        $projectOptionsModel = new ProjectOptionsModel();
+        $options = $projectOptionsModel->find($id);
+        $isUpdate = boolval($options);
+
+        if ($isUpdate) {
+            $options->project = $data->id;
+            $options->archived_order = isset($data->archived_order) ? $data->archived_order : $options->archived_order;
+            $options->hourlyFee = isset($data->hourlyFee) ? $data->hourlyFee : $options->hourlyFee;
+            $options->feeCurrency = isset($data->feeCurrency) ? $data->feeCurrency : $options->feeCurrency;
+        } else {
+            $options = new \stdClass();
+            $options->project = $data->id;
+            $options->archived_order = isset($data->archived_order) ? $data->archived_order : "title-asc";
+            $options->hourlyFee = isset($data->hourlyFee) ? $data->hourlyFee : 0;
+            $options->feeCurrency = isset($data->feeCurrency) ? $data->feeCurrency : "USD";
+        }
+        
+        try {
+            if ($isUpdate) {
+                if ($projectOptionsModel->update($id, $options) === false) {
+                    return $projectOptionsModel->errors();
+                }
+            } else {
+                if ($projectOptionsModel->insert($options) === false) {
+                    return $projectOptionsModel->errors();
+                }
+            }
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+
+        return true;
     }
 }
 
@@ -88,30 +127,133 @@ if (!function_exists('projects_update'))
 {
     function projects_update($project)
     {
+        // helper('uuid');
+
         // $user = $this->request->user;
-        // $board = $this->request->board;
+        // $recordData = $this->request->getJSON();
+
+        // // create record object
+        // $record = new \stdClass();
+        // $record->id = $recordData->id;
+        // $record->title = $recordData->title;
+        // $record->owner = $user->id;
+        // $record->type = "project";
+
+        // // in case everyone was not set will enforce it to 1
+        // if (!isset($recordData->everyone)) {
+        //     $record->everyone = 1;
+        // } else {
+        //     $record->everyone = intval($recordData->everyone);
+        // }
+
+        // // setting the record type
+        // if (isset($recordData->type)) {
+        //     $record->type = $recordData->type;
+        // }
+
+        // // set record ID in case is missing
+        // if (!isset($record->id)) {
+        //     $record->id = uuid();
+        // }
+
+        // // getting the members array
+        // // and setting everyone to 0 in case there are members
+        // $membersIDs = array();
+        // if (isset($recordData->members)) {
+        //     $membersIDs = $recordData->members;
+        //     $record->everyone = 0;
+        // }
+
+        // // $recordData->archived_order = 'title-asc';
+        // // if (!isset($recordData->hourlyFee)) {
+        // //     $recordData->hourlyFee = 0;
+        // // }
+        // // if (!isset($recordData->feeCurrency)) {
+        // //     $recordData->feeCurrency = "USD";
+        // // }
+        // // if (isset($recordData->tags)) {
+        // //     if (!$this->set_tags($recordData->id, $recordData->tags)) {
+        // //         return $this->reply(null, 500, "ERR-BOARD-TAGS");   
+        // //     }
+        // // }
         
-        // $boardModel = new BoardModel();
-
-        // $boardData = $this->request->getJSON();
-
-        // if (!$this->set_tags($board->id, $boardData->tags)) {
-        //     return $this->reply(null, 500, "ERR-BOARD-TAGS");   
-        // }
-
-        // unset($boardData->id); // we enforce this in another way
-        // unset($boardData->deleted); // this should pass via the designated route
-        // unset($boardData->owner); // this should pass via the designated route
-        // unset($boardData->tags);
-
-        // try {
-        //     if ($boardModel->update($board->id, $boardData) === false) {
-        //         return $this->reply(null, 404, "ERR-BOARDS-UPDATE");
+        // // save the record
+        // $DocumentModel = new DocumentModel();
+        
+        // if ($update) {
+        //     try {
+        //         if ($DocumentModel->update($record->id, $record) === false) {
+        //             $errors = $DocumentModel->errors();
+        //             // TODO: need to change the error message based on the type of the record updated
+        //             return $this->reply($errors, 500, "ERR-RECORD-UPDATE");
+        //         }
+        //     } catch (\Exception $e) {
+        //         // TODO: need to change the error message based on the type of the record updated
+        //         return $this->reply($e->getMessage(), 500, "ERR-RECORD-UPDATE");
         //     }
-        // } catch (\Exception $e) {
-        //     return $this->reply($e->getMessage(), 500, "ERR-BOARD-UPDATE");
+
+        //     Events::trigger("AFTER_record_UPDATE", $record->id);
+        // } else {
+        //     try {
+        //         if ($DocumentModel->insert($record) === false) {
+        //             $errors = $DocumentModel->errors();
+        //             // TODO: need to change the error message based on the type of the record created
+        //             return $this->reply($errors, 500, "ERR-RECORD-CREATE");
+        //         }
+        //     } catch (\Exception $e) {
+        //         // TODO: need to change the error message based on the type of the record created
+        //         return $this->reply($e->getMessage(), 500, "ERR-RECORD-CREATE");
+        //     }
+        
+        //     // assign record to folder
+        //     $recordOrder = new \stdClass();
+        //     $recordOrder->folder = $recordData->folder;
+        //     $recordOrder->record = $record->id;
+        //     $recordOrder->order = 1;
+
+        //     // $recordOrderModel = new RecordOrderModel();
+        //     // $lastOrder = $recordOrderModel->where("folder", $recordData->folder)
+        //     //     ->orderBy("order", "desc")
+        //     //     ->first();
+
+        //     // if ($lastOrder) {
+        //     //     $recordOrder->order = intval($lastOrder->order) + 1;
+        //     // }
+
+        //     // try {
+        //     //     if ($recordOrderModel->insert($recordOrder) === false) {
+        //     //         $errors = $recordOrderModel->errors();
+        //     //         return $this->reply($errors, 500, "ERR-RECORD-ORDER");
+        //     //     }
+        //     // } catch (\Exception $e) {
+        //     //     return $this->reply($e->getMessage(), 500, "ERR-RECORD-ORDER");
+        //     // }
+
+        //     // if members are defined then assigned them to the board
+        //     if (count($membersIDs)) {
+        //         $recordMemberModel = new RecordMemberModel();
+        //         $recordMemberBuilder = $recordMemberModel->builder();
+
+        //         $members = array();
+        //         foreach ($membersIDs as $userID) {
+        //             $members[] = [
+        //                 'record' => $record->id,
+        //                 'user' => $userID
+        //             ];
+        //         }
+
+        //         try {
+        //             if ($recordMemberBuilder->insertBatch($members) === false) {
+        //                 $errors = $recordMemberBuilder->errors();
+        //                 return $this->reply($errors, 500, "ERR-RECORD-MEMBERS");    
+        //             }
+        //         } catch (\Exception $e) {
+        //             return $this->reply($e->getMessage(), 500, "ERR-RECORD-MEMBERS");
+        //         }
+        //     }
+
+        //     Events::trigger("AFTER_record_ADD", $record->id);
         // }
 
-        // Events::trigger("AFTER_board_UPDATE", $board->id);
     }
 }

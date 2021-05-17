@@ -4,36 +4,36 @@ use CodeIgniter\Model;
 
 class StackModel extends Model
 {
-    protected $table      = 'stacks';
-    protected $primaryKey = 'id';
-    protected $returnType = 'object';
+    protected $table      = "stacks";
+    protected $primaryKey = "id";
+    protected $returnType = "object";
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ['id', 'title', 'board', 'tag', 'created', 'updated'];
+    protected $allowedFields = ["id", "title", "project", "tag", "order", "created", "updated"];
 
     protected $useTimestamps = true;
-    protected $createdField  = 'created';
-    protected $updatedField  = 'updated';
-    protected $deletedField  = 'deleted';
+    protected $createdField  = "created";
+    protected $updatedField  = "updated";
+    protected $deletedField  = "deleted";
 
     protected $validationRules = [
-        'id' => 'required|min_length[35]',
-        'title' => 'required|alpha_numeric_punct',
-        'board' => 'required|min_length[35]'
+        "id" => "required|min_length[35]",
+        "title" => "required|alpha_numeric_punct",
+        "project" => "required|min_length[35]"
     ];
 
     protected $validationMessages = [
-        'id' => [
-            'required' => 'ERR_BOARD_STACKS_ID_REQUIRED',
-            'min_length' => 'ERR_BOARD_STACKS_ID_INVALID',
+        "id" => [
+            "required" => "Missing required field `id`",
+            "min_length" => "Invalid field `id`",
         ],
-        'title' => [
-            'required' => 'ERR_BOARD_STACKS_TITLE_REQUIRED',
+        "title" => [
+            "required" => "Missing required field `title`",
         ],
-        'board' => [
-            'required' => 'ERR_BOARD_STACKS_BOARD_REQUIRED',
-            'min_length' => 'ERR_BOARD_STACKS_BOARD_INVALID',
+        "project" => [
+            "required" => "Missing required field `project`",
+            "min_length" => "Invalid field `project`",
         ],
     ];
 }
