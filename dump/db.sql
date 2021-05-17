@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.26)
 # Database: stacks
-# Generation Time: 2021-05-14 08:03:43 +0000
+# Generation Time: 2021-05-17 09:31:32 +0000
 # ************************************************************
 
 
@@ -49,7 +49,9 @@ VALUES
 	(5,1,'79b1c371-2772-4603-a27e-78ada82fdae1','d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:26:19'),
 	(6,1,'79b1c371-2772-4603-a27e-78ada82fdae1','d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:27:40'),
 	(7,1,'79b1c371-2772-4603-a27e-78ada82fdae1','d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:28:43'),
-	(8,1,'79b1c371-2772-4603-a27e-78ada82fdae1','w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:29:10');
+	(8,1,'79b1c371-2772-4603-a27e-78ada82fdae1','w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:29:10'),
+	(9,1,'79b1c371-2772-4603-a27e-78ada82fdae1','w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-14 17:25:54'),
+	(10,1,'79b1c371-2772-4603-a27e-78ada82fdae1','w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-17 10:51:23');
 
 /*!40000 ALTER TABLE `stk_activities` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -103,8 +105,8 @@ LOCK TABLES `stk_documents` WRITE;
 INSERT INTO `stk_documents` (`id`, `title`, `type`, `owner`, `everyone`, `folder`, `order`, `created`, `updated`, `deleted`)
 VALUES
 	('c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Test Folder','folder',1,1,'',1,'2021-05-13 15:24:15','2021-05-13 15:24:15',NULL),
-	('d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Some project','project',1,1,'c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',1,'2021-05-13 15:28:43','2021-05-13 15:28:43',NULL),
-	('w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Some project 2','project',1,1,'c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',2,'2021-05-13 15:29:10','2021-05-13 15:29:10',NULL);
+	('d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Some project','project',1,1,'c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',1,'2021-05-13 15:28:43','2021-05-17 10:54:20',NULL),
+	('w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Some project 2','project',1,1,'c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',2,'2021-05-17 10:51:23','2021-05-17 10:51:23',NULL);
 
 /*!40000 ALTER TABLE `stk_documents` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -162,6 +164,15 @@ CREATE TABLE `stk_projects_options` (
   UNIQUE KEY `board` (`project`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+LOCK TABLES `stk_projects_options` WRITE;
+/*!40000 ALTER TABLE `stk_projects_options` DISABLE KEYS */;
+
+INSERT INTO `stk_projects_options` (`project`, `hourlyFee`, `feeCurrency`, `archived_order`)
+VALUES
+	('w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',0,'USD','title-asc');
+
+/*!40000 ALTER TABLE `stk_projects_options` ENABLE KEYS */;
+UNLOCK TABLES;
 
 
 # Dump of table stk_projects_tags
@@ -191,6 +202,7 @@ CREATE TABLE `stk_stacks` (
   `title` varchar(100) NOT NULL DEFAULT '',
   `project` char(36) NOT NULL DEFAULT '',
   `tag` text NOT NULL,
+  `order` smallint(6) NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
@@ -200,9 +212,9 @@ CREATE TABLE `stk_stacks` (
 LOCK TABLES `stk_stacks` WRITE;
 /*!40000 ALTER TABLE `stk_stacks` DISABLE KEYS */;
 
-INSERT INTO `stk_stacks` (`id`, `title`, `project`, `tag`, `created`, `updated`, `deleted`)
+INSERT INTO `stk_stacks` (`id`, `title`, `project`, `tag`, `order`, `created`, `updated`, `deleted`)
 VALUES
-	('6a20c65c-8241-40d4-afe8-7c1c5fa9595b','To Do','5114bbde-0a1c-4a6c-8d10-d00631188104','',NULL,NULL,NULL);
+	('e2a7a598-0578-4ff0-9492-60db9495a1da','To Do','w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','',1,'2021-05-17 11:29:15','2021-05-17 11:29:15',NULL);
 
 /*!40000 ALTER TABLE `stk_stacks` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -227,26 +239,10 @@ LOCK TABLES `stk_stacks_collapsed` WRITE;
 
 INSERT INTO `stk_stacks_collapsed` (`id`, `stack`, `collapsed`, `user`, `created`)
 VALUES
-	(1,'6a20c65c-8241-40d4-afe8-7c1c5fa9595b',1,1,'0000-00-00 00:00:00');
+	(3,'e2a7a598-0578-4ff0-9492-60db9495a1da',0,1,'2021-05-17 11:29:15');
 
 /*!40000 ALTER TABLE `stk_stacks_collapsed` ENABLE KEYS */;
 UNLOCK TABLES;
-
-
-# Dump of table stk_stacks_order
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `stk_stacks_order`;
-
-CREATE TABLE `stk_stacks_order` (
-  `board` char(36) NOT NULL DEFAULT '',
-  `stack` char(36) NOT NULL DEFAULT '',
-  `order` smallint(6) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`stack`,`order`),
-  UNIQUE KEY `order` (`order`,`stack`),
-  KEY `id` (`stack`,`order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 
 
 # Dump of table stk_tasks
