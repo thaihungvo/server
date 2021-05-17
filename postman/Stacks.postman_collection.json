@@ -50,6 +50,32 @@
 			"name": "1. User",
 			"item": [
 				{
+					"name": "User registration",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"admin@stacks.rocks\",\n\t\"password\": \"123456\",\n    \"firstName\": \"Admin\",\n    \"lastName\": \"Stacks\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/register",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Login",
 					"event": [
 						{
@@ -77,7 +103,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"email\": \"admin@stacks.server\",\n\t\"password\": \"123456\"\n}",
+							"raw": "{\n\t\"email\": \"admin@stacks.rocks\",\n\t\"password\": \"123456\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -91,32 +117,6 @@
 							],
 							"path": [
 								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "User registration",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"email\": \"user@email.com\",\n\t\"password\": \"123456\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/register",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"register"
 							]
 						}
 					},
@@ -197,44 +197,19 @@
 					"response": []
 				},
 				{
-					"name": "Get Single Document",
+					"name": "Add Folder",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									""
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"folder\", jsonData.data.id);"
 								],
 								"type": "text/javascript"
 							}
 						}
 					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents/5114bbde-0a1c-4a6c-8d10-d00631188104",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"documents",
-								"5114bbde-0a1c-4a6c-8d10-d00631188104"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add Folder",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -246,41 +221,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"id\": \"c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\",\n  \"title\": \"Test Folder\",\n  \"created\": \"2021-04-20T08:32:25.998Z\",\n  \"type\": \"folder\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"documents"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Folder",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\"id\": \"d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\",\n  \"title\": \"Some folder 2\",\n  \"updated\": \"2021-05-20T08:32:25.998Z\",\n  \"type\": \"folder\"\n}",
+							"raw": "{\n  \"title\": \"New Folder\",\n  \"created\": \"2021-04-20T08:32:25.998Z\",\n  \"type\": \"folder\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -303,6 +244,18 @@
 				},
 				{
 					"name": "Add Document",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"document\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -314,7 +267,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"id\": \"w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\",\n  \"title\": \"Some project 2\",\n  \"created\": \"2021-04-20T08:32:25.998Z\",\n  \"type\": \"project\",\n  \"folder\": \"c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\"\n}",
+							"raw": "{\n  \"title\": \"Some document\",\n  \"created\": \"2021-04-20T08:32:25.998Z\",\n  \"type\": \"project\",\n  \"folder\": \"{{folder}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -336,6 +289,78 @@
 					"response": []
 				},
 				{
+					"name": "Get Single Document",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/documents/{{document}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"documents",
+								"{{document}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Folder",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Some folder 2\",\n  \"updated\": \"2021-05-20T08:32:25.998Z\",\n  \"type\": \"folder\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/documents/{{folder}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"documents",
+								"{{folder}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Update Document",
 					"request": {
 						"method": "PUT",
@@ -348,7 +373,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"id\": \"d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\",\n  \"title\": \"Some project 2\",\n  \"updated\": \"2021-05-20T08:32:25.998Z\",\n  \"type\": \"project\",\n  \"folder\": \"d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\"\n}",
+							"raw": "{\n  \"title\": \"Some project 2\",\n  \"updated\": \"2021-05-20T08:32:25.998Z\",\n  \"type\": \"project\",\n  \"folder\": \"d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -356,14 +381,15 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents",
+							"raw": "{{server}}/api/{{ver}}/documents/{{document}}",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"documents"
+								"documents",
+								"{{document}}"
 							]
 						}
 					},
@@ -435,7 +461,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents/5114bbde-0a1c-4a6c-8d10-d00631188104",
+							"raw": "{{server}}/api/{{ver}}/documents/f828b423-8daf-4f91-879c-9a835c69d346",
 							"host": [
 								"{{server}}"
 							],
@@ -443,7 +469,7 @@
 								"api",
 								"{{ver}}",
 								"documents",
-								"5114bbde-0a1c-4a6c-8d10-d00631188104"
+								"f828b423-8daf-4f91-879c-9a835c69d346"
 							]
 						}
 					},
@@ -581,6 +607,43 @@
 					"response": []
 				},
 				{
+					"name": "Update Stack",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Updated Stack\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/stacks/{{stack}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"projects",
+								"{{project}}",
+								"stacks",
+								"{{stack}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Stacks order",
 					"request": {
 						"method": "POST",
@@ -638,41 +701,6 @@
 								"boards",
 								"{{board}}",
 								"stacks"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Stack",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"title\": \"Updated Stack\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"stacks",
-								"{{stack}}"
 							]
 						}
 					},

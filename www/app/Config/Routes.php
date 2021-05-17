@@ -41,10 +41,10 @@ $routes->get("/ping", "PingController::index");
     $routes->get("/api/v1/updates", "UpdatesController::updates_v1");
 
 // 1. USER
-    // login user
-    $routes->post("/login", "UserController::login_v1");
     // register user
     $routes->post("/register", "UserController::register_v1");
+    // login user
+    $routes->post("/login", "UserController::login_v1");
 
 // 2. DOCUMENTS
     // get all documents
@@ -52,7 +52,7 @@ $routes->get("/ping", "PingController::index");
     // get a specific document
     $routes->get("/api/v1/documents/(:any)", "DocumentsController::one_v1/$1");
     // update a document
-    $routes->put("/api/v1/documents", "DocumentsController::update_v1");
+    $routes->put("/api/v1/documents/(:any)", "DocumentsController::update_v1/$1");
     // create a document
     $routes->post("/api/v1/documents", "DocumentsController::add_v1");
     // reorder documents
@@ -86,8 +86,6 @@ $routes->get("/ping", "PingController::index");
     $routes->get("/api/v1/stacks/(:any)/done", "StacksController::done_v1/$1");
     // mark all tasks as to do
     $routes->get("/api/v1/stacks/(:any)/todo", "StacksController::todo_v1/$1");
-    // get all stacks in a project
-    $routes->get("/api/v1/projects/(:any)/stacks", "StacksController::all_v1/$1");
     // delete a stack
     $routes->delete("/api/v1/stacks/(:any)", "StacksController::delete_v1/$1");
     // save stacks order inside a project

@@ -9,39 +9,12 @@ use App\Models\StackCollapsedModel;
 
 class StacksController extends BaseController
 {
-    public function all_v1($id)
-    {
-        $board = $this->request->board;
-
-        $stackModel = new StackModel();
-        $stackBuilder = $stackModel->builder();
-        $stackQuery = $stackBuilder->select("stacks.*, stacks_collapsed.collapsed")
-            ->join('stacks_order', 'stacks_order.stack = stacks.id', 'left')
-            ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id', 'left')
-            ->where('stacks.board', $board->id)
-            ->where('stacks.deleted', NULL)
-            ->orderBy('stacks_order.`order`', 'ASC')
-            ->get();
-        $stacks = $stackQuery->getResult();
-
-        foreach ($stacks as &$stack) {
-            $stack->collapsed = boolval($stack->collapsed);
-        }
-
-        foreach ($stacks as &$stack) {
-            $stack->tag = json_decode($stack->tag);
-        }
-
-        return $this->reply($stacks);
-    }
-
-    public function add_v1($id)
+    public function add_v1($idStack)
     {
         helper("documents");
-        $this->lock($id);
 
         $user = $this->request->user;
-        $document = documents_load($id, $user);
+        $document = documents_load($idStack, $user);
 
         $stackModel = new StackModel();
         $stackData = $this->request->getJSON();
@@ -93,19 +66,23 @@ class StacksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
 
-        $stack = $stackModel->find($stackData->id);
+        $this->addActivity($document->id, $idStack, $this::ACTION_CREATE, $this::SECTION_PROJECT);
 
+        $stack = $stackModel->find($stackData->id);
         return $this->reply($stack);
     }
 
-    public function update_v1($idStack)
+    public function update_v1($idProject, $idStack)
     {
-        $this->lock();
+        $this->lock($idStack);
 
-        $board = $this->request->board;
+        helper("documents");
+
         $user = $this->request->user;
+        $document = documents_load($idProject, $user);
 
         $stackData = $this->request->getJSON();
+        unset($stackData->created);
 
         // saving stack tag/tint color
         if (isset($stackData->tag)) {
@@ -124,8 +101,8 @@ class StacksController extends BaseController
                         ->where("stack", $stackData->id)
                         ->delete() === false
                 ) {
-                    $errors = $stackOrderModel->errors();
-                    return $this->reply($errors, 500, "ERR-STACK-COLLAPSED");
+                    $errors = $stackCollapsedModel->errors();
+                    return $this->reply($errors, 500, "ERR-STACK-UPDATE");
                 }
                     
                 if ($stackCollapsedModel->insert([
@@ -133,23 +110,23 @@ class StacksController extends BaseController
                     "collapsed" => intval($stackData->collapsed),
                     "user" => $user->id
                 ]) === false) {
-                    $errors = $stackOrderModel->errors();
-                    return $this->reply($errors, 500, "ERR-STACK-COLLAPSED");
+                    $errors = $stackCollapsedModel->errors();
+                    return $this->reply($errors, 500, "ERR-STACK-UPDATE");
                 }
             } catch (\Exception $e) {
-                return $this->reply($e->getMessage(), 500, "ERR-STACK-COLLAPSED");
+                return $this->reply($e->getMessage(), 500, "ERR-STACK-UPDATE");
             }
         }
 
         // update the stack data
         $stackModel = new StackModel();
-        if ($stackModel->update($board->stack, $stackData) === false) {
+        if ($stackModel->update($idStack, $stackData) === false) {
             return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
         }
 
-        Events::trigger("AFTER_stack_UPDATE", $board->stack, $board->id);
+        $this->addActivity($idProject, $idStack, $this::ACTION_UPDATE, $this::SECTION_STACK);
 
-        return $this->reply(null, 200, "OK-STACK-UPDATE-SUCCESS");
+        return $this->reply(true);
     }
 
     public function done_v1($idStack)

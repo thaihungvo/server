@@ -49,12 +49,12 @@ class DocumentsController extends BaseController
         return $this->reply($folders);
     }
 
-	public function one_v1($id)
+	public function one_v1($documentId)
 	{
         $user = $this->request->user;
         helper("documents");
 
-        $document = documents_load($id, $user);
+        $document = documents_load($documentId, $user);
 
         return $this->reply($document);
     }
@@ -62,40 +62,47 @@ class DocumentsController extends BaseController
     public function add_v1()
     {
         $user = $this->request->user;
-        $recordData = $this->request->getJSON();
-        $recordData->owner = $user->id;
+        $documentData = $this->request->getJSON();
+        $documentData->owner = $user->id;
+
+        if (!isset($documentData->id)) {
+            helper('uuid');
+            $documentData->id = uuid();
+        }
 
         helper("documents");
 
         // check for unknown record types
-        if (!documents_validate_type($recordData->type)) {
+        if (!documents_validate_type($documentData->type)) {
             return $this->reply("Document type missing or not valid", 500, "ERR-DOCUMENTS-CREATE");
         }
 
-        if ($recordData->type !== $this::TYPE_FOLDER && !isset($recordData->folder)) {
+        if ($documentData->type !== $this::TYPE_FOLDER && !isset($documentData->folder)) {
             return $this->reply("Missing folder id", 500, "ERR-DOCUMENTS-CREATE");
         }
 
-        $result = documents_create($recordData);
+        $result = documents_create($documentData);
 
         if ($result !== true) {
             return $this->reply($result, 500, "ERR-DOCUMENTS-CREATE");
         }
         
-        $this->addActivity($recordData->folder || "", $recordData->id, $this::ACTION_CREATE, $recordData->type);
+        $this->addActivity($documentData->folder || "", $documentData->id, $this::ACTION_CREATE, $documentData->type);
         
-        return $this->reply(true);
+        return $this->reply(documents_load($documentData->id, $user));
     }
 
-    public function update_v1()
+    public function update_v1($documentId)
     {
+        $user = $this->request->user;
         $recordData = $this->request->getJSON();
+
         // check for unknown record types
-        if (!isset($recordData->id)) {
+        if (!isset($documentId)) {
             return $this->reply("Document `id` missing or not valid", 500, "ERR-DOCUMENTS-UPDATE");
         }
 
-        $this->lock($recordData->id);
+        $this->lock($documentId);
 
         helper("documents");
 
@@ -108,13 +115,18 @@ class DocumentsController extends BaseController
             return $this->reply("Document `folder` missing or not valid", 500, "ERR-DOCUMENTS-UPDATE");
         }
 
-        $result = documents_update($recordData);
-
-        if ($result === true) {
-            return $this->reply(true);
+        $document = documents_load($documentId, $user);
+        if (!$document) {
+            return $this->reply("Document not found", 404, "ERR-DOCUMENTS-UPDATE");
         }
 
-        return $this->reply($result, 500, "ERR-DOCUMENTS-UPDATE");
+        $result = documents_update($recordData);
+
+        if ($result !== true) {
+            return $this->reply($result, 500, "ERR-DOCUMENTS-UPDATE");
+        }
+
+        return $this->reply(true);
     }
 
     public function order_v1()

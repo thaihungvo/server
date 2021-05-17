@@ -11,10 +11,6 @@ class Filters extends BaseConfig
 		"toolbar"  => \CodeIgniter\Filters\DebugToolbar::class,
 		"honeypot" => \CodeIgniter\Filters\Honeypot::class,
 		"auth" => \App\Filters\APIAuth::class,
-        // "record" => \App\Filters\Record::class,
-        "boardstacks" => \App\Filters\BoardStacks::class,
-        "boardtasks" => \App\Filters\BoardTasks::class,
-        "task" => \App\Filters\Task::class,
 	];
 
 	// Always applied before every request
@@ -41,31 +37,5 @@ class Filters extends BaseConfig
         "auth" => [
             "before" => ["api/*"]
         ],
-        "task" => ["before" => [
-            "/api/*/boards/*/tasks",
-            "/api/*/boards/*/tasks/*"            
-        ]],
-        // "record" => ["before" => [
-        //         "/api/*/records/*",
-        //         "/api/*/boards/*",
-        //         "/api/*/boards/*/tags",
-        //         "/api/*/boards/*/tags/*",
-        //         "/api/*/boards/*/stacks"
-        //     ]
-        // ],
-        "boardstacks" => [
-            "before" => [
-                "/api/*/stacks/*",
-                "/api/*/stacks/*/tasks",
-                "/api/*/stacks/*/tasks/*"
-            ]
-        ],
-        "boardtasks" => [
-            "before" => [
-                "/api/*/tasks/*",
-                "/api/*/upload/*",
-                "/api/*/link/*"
-            ]
-        ]
     ];
 }
