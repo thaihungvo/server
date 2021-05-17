@@ -194,7 +194,7 @@ class DocumentsController extends BaseController
             $foldersOrderQuery[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `order`=VALUES(`order`);";
             $foldersQuery = implode(" ", $foldersOrderQuery);
 
-            if (!$db->simpleQuery($foldersQuery)) {
+            if (!$db->query($foldersQuery)) {
                 return $this->reply("Unable to update folders order", 500, "ERR-DOCUMENTS-REORDER");
             }
         }
@@ -216,7 +216,7 @@ class DocumentsController extends BaseController
             $documentsOrderQuery[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `folder`=VALUES(`folder`), `order`=VALUES(`order`);";
             $documentsQuery = implode(" ", $documentsOrderQuery);
 
-            if (!$db->simpleQuery($documentsQuery)) {
+            if (!$db->query($documentsQuery)) {
                 return $this->reply("Unable to update documents order", 500, "ERR-DOCUMENTS-REORDER");
             }
         }

@@ -75,17 +75,17 @@ $routes->get("/ping", "PingController::index");
 // STACKS
     // create a stack
     $routes->post("/api/v1/projects/(:any)/stacks", "StacksController::add_v1/$1");
-    // archive all completed tasks
     // update a stack
     $routes->put("/api/v1/projects/(:any)/stacks/(:any)", "StacksController::update_v1/$1/$2");
+    // mark all tasks as complete
+    $routes->get("/api/v1/projects/(:any)stacks/(:any)/done", "StacksController::done_v1/$1");
+    // mark all tasks as to do
+    $routes->get("/api/v1/projects/(:any)stacks/(:any)/todo", "StacksController::todo_v1/$1");
     
+    // archive all completed tasks
     $routes->get("/api/v1/stacks/(:any)/archive-done", "StacksController::archive_done_v1/$1");
     // archive all tasks
     $routes->get("/api/v1/stacks/(:any)/archive-all", "StacksController::archive_all_v1/$1");
-    // mark all tasks as complete
-    $routes->get("/api/v1/stacks/(:any)/done", "StacksController::done_v1/$1");
-    // mark all tasks as to do
-    $routes->get("/api/v1/stacks/(:any)/todo", "StacksController::todo_v1/$1");
     // delete a stack
     $routes->delete("/api/v1/stacks/(:any)", "StacksController::delete_v1/$1");
     // save stacks order inside a project
@@ -94,6 +94,9 @@ $routes->get("/ping", "PingController::index");
     $routes->post("/api/v1/projects/(:any)/order-tasks", "BoardsController::order_tasks_v1/$1/$2");
 
 // TASKS
+    // create a task
+    $routes->post("/api/v1/projects/(:any)/tasks", "TasksController::add_v1/$1");
+
     // get watchers for the task
     $routes->get("/api/v1/tasks/(:any)/watchers", "TasksController::get_watchers_v1/$1");
     // add the current user to the task watch list
@@ -106,8 +109,6 @@ $routes->get("/ping", "PingController::index");
     $routes->get("/api/v1/stacks/(:any)/tasks", "TasksController::all_stack_v1/$1");
     // single task
     $routes->get("/api/v1/tasks/(:any)", "TasksController::one_v1/$1");
-    // create a task
-    $routes->post("/api/v1/boards/(:any)/tasks/(:any)", "TasksController::add_v1/$1/$2");
     // update a task
     $routes->put("/api/v1/tasks/(:any)", "TasksController::update_v1/$1");
     // delete a task

@@ -84,6 +84,9 @@ class StacksController extends BaseController
         $stackData = $this->request->getJSON();
         unset($stackData->created);
 
+        // forcing the stack project id
+        $stackData->project = $document->id;
+
         // saving stack tag/tint color
         if (isset($stackData->tag)) {
             $stackData->tag = json_encode($stackData->tag);
@@ -129,17 +132,20 @@ class StacksController extends BaseController
         return $this->reply(true);
     }
 
-    public function done_v1($idStack)
+    public function done_v1($idProject, $idStack)
     {
-        $this->lock();
+        $this->lock($idStack);
 
-        $board = $this->request->board;
+        helper("documents");
+
+        $user = $this->request->user;
+        $document = documents_load($idProject, $user);
 
         $taskModel = new TaskModel();
         $taskBuild = $taskModel->builder();
         $taskQuery = $taskBuild->select("*")
             ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
-            ->where('tasks_order.stack', $board->stack)
+            ->where('tasks_order.stack', "CHANGE ME")
             ->where('tasks.deleted', null)
             ->where('tasks.archived', null)
             ->get();
@@ -163,7 +169,7 @@ class StacksController extends BaseController
             }
         }
 
-        return $this->reply(null, 200, "OK-STACK-DONE-SUCCESS");
+        return $this->reply(true);
     }
 
     public function todo_v1($idStack)
