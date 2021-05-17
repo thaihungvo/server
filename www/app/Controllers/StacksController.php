@@ -1,9 +1,6 @@
 <?php namespace App\Controllers;
 
-use CodeIgniter\Events\Events;
 use App\Models\StackModel;
-use App\Models\BoardModel;
-use App\Models\StackOrderModel;
 use App\Models\TaskModel;
 use App\Models\StackCollapsedModel;
 
@@ -15,23 +12,26 @@ class StacksController extends BaseController
 
         $user = $this->request->user;
         $document = documents_load($idStack, $user);
+        
+        if (!$document) {
+            $this->reply("Project not found", 404, "ERR-STACK-CREATE");
+        }
 
         $stackModel = new StackModel();
         $stackData = $this->request->getJSON();
+        $stackData->project = $document->id;
 
         if (isset($stackData->tag)) {
             $stackData->tag = json_encode($stackData->tag);
         }
 
-        $stackData->project = $document->id;
-
-        if (!isset($stackData->order)) {
-            $lastOrder = $stackModel
+        if (!isset($stackData->position)) {
+            $lastPosition = $stackModel
                 ->where("project", $document->id)
-                ->orderBy("order", "desc")
+                ->orderBy("position", "desc")
                 ->first();
 
-            $stackData->order = intval($lastOrder->order) + 1;
+            $stackData->position = intval($lastPosition->position) + 1;
         }
 
         if (!isset($stackData->id)) {

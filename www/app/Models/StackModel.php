@@ -10,7 +10,7 @@ class StackModel extends Model
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ["id", "title", "project", "tag", "order", "created", "updated"];
+    protected $allowedFields = ["id", "title", "project", "tag", "position", "created", "updated"];
 
     protected $useTimestamps = true;
     protected $createdField  = "created";
@@ -20,7 +20,8 @@ class StackModel extends Model
     protected $validationRules = [
         "id" => "required|min_length[35]",
         "title" => "required|alpha_numeric_punct",
-        "project" => "required|min_length[35]"
+        "project" => "required|min_length[35]",
+        "position" => "required"
     ];
 
     protected $validationMessages = [

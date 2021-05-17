@@ -113,6 +113,7 @@ if (!function_exists('task_format'))
 
         unset($task->order);
         unset($task->stack);
+        unset($task->project);
         unset($task->deleted);
 
         return $task;

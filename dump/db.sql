@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.26)
 # Database: stacks
-# Generation Time: 2021-05-17 09:31:32 +0000
+# Generation Time: 2021-05-17 13:49:50 +0000
 # ************************************************************
 
 
@@ -42,16 +42,12 @@ LOCK TABLES `stk_activities` WRITE;
 
 INSERT INTO `stk_activities` (`id`, `user`, `instance`, `parent`, `item`, `action`, `section`, `created`)
 VALUES
-	(1,1,'79b1c371-2772-4603-a27e-78ada82fdae1','5114bbde-0a1c-4a6c-8d10-d00631188104','d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','DELETE','document','2021-05-13 15:11:43'),
-	(2,1,'79b1c371-2772-4603-a27e-78ada82fdae1','c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','','CREATE','folder','2021-05-13 15:23:22'),
-	(3,1,'79b1c371-2772-4603-a27e-78ada82fdae1','d3da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','','CREATE','folder','2021-05-13 15:23:53'),
-	(4,1,'79b1c371-2772-4603-a27e-78ada82fdae1','c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','','CREATE','folder','2021-05-13 15:24:15'),
-	(5,1,'79b1c371-2772-4603-a27e-78ada82fdae1','d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:26:19'),
-	(6,1,'79b1c371-2772-4603-a27e-78ada82fdae1','d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:27:40'),
-	(7,1,'79b1c371-2772-4603-a27e-78ada82fdae1','d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:28:43'),
-	(8,1,'79b1c371-2772-4603-a27e-78ada82fdae1','w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-13 15:29:10'),
-	(9,1,'79b1c371-2772-4603-a27e-78ada82fdae1','w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-14 17:25:54'),
-	(10,1,'79b1c371-2772-4603-a27e-78ada82fdae1','w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','1','CREATE','project','2021-05-17 10:51:23');
+	(1,1,'85e788f3-6bc7-466e-a187-43318ab26575','fdb1fc16-48b9-4f68-a381-9280db20ac75','','CREATE','folder','2021-05-17 15:39:22'),
+	(2,1,'85e788f3-6bc7-466e-a187-43318ab26575','d8794996-5bdc-4c9f-a91d-9dcf523c22d5','1','CREATE','project','2021-05-17 15:47:11'),
+	(3,1,'85e788f3-6bc7-466e-a187-43318ab26575','d8794996-5bdc-4c9f-a91d-9dcf523c22d5','fdb1fc16-48b9-4f68-a381-9280db20ac75','DELETE','document','2021-05-17 15:47:18'),
+	(4,1,'85e788f3-6bc7-466e-a187-43318ab26575','d8794996-5bdc-4c9f-a91d-9dcf523c22d5','d8794996-5bdc-4c9f-a91d-9dcf523c22d5','CREATE','project','2021-05-17 15:48:22'),
+	(5,1,'85e788f3-6bc7-466e-a187-43318ab26575','36704fe7-be20-4cf9-ba6c-e6577b29b268','77bc52f4-e51e-4b7e-9c9c-e16f462e2266','CREATE','task','2021-05-17 15:48:41'),
+	(6,1,'85e788f3-6bc7-466e-a187-43318ab26575','d8794996-5bdc-4c9f-a91d-9dcf523c22d5','','UPDATE','project','2021-05-17 15:48:41');
 
 /*!40000 ALTER TABLE `stk_activities` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -92,7 +88,7 @@ CREATE TABLE `stk_documents` (
   `owner` int(11) NOT NULL,
   `everyone` tinyint(1) NOT NULL DEFAULT '1',
   `folder` char(36) NOT NULL,
-  `order` smallint(6) NOT NULL,
+  `position` smallint(6) NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
@@ -102,11 +98,10 @@ CREATE TABLE `stk_documents` (
 LOCK TABLES `stk_documents` WRITE;
 /*!40000 ALTER TABLE `stk_documents` DISABLE KEYS */;
 
-INSERT INTO `stk_documents` (`id`, `title`, `type`, `owner`, `everyone`, `folder`, `order`, `created`, `updated`, `deleted`)
+INSERT INTO `stk_documents` (`id`, `title`, `type`, `owner`, `everyone`, `folder`, `position`, `created`, `updated`, `deleted`)
 VALUES
-	('c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Test Folder','folder',1,1,'',1,'2021-05-13 15:24:15','2021-05-13 15:24:15',NULL),
-	('d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Some project','project',1,1,'c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',1,'2021-05-13 15:28:43','2021-05-17 10:54:20',NULL),
-	('w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','Some project 2','project',1,1,'c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',2,'2021-05-17 10:51:23','2021-05-17 10:51:23',NULL);
+	('d8794996-5bdc-4c9f-a91d-9dcf523c22d5','Some document','project',1,1,'fdb1fc16-48b9-4f68-a381-9280db20ac75',1,'2021-05-17 15:47:11','2021-05-17 15:47:18',NULL),
+	('fdb1fc16-48b9-4f68-a381-9280db20ac75','Some folder','folder',1,1,'',1,'2021-05-17 15:39:22','2021-05-17 15:45:03',NULL);
 
 /*!40000 ALTER TABLE `stk_documents` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -125,17 +120,6 @@ CREATE TABLE `stk_documents_members` (
   UNIQUE KEY `record` (`document`,`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-LOCK TABLES `stk_documents_members` WRITE;
-/*!40000 ALTER TABLE `stk_documents_members` DISABLE KEYS */;
-
-INSERT INTO `stk_documents_members` (`document`, `user`, `created`)
-VALUES
-	('5114bbde-0a1c-4a6c-8d10-d00631188104','1',NULL),
-	('5114bbde-0a1c-4a6c-8d10-d00631188104','2',NULL),
-	('5114bbde-0a1c-4a6c-8d10-d00631188104','3',NULL);
-
-/*!40000 ALTER TABLE `stk_documents_members` ENABLE KEYS */;
-UNLOCK TABLES;
 
 
 # Dump of table stk_files
@@ -169,7 +153,7 @@ LOCK TABLES `stk_projects_options` WRITE;
 
 INSERT INTO `stk_projects_options` (`project`, `hourlyFee`, `feeCurrency`, `archived_order`)
 VALUES
-	('w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7',0,'USD','title-asc');
+	('d8794996-5bdc-4c9f-a91d-9dcf523c22d5',0,'USD','title-asc');
 
 /*!40000 ALTER TABLE `stk_projects_options` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -202,7 +186,7 @@ CREATE TABLE `stk_stacks` (
   `title` varchar(100) NOT NULL DEFAULT '',
   `project` char(36) NOT NULL DEFAULT '',
   `tag` text NOT NULL,
-  `order` smallint(6) NOT NULL,
+  `position` smallint(6) NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
@@ -212,9 +196,9 @@ CREATE TABLE `stk_stacks` (
 LOCK TABLES `stk_stacks` WRITE;
 /*!40000 ALTER TABLE `stk_stacks` DISABLE KEYS */;
 
-INSERT INTO `stk_stacks` (`id`, `title`, `project`, `tag`, `order`, `created`, `updated`, `deleted`)
+INSERT INTO `stk_stacks` (`id`, `title`, `project`, `tag`, `position`, `created`, `updated`, `deleted`)
 VALUES
-	('e2a7a598-0578-4ff0-9492-60db9495a1da','To Do','w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7','',1,'2021-05-17 11:29:15','2021-05-17 11:29:15',NULL);
+	('77bc52f4-e51e-4b7e-9c9c-e16f462e2266','To Do','d8794996-5bdc-4c9f-a91d-9dcf523c22d5','',1,'2021-05-17 15:48:22','2021-05-17 15:48:22',NULL);
 
 /*!40000 ALTER TABLE `stk_stacks` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -239,7 +223,7 @@ LOCK TABLES `stk_stacks_collapsed` WRITE;
 
 INSERT INTO `stk_stacks_collapsed` (`id`, `stack`, `collapsed`, `user`, `created`)
 VALUES
-	(3,'e2a7a598-0578-4ff0-9492-60db9495a1da',0,1,'2021-05-17 11:29:15');
+	(1,'77bc52f4-e51e-4b7e-9c9c-e16f462e2266',0,1,'2021-05-17 15:48:22');
 
 /*!40000 ALTER TABLE `stk_stacks_collapsed` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -264,9 +248,11 @@ CREATE TABLE `stk_tasks` (
   `spent` varchar(100) DEFAULT NULL,
   `progress` tinyint(4) DEFAULT NULL,
   `hourlyFee` float DEFAULT NULL,
-  `owner` int(11) DEFAULT NULL,
-  `board` char(36) DEFAULT NULL,
   `archived` datetime DEFAULT NULL,
+  `project` char(36) NOT NULL DEFAULT '',
+  `stack` char(36) NOT NULL,
+  `position` smallint(6) NOT NULL,
+  `owner` int(11) NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
@@ -276,9 +262,9 @@ CREATE TABLE `stk_tasks` (
 LOCK TABLES `stk_tasks` WRITE;
 /*!40000 ALTER TABLE `stk_tasks` DISABLE KEYS */;
 
-INSERT INTO `stk_tasks` (`id`, `title`, `content`, `tags`, `startdate`, `duedate`, `cover`, `done`, `altTags`, `estimate`, `spent`, `progress`, `hourlyFee`, `owner`, `board`, `archived`, `created`, `updated`, `deleted`)
+INSERT INTO `stk_tasks` (`id`, `title`, `content`, `tags`, `startdate`, `duedate`, `cover`, `done`, `altTags`, `estimate`, `spent`, `progress`, `hourlyFee`, `archived`, `project`, `stack`, `position`, `owner`, `created`, `updated`, `deleted`)
 VALUES
-	('6a20c65c-8241-40d4-afe8-7c1c5fa9595b','Hello world','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+	('36704fe7-be20-4cf9-ba6c-e6577b29b268','New task','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'d8794996-5bdc-4c9f-a91d-9dcf523c22d5','77bc52f4-e51e-4b7e-9c9c-e16f462e2266',1,1,'2021-05-17 15:48:41',NULL,NULL);
 
 /*!40000 ALTER TABLE `stk_tasks` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -314,30 +300,6 @@ CREATE TABLE `stk_tasks_extensions` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
-
-# Dump of table stk_tasks_order
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `stk_tasks_order`;
-
-CREATE TABLE `stk_tasks_order` (
-  `project` char(36) NOT NULL DEFAULT '',
-  `stack` char(36) NOT NULL DEFAULT '',
-  `task` char(36) NOT NULL DEFAULT '',
-  `order` smallint(6) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`task`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-LOCK TABLES `stk_tasks_order` WRITE;
-/*!40000 ALTER TABLE `stk_tasks_order` DISABLE KEYS */;
-
-INSERT INTO `stk_tasks_order` (`project`, `stack`, `task`, `order`)
-VALUES
-	('5114bbde-0a1c-4a6c-8d10-d00631188104','6a20c65c-8241-40d4-afe8-7c1c5fa9595b','6a20c65c-8241-40d4-afe8-7c1c5fa9595b',1);
-
-/*!40000 ALTER TABLE `stk_tasks_order` ENABLE KEYS */;
-UNLOCK TABLES;
 
 
 # Dump of table stk_tasks_watchers
@@ -377,9 +339,7 @@ LOCK TABLES `stk_users` WRITE;
 
 INSERT INTO `stk_users` (`id`, `email`, `password`, `nickname`, `firstName`, `lastName`, `created`, `updated`)
 VALUES
-	(1,'admin@stacks.server','$2y$12$264650655ea6f3258cc5bukTLXMfwH3TxLERG5JtSHF0CkD7q9m2S','admin','Admin','Stacks','2020-04-24 09:10:18','2020-04-24 09:10:18'),
-	(2,'l.skywalker@resistance.com','$2y$12$264650655ea6f3258cc5bukTLXMfwH3TxLERG5JtSHF0CkD7q9m2S','skywalker','Luke','Skywalker','2020-09-18 08:20:13','2020-09-18 08:20:13'),
-	(3,'d.vader@theempire.com','$2y$12$264650655ea6f3258cc5bukTLXMfwH3TxLERG5JtSHF0CkD7q9m2S','vader','Darth','Vader','2020-09-22 08:13:51','2020-09-22 08:13:51');
+	(1,'admin@stacks.rocks','$2y$12$125312471860a23d8a7f9euPiIN.dMgREE4ftjp2tTKn2HzVFpjs2','','',NULL,'2021-05-17 11:55:23','2021-05-17 11:55:23');
 
 /*!40000 ALTER TABLE `stk_users` ENABLE KEYS */;
 UNLOCK TABLES;

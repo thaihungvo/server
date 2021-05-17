@@ -10,7 +10,7 @@ class DocumentModel extends Model
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ["id", "title", "folder", "owner", "everyone", "type", "order"];
+    protected $allowedFields = ["id", "title", "folder", "owner", "everyone", "type", "position"];
 
     protected $useTimestamps = true;
     protected $createdField  = "created";
@@ -22,7 +22,7 @@ class DocumentModel extends Model
         "title" => "required|alpha_numeric_punct",
         "owner" => "required|integer",
         "type" => "required",
-        "order" => "required|numeric"
+        "position" => "required|numeric"
     ];
 
     protected $validationMessages = [
@@ -39,8 +39,8 @@ class DocumentModel extends Model
         "type" => [
             "required" => "Missing required field `type`",
         ],
-        "order" => [
-            "required" => "Missing required field `order`",
+        "position" => [
+            "required" => "Missing required field `position`",
         ],
     ];
 }

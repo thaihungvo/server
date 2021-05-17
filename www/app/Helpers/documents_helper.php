@@ -16,21 +16,21 @@ if (!function_exists('documents_create'))
     function documents_create($documentData)
     {
         $documentModel = new DocumentModel();
-        $documentData->order = 1;
+        $documentData->position = 1;
 
         $documentModel
             ->where("type", $documentData->type)
-            ->orderBy("order", "desc");
+            ->orderBy("position", "desc");
             
         
         if ($documentData->type !== "folder") {
             $documentModel->where("folder", $documentData->folder);
         }
 
-        $lastOrder = $documentModel->first();
+        $lastPosition = $documentModel->first();
 
-        if ($lastOrder) {
-            $documentData->order = intval($lastOrder->order) + 1;
+        if ($lastPosition) {
+            $documentData->position = intval($lastPosition->position) + 1;
         }
 
         $optionsResult = documents_create_options($documentData);
@@ -67,36 +67,30 @@ if (!function_exists('documents_create_options'))
 
 if (!function_exists('documents_update'))
 {
-    function documents_update($document)
+    function documents_update($documentData)
     {
         $documentModel = new DocumentModel();
 
-        $documentBuilder = $documentModel->builder();
-        $documentQuery = $documentBuilder->select('documents.*')
-            ->where('documents.deleted', NULL)
-            ->where('documents.id', $document->id)
-            ->limit(1)
-            ->get();
+        $document = $documentModel->where("deleted", NULL)
+            ->find($documentData->id);
 
-        $documents = $documentQuery->getResult();
-
-        if (!count($documents)) {
-            return "No document found with the requested id `".$document->id."`";
+        if (!$document) {
+            return "No document found with the requested id `".$documentData->id."`";
         }
         
         // just in case someone tries to change types
-        unset($document->type);
-        unset($document->created);
+        unset($documentData->type);
+        unset($documentData->created);
 
         // in case everyone was not set will enforce it to 1
-        if (!isset($document->everyone)) {
-            $document->everyone = 1;
+        if (!isset($documentData->everyone)) {
+            $documentData->everyone = 1;
         } else {
-            $document->everyone = intval($document->everyone);
+            $documentData->everyone = intval($documentData->everyone);
         }
 
         try {
-            if ($documentModel->update($document->id, $document) === false) {
+            if ($documentModel->update($documentData->id, $documentData) === false) {
                 return $documentModel->errors();
             }
         } catch (\Exception $e) {

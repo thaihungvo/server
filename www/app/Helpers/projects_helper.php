@@ -29,7 +29,7 @@ if (!function_exists('projects_load_stacks'))
             ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id', 'left')
             ->where('stacks.project', $id)
             ->where('stacks.deleted', NULL)
-            ->orderBy('`order`', 'ASC')
+            ->orderBy('position', 'ASC')
             ->get();
         $stacks = $stackQuery->getResult();
 
@@ -54,7 +54,7 @@ if (!function_exists('projects_load_stacks'))
             // connect tasks to stacks
             foreach ($stacks as &$stack) {
                 // remove the order property from the stack
-                unset($stack->order);
+                unset($stack->position);
 
                 $stack->tasks = [];
                 foreach ($tasks as $task) {                    

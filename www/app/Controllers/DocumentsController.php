@@ -116,6 +116,7 @@ class DocumentsController extends BaseController
         }
 
         $document = documents_load($documentId, $user);
+        
         if (!$document) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-UPDATE");
         }

@@ -338,7 +338,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"title\": \"Some folder 2\",\n  \"updated\": \"2021-05-20T08:32:25.998Z\",\n  \"type\": \"folder\"\n}",
+							"raw": "{\n  \"title\": \"Some folder\",\n  \"updated\": \"2021-05-20T08:32:25.998Z\",\n  \"type\": \"folder\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -461,7 +461,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents/f828b423-8daf-4f91-879c-9a835c69d346",
+							"raw": "{{server}}/api/{{ver}}/documents/{{document}}",
 							"host": [
 								"{{server}}"
 							],
@@ -469,7 +469,7 @@
 								"api",
 								"{{ver}}",
 								"documents",
-								"f828b423-8daf-4f91-879c-9a835c69d346"
+								"{{document}}"
 							]
 						}
 					},
@@ -504,7 +504,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7",
+							"raw": "{{server}}/api/{{ver}}/projects/{{document}}",
 							"host": [
 								"{{server}}"
 							],
@@ -512,7 +512,7 @@
 								"api",
 								"{{ver}}",
 								"projects",
-								"w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7"
+								"{{document}}"
 							]
 						}
 					},
@@ -644,7 +644,7 @@
 					"response": []
 				},
 				{
-					"name": "Stacks order",
+					"name": "-Stacks order",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -680,7 +680,7 @@
 					"response": []
 				},
 				{
-					"name": "Get Stacks list",
+					"name": "-Get Stacks list",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -707,7 +707,7 @@
 					"response": []
 				},
 				{
-					"name": "Mark all task as Done",
+					"name": "-Mark all task as Done",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -734,7 +734,7 @@
 					"response": []
 				},
 				{
-					"name": "Mark all tasks as To Do",
+					"name": "-Mark all tasks as To Do",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -761,7 +761,7 @@
 					"response": []
 				},
 				{
-					"name": "Archive All tasks",
+					"name": "-Archive All tasks",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -788,7 +788,7 @@
 					"response": []
 				},
 				{
-					"name": "Archive done tasks",
+					"name": "-Archive done tasks",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -815,7 +815,7 @@
 					"response": []
 				},
 				{
-					"name": "Delete Stack",
+					"name": "-Delete Stack",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -845,42 +845,6 @@
 		{
 			"name": "4. Tasks",
 			"item": [
-				{
-					"name": "Tasks order",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    // stack: [taskID, taskID, ...]\n\t\"60166fa5-918c-485c-9bea-4ce4ffefea47\": [\"ce8d16f6-9222-11ea-8c1c-870eb04b6723\", \"f15ce382-8a11-11ea-b94d-a87f862112f6\", \"fcdb8844-9222-11ea-8c1c-870eb04b6723\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/order-tasks",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"{{board}}",
-								"order-tasks"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Add Task",
 					"event": [
@@ -914,43 +878,15 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tasks/top",
+							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/tasks",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"boards",
-								"{{board}}",
-								"tasks",
-								"top"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "All Tasks by Board",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tasks",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"{{board}}",
+								"projects",
+								"{{project}}",
 								"tasks"
 							]
 						}
@@ -958,9 +894,21 @@
 					"response": []
 				},
 				{
-					"name": "All Tasks by Stack",
+					"name": "Add Task to TOP",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"task\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Authorization",
@@ -968,24 +916,39 @@
 								"type": "text"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"New task\",\n\t\"stack\": \"{{stack}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/tasks",
+							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/tasks?position=top",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"stacks",
-								"{{stack}}",
+								"projects",
+								"{{project}}",
 								"tasks"
+							],
+							"query": [
+								{
+									"key": "position",
+									"value": "top"
+								}
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Single Task",
+					"name": "Get Single Task",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1040,6 +1003,96 @@
 								"{{ver}}",
 								"tasks",
 								"{{task}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tasks order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    // stack: [taskID, taskID, ...]\n\t\"60166fa5-918c-485c-9bea-4ce4ffefea47\": [\"ce8d16f6-9222-11ea-8c1c-870eb04b6723\", \"f15ce382-8a11-11ea-b94d-a87f862112f6\", \"fcdb8844-9222-11ea-8c1c-870eb04b6723\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/order-tasks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"{{board}}",
+								"order-tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Tasks by Board",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tasks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"boards",
+								"{{board}}",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Tasks by Stack",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/tasks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"stacks",
+								"{{stack}}",
+								"tasks"
 							]
 						}
 					},
