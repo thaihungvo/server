@@ -1,53 +1,28 @@
 <?php
+
 /**
- * CodeIgniter
+ * This file is part of the CodeIgniter 4 framework.
  *
- * An open source application development framework for PHP
+ * (c) CodeIgniter Foundation <admin@codeigniter.com>
  *
- * This content is released under the MIT License (MIT)
- *
- * Copyright (c) 2014-2019 British Columbia Institute of Technology
- * Copyright (c) 2019-2020 CodeIgniter Foundation
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * @package    CodeIgniter
- * @author     CodeIgniter Dev Team
- * @copyright  2019-2020 CodeIgniter Foundation
- * @license    https://opensource.org/licenses/MIT	MIT License
- * @link       https://codeigniter.com
- * @since      Version 4.0.0
- * @filesource
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace CodeIgniter\Validation;
 
+use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\Validation\Exceptions\ValidationException;
 use CodeIgniter\View\RendererInterface;
+use Config\Validation as ValidationConfig;
+use InvalidArgumentException;
 
 /**
  * Validator
  */
 class Validation implements ValidationInterface
 {
-
 	/**
 	 * Files to load with validation functions.
 	 *
@@ -97,7 +72,7 @@ class Validation implements ValidationInterface
 	/**
 	 * Our configuration.
 	 *
-	 * @var \Config\Validation
+	 * @var ValidationConfig
 	 */
 	protected $config;
 
@@ -113,8 +88,8 @@ class Validation implements ValidationInterface
 	/**
 	 * Validation constructor.
 	 *
-	 * @param \Config\Validation $config
-	 * @param RendererInterface  $view
+	 * @param ValidationConfig  $config
+	 * @param RendererInterface $view
 	 */
 	public function __construct($config, RendererInterface $view)
 	{
@@ -131,18 +106,18 @@ class Validation implements ValidationInterface
 	 * Runs the validation process, returning true/false determining whether
 	 * validation was successful or not.
 	 *
-	 * @param array  $data     The array of data to validate.
-	 * @param string $group    The pre-defined group of rules to apply.
-	 * @param string $db_group The database group to use.
+	 * @param array  $data    The array of data to validate.
+	 * @param string $group   The pre-defined group of rules to apply.
+	 * @param string $dbGroup The database group to use.
 	 *
 	 * @return boolean
 	 */
-	public function run(array $data = null, string $group = null, string $db_group = null): bool
+	public function run(array $data = null, string $group = null, string $dbGroup = null): bool
 	{
 		$data = $data ?? $this->data;
 
 		// i.e. is_unique
-		$data['DBGroup'] = $db_group;
+		$data['DBGroup'] = $dbGroup;
 
 		$this->loadRuleSets();
 
@@ -154,6 +129,10 @@ class Validation implements ValidationInterface
 		{
 			return false;
 		}
+
+		// Replace any placeholders (i.e. {id}) in the rules with
+		// the value found in $data, if exists.
+		$this->rules = $this->fillPlaceholders($this->rules, $data);
 
 		// Need this for searching arrays in validation.
 		helper('array');
@@ -170,9 +149,20 @@ class Validation implements ValidationInterface
 				$rules = $this->splitRules($rules);
 			}
 
-			$value = dot_array_search($rField, $data);
+			$value          = dot_array_search($rField, $data);
+			$fieldNameToken = explode('.', $rField);
 
-			$this->processRules($rField, $rSetup['label'] ?? $rField, $value ?? null, $rules, $data);
+			if (is_array($value) && end($fieldNameToken) === '*')
+			{
+				foreach ($value as $val)
+				{
+					$this->processRules($rField, $rSetup['label'] ?? $rField, $val ?? null, $rules, $data);
+				}
+			}
+			else
+			{
+				$this->processRules($rField, $rSetup['label'] ?? $rField, $value ?? null, $rules, $data);
+			}
 		}
 
 		return ! empty($this->getErrors()) ? false : true;
@@ -212,30 +202,67 @@ class Validation implements ValidationInterface
 	 * @param string|null  $label
 	 * @param string|array $value Value to be validated, can be a string or an array
 	 * @param array|null   $rules
-	 * @param array        $data  // All of the fields to check.
+	 * @param array        $data  All of the fields to check.
 	 *
 	 * @return boolean
 	 */
-	protected function processRules(string $field, string $label = null, $value, $rules = null, array $data): bool
+	protected function processRules(string $field, string $label = null, $value, $rules = null, array $data = null): bool
 	{
-		// If the if_exist rule is defined...
-		if (in_array('if_exist', $rules))
+		if (is_null($data))
 		{
-			// and the current field does not exists in the input data
-			// we can return true. Ignoring all other rules to this field.
-			if (! array_key_exists($field, $data))
+			throw new InvalidArgumentException('You must supply the parameter: data.');
+		}
+
+		if (in_array('if_exist', $rules, true))
+		{
+			// If the if_exist rule is defined
+			// and the current field does not exist in the input data
+			// we can return true, ignoring all other rules to this field.
+			if (! array_key_exists($field, array_flatten_with_dots($data)))
 			{
 				return true;
 			}
+
 			// Otherwise remove the if_exist rule and continue the process
 			$rules = array_diff($rules, ['if_exist']);
 		}
 
-		if (in_array('permit_empty', $rules))
+		if (in_array('permit_empty', $rules, true))
 		{
-			if (! in_array('required', $rules) && (is_array($value) ? empty($value) : (trim($value) === '')))
+			if (! in_array('required', $rules, true) && (is_array($value) ? empty($value) : (trim($value) === '')))
 			{
-				return true;
+				$passed = true;
+
+				foreach ($rules as $rule)
+				{
+					if (preg_match('/(.*?)\[(.*)\]/', $rule, $match))
+					{
+						$rule  = $match[1];
+						$param = $match[2];
+
+						if (! in_array($rule, ['required_with', 'required_without'], true))
+						{
+							continue;
+						}
+
+						// Check in our rulesets
+						foreach ($this->ruleSetInstances as $set)
+						{
+							if (! method_exists($set, $rule))
+							{
+								continue;
+							}
+
+							$passed = $passed && $set->$rule($value, $param, $data);
+							break;
+						}
+					}
+				}
+
+				if ($passed === true)
+				{
+					return true;
+				}
 			}
 
 			$rules = array_diff($rules, ['permit_empty']);
@@ -298,7 +325,7 @@ class Validation implements ValidationInterface
 				}
 
 				$this->errors[$field] = is_null($error) ? $this->getErrorMessage($rule, $field, $label, $param, $value)
-					: $error;
+					: $error; // @phpstan-ignore-line
 
 				return false;
 			}
@@ -313,13 +340,19 @@ class Validation implements ValidationInterface
 	 * Takes a Request object and grabs the input data to use from its
 	 * array values.
 	 *
-	 * @param \CodeIgniter\HTTP\RequestInterface|\CodeIgniter\HTTP\IncomingRequest $request
+	 * @param RequestInterface|IncomingRequest $request
 	 *
-	 * @return \CodeIgniter\Validation\ValidationInterface
+	 * @return ValidationInterface
 	 */
 	public function withRequest(RequestInterface $request): ValidationInterface
 	{
-		if (in_array($request->getMethod(), ['put', 'patch', 'delete']))
+		if ($request->isJSON())
+		{
+			$this->data = $request->getJSON(true);
+			return $this;
+		}
+
+		if (in_array($request->getMethod(), ['put', 'patch', 'delete'], true))
 		{
 			$this->data = $request->getRawInput();
 		}
@@ -360,7 +393,8 @@ class Validation implements ValidationInterface
 			'label' => $label,
 			'rules' => $rules,
 		];
-		$this->customErrors  = array_merge($this->customErrors, [
+
+		$this->customErrors = array_merge($this->customErrors, [
 			$field => $errors,
 		]);
 
@@ -388,7 +422,7 @@ class Validation implements ValidationInterface
 	 * @param array $rules
 	 * @param array $errors // An array of custom error messages
 	 *
-	 * @return \CodeIgniter\Validation\ValidationInterface
+	 * @return ValidationInterface
 	 */
 	public function setRules(array $rules, array $errors = []): ValidationInterface
 	{
@@ -446,7 +480,7 @@ class Validation implements ValidationInterface
 	 *
 	 * @return string[] Rule group.
 	 *
-	 * @throws \InvalidArgumentException If group not found.
+	 * @throws InvalidArgumentException If group not found.
 	 */
 	public function getRuleGroup(string $group): array
 	{
@@ -470,12 +504,12 @@ class Validation implements ValidationInterface
 	 *
 	 * @param string $group Group.
 	 *
-	 * @throws \InvalidArgumentException If group not found.
+	 * @throws InvalidArgumentException If group not found.
 	 */
 	public function setRuleGroup(string $group)
 	{
-		$rules       = $this->getRuleGroup($group);
-		$this->rules = $rules;
+		$rules = $this->getRuleGroup($group);
+		$this->setRules($rules);
 
 		$errorName = $group . '_errors';
 		if (isset($this->config->$errorName))
@@ -578,7 +612,7 @@ class Validation implements ValidationInterface
 			throw ValidationException::forGroupNotArray($group);
 		}
 
-		$this->rules = $this->config->$group;
+		$this->setRules($this->config->$group);
 
 		// If {group}_errors exists in the config file,
 		// then override our custom errors with them.
@@ -590,6 +624,64 @@ class Validation implements ValidationInterface
 		}
 
 		return $this->rules;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Replace any placeholders within the rules with the values that
+	 * match the 'key' of any properties being set. For example, if
+	 * we had the following $data array:
+	 *
+	 * [ 'id' => 13 ]
+	 *
+	 * and the following rule:
+	 *
+	 *  'required|is_unique[users,email,id,{id}]'
+	 *
+	 * The value of {id} would be replaced with the actual id in the form data:
+	 *
+	 *  'required|is_unique[users,email,id,13]'
+	 *
+	 * @param array $rules
+	 * @param array $data
+	 *
+	 * @return array
+	 */
+	protected function fillPlaceholders(array $rules, array $data): array
+	{
+		$replacements = [];
+
+		foreach ($data as $key => $value)
+		{
+			$replacements["{{$key}}"] = $value;
+		}
+
+		if (! empty($replacements))
+		{
+			foreach ($rules as &$rule)
+			{
+				if (is_array($rule))
+				{
+					foreach ($rule as &$row)
+					{
+						// Should only be an `errors` array
+						// which doesn't take placeholders.
+						if (is_array($row))
+						{
+							continue;
+						}
+
+						$row = strtr($row, $replacements);
+					}
+					continue;
+				}
+
+				$rule = strtr($rule, $replacements);
+			}
+		}
+
+		return $rules;
 	}
 
 	//--------------------------------------------------------------------
@@ -671,7 +763,7 @@ class Validation implements ValidationInterface
 	 * @param string $field
 	 * @param string $error
 	 *
-	 * @return \CodeIgniter\Validation\ValidationInterface
+	 * @return ValidationInterface
 	 */
 	public function setError(string $field, string $error): ValidationInterface
 	{
@@ -698,7 +790,7 @@ class Validation implements ValidationInterface
 		// Check if custom message has been defined by user
 		if (isset($this->customErrors[$field][$rule]))
 		{
-			$message = $this->customErrors[$field][$rule];
+			$message = lang($this->customErrors[$field][$rule]);
 		}
 		else
 		{
@@ -708,11 +800,10 @@ class Validation implements ValidationInterface
 			$message = lang('Validation.' . $rule);
 		}
 
-		$message = str_replace('{field}', $label ?? $field, $message);
-		$message = str_replace('{param}', $this->rules[$param]['label'] ?? $param, $message);
-		$message = str_replace('{value}', $value, $message);
+		$message = str_replace('{field}', empty($label) ? $field : lang($label), $message);
+		$message = str_replace('{param}', empty($this->rules[$param]['label']) ? $param : lang($this->rules[$param]['label']), $message);
 
-		return $message;
+		return str_replace('{value}', $value, $message);
 	}
 
 	/**
@@ -724,16 +815,16 @@ class Validation implements ValidationInterface
 	 */
 	protected function splitRules(string $rules): array
 	{
-		$non_escape_bracket  = '((?<!\\\\)(?:\\\\\\\\)*[\[\]])';
-		$pipe_not_in_bracket = sprintf(
+		$nonEscapeBracket = '((?<!\\\\)(?:\\\\\\\\)*[\[\]])';
+		$pipeNotInBracket = sprintf(
 				'/\|(?=(?:[^\[\]]*%s[^\[\]]*%s)*(?![^\[\]]*%s))/',
-				$non_escape_bracket,
-				$non_escape_bracket,
-				$non_escape_bracket
+				$nonEscapeBracket,
+				$nonEscapeBracket,
+				$nonEscapeBracket
 		);
 
 		$_rules = preg_split(
-				$pipe_not_in_bracket,
+				$pipeNotInBracket,
 				$rules
 		);
 
@@ -749,7 +840,7 @@ class Validation implements ValidationInterface
 	 * Resets the class to a blank slate. Should be called whenever
 	 * you need to process more than one array.
 	 *
-	 * @return \CodeIgniter\Validation\ValidationInterface
+	 * @return ValidationInterface
 	 */
 	public function reset(): ValidationInterface
 	{

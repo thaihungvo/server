@@ -1,11 +1,22 @@
-<?php namespace CodeIgniter\Exceptions;
+<?php
+
+/**
+ * This file is part of the CodeIgniter 4 framework.
+ *
+ * (c) CodeIgniter Foundation <admin@codeigniter.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace CodeIgniter\Exceptions;
 
 /**
  * Cast Exceptions.
  */
-
 class CastException extends CriticalError
 {
+	use DebugTraceableTrait;
 
 	/**
 	 * Error code
@@ -19,23 +30,17 @@ class CastException extends CriticalError
 		switch($error)
 		{
 			case JSON_ERROR_DEPTH:
-				throw new static(lang('Cast.jsonErrorDepth'));
-			break;
+				return new static(lang('Cast.jsonErrorDepth'));
 			case JSON_ERROR_STATE_MISMATCH:
-				throw new static(lang('Cast.jsonErrorStateMismatch'));
-			break;
+				return new static(lang('Cast.jsonErrorStateMismatch'));
 			case JSON_ERROR_CTRL_CHAR:
-				throw new static(lang('Cast.jsonErrorCtrlChar'));
-			break;
+				return new static(lang('Cast.jsonErrorCtrlChar'));
 			case JSON_ERROR_SYNTAX:
-				throw new static(lang('Cast.jsonErrorSyntax'));
-			break;
+				return new static(lang('Cast.jsonErrorSyntax'));
 			case JSON_ERROR_UTF8:
-				throw new static(lang('Cast.jsonErrorUtf8'));
-			break;
+				return new static(lang('Cast.jsonErrorUtf8'));
 			default:
-				throw new static(lang('Cast.jsonErrorUnknown'));
+				return new static(lang('Cast.jsonErrorUnknown'));
 		}
 	}
-
 }

@@ -1,40 +1,12 @@
 <?php
 
 /**
- * CodeIgniter
+ * This file is part of the CodeIgniter 4 framework.
  *
- * An open source application development framework for PHP
+ * (c) CodeIgniter Foundation <admin@codeigniter.com>
  *
- * This content is released under the MIT License (MIT)
- *
- * Copyright (c) 2014-2019 British Columbia Institute of Technology
- * Copyright (c) 2019-2020 CodeIgniter Foundation
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * @package    CodeIgniter
- * @author     CodeIgniter Dev Team
- * @copyright  2019-2020 CodeIgniter Foundation
- * @license    https://opensource.org/licenses/MIT	MIT License
- * @link       https://codeigniter.com
- * @since      Version 4.0.0
- * @filesource
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace CodeIgniter\Database;
@@ -46,7 +18,6 @@ use CodeIgniter\Database\Exceptions\DatabaseException;
  */
 abstract class BaseUtils
 {
-
 	/**
 	 * Database object
 	 *
@@ -59,21 +30,21 @@ abstract class BaseUtils
 	/**
 	 * List databases statement
 	 *
-	 * @var string
+	 * @var string|boolean
 	 */
 	protected $listDatabases = false;
 
 	/**
 	 * OPTIMIZE TABLE statement
 	 *
-	 * @var string
+	 * @var string|boolean
 	 */
 	protected $optimizeTable = false;
 
 	/**
 	 * REPAIR TABLE statement
 	 *
-	 * @var string
+	 * @var string|boolean
 	 */
 	protected $repairTable = false;
 
@@ -82,7 +53,7 @@ abstract class BaseUtils
 	/**
 	 * Class constructor
 	 *
-	 * @param ConnectionInterface|object $db
+	 * @param ConnectionInterface $db
 	 */
 	public function __construct(ConnectionInterface &$db)
 	{
@@ -95,7 +66,7 @@ abstract class BaseUtils
 	 * List databases
 	 *
 	 * @return array|boolean
-	 * @throws \CodeIgniter\Database\Exceptions\DatabaseException
+	 * @throws DatabaseException
 	 */
 	public function listDatabases()
 	{
@@ -104,7 +75,8 @@ abstract class BaseUtils
 		{
 			return $this->db->dataCache['db_names'];
 		}
-		elseif ($this->listDatabases === false)
+
+		if ($this->listDatabases === false)
 		{
 			if ($this->db->DBDebug)
 			{
@@ -134,12 +106,12 @@ abstract class BaseUtils
 	/**
 	 * Determine if a particular database exists
 	 *
-	 * @param  string $database_name
+	 * @param  string $databaseName
 	 * @return boolean
 	 */
-	public function databaseExists(string $database_name): bool
+	public function databaseExists(string $databaseName): bool
 	{
-		return in_array($database_name, $this->listDatabases());
+		return in_array($databaseName, $this->listDatabases(), true);
 	}
 
 	//--------------------------------------------------------------------
@@ -147,11 +119,11 @@ abstract class BaseUtils
 	/**
 	 * Optimize Table
 	 *
-	 * @param  string $table_name
+	 * @param  string $tableName
 	 * @return mixed
-	 * @throws \CodeIgniter\Database\Exceptions\DatabaseException
+	 * @throws DatabaseException
 	 */
-	public function optimizeTable(string $table_name)
+	public function optimizeTable(string $tableName)
 	{
 		if ($this->optimizeTable === false)
 		{
@@ -162,7 +134,7 @@ abstract class BaseUtils
 			return false;
 		}
 
-		$query = $this->db->query(sprintf($this->optimizeTable, $this->db->escapeIdentifiers($table_name)));
+		$query = $this->db->query(sprintf($this->optimizeTable, $this->db->escapeIdentifiers($tableName)));
 		if ($query !== false)
 		{
 			$query = $query->getResultArray();
@@ -178,7 +150,7 @@ abstract class BaseUtils
 	 * Optimize Database
 	 *
 	 * @return mixed
-	 * @throws \CodeIgniter\Database\Exceptions\DatabaseException
+	 * @throws DatabaseException
 	 */
 	public function optimizeDatabase()
 	{
@@ -192,9 +164,9 @@ abstract class BaseUtils
 		}
 
 		$result = [];
-		foreach ($this->db->listTables() as $table_name)
+		foreach ($this->db->listTables() as $tableName)
 		{
-			$res = $this->db->query(sprintf($this->optimizeTable, $this->db->escapeIdentifiers($table_name)));
+			$res = $this->db->query(sprintf($this->optimizeTable, $this->db->escapeIdentifiers($tableName)));
 			if (is_bool($res))
 			{
 				return $res;
@@ -207,7 +179,7 @@ abstract class BaseUtils
 			// Postgre & SQLite3 returns empty array
 			if (empty($res))
 			{
-				$key = $table_name;
+				$key = $tableName;
 			}
 			else
 			{
@@ -228,11 +200,11 @@ abstract class BaseUtils
 	/**
 	 * Repair Table
 	 *
-	 * @param  string $table_name
+	 * @param  string $tableName
 	 * @return mixed
-	 * @throws \CodeIgniter\Database\Exceptions\DatabaseException
+	 * @throws DatabaseException
 	 */
-	public function repairTable(string $table_name)
+	public function repairTable(string $tableName)
 	{
 		if ($this->repairTable === false)
 		{
@@ -243,7 +215,7 @@ abstract class BaseUtils
 			return false;
 		}
 
-		$query = $this->db->query(sprintf($this->repairTable, $this->db->escapeIdentifiers($table_name)));
+		$query = $this->db->query(sprintf($this->repairTable, $this->db->escapeIdentifiers($tableName)));
 		if (is_bool($query))
 		{
 			return $query;
@@ -312,7 +284,10 @@ abstract class BaseUtils
 		}
 
 		// Create variables for convenience
-		extract($params);
+		$root    = $params['root'];
+		$newline = $params['newline'];
+		$tab     = $params['tab'];
+		$element = $params['element'];
 
 		// Load the xml helper
 		helper('xml');
@@ -321,11 +296,14 @@ abstract class BaseUtils
 		while ($row = $query->getUnbufferedRow())
 		{
 			$xml .= $tab . '<' . $element . '>' . $newline;
+
 			foreach ($row as $key => $val)
 			{
-				$val  = (! empty($val)) ? xml_convert($val) : '';
+				$val = (! empty($val)) ? xml_convert($val) : '';
+
 				$xml .= $tab . $tab . '<' . $key . '>' . $val . '</' . $key . '>' . $newline;
 			}
+
 			$xml .= $tab . '</' . $element . '>' . $newline;
 		}
 
@@ -339,7 +317,7 @@ abstract class BaseUtils
 	 *
 	 * @param  array|string $params
 	 * @return mixed
-	 * @throws \CodeIgniter\Database\Exceptions\DatabaseException
+	 * @throws DatabaseException
 	 */
 	public function backup($params = [])
 	{
@@ -356,7 +334,7 @@ abstract class BaseUtils
 			'tables'             => [],
 			'ignore'             => [],
 			'filename'           => '',
-			'format'             => 'gzip', // gzip, zip, txt
+			'format'             => 'gzip', // gzip, txt
 			'add_drop'           => true,
 			'add_insert'         => true,
 			'newline'            => "\n",
@@ -383,15 +361,14 @@ abstract class BaseUtils
 		}
 
 		// Validate the format
-		if (! in_array($prefs['format'], ['gzip', 'zip', 'txt'], true))
+		if (! in_array($prefs['format'], ['gzip', 'txt'], true))
 		{
 			$prefs['format'] = 'txt';
 		}
 
 		// Is the encoder supported? If not, we'll either issue an
 		// error or use plain text depending on the debug settings
-		if (($prefs['format'] === 'gzip' && ! function_exists('gzencode'))
-			|| ( $prefs['format'] === 'zip' && ! function_exists('gzcompress')))
+		if ($prefs['format'] === 'gzip' && ! function_exists('gzencode'))
 		{
 			if ($this->db->DBDebug)
 			{
@@ -401,46 +378,12 @@ abstract class BaseUtils
 			$prefs['format'] = 'txt';
 		}
 
-		// Was a Zip file requested?
-		if ($prefs['format'] === 'zip')
-		{
-			// Set the filename if not provided (only needed with Zip files)
-			if ($prefs['filename'] === '')
-			{
-				$prefs['filename'] = (count($prefs['tables']) === 1 ? $prefs['tables'] : $this->db->database)
-					. date('Y-m-d_H-i', time()) . '.sql';
-			}
-			else
-			{
-				// If they included the .zip file extension we'll remove it
-				if (preg_match('|.+?\.zip$|', $prefs['filename']))
-				{
-					$prefs['filename'] = str_replace('.zip', '', $prefs['filename']);
-				}
-
-				// Tack on the ".sql" file extension if needed
-				if (! preg_match('|.+?\.sql$|', $prefs['filename']))
-				{
-					$prefs['filename'] .= '.sql';
-				}
-			}
-
-			// Load the Zip class and output it
-			//          $CI =& get_instance();
-			//          $CI->load->library('zip');
-			//          $CI->zip->add_data($prefs['filename'], $this->_backup($prefs));
-			//          return $CI->zip->get_zip();
-		}
-		elseif ($prefs['format'] === 'txt') // Was a text file requested?
+		if ($prefs['format'] === 'txt') // Was a text file requested?
 		{
 			return $this->_backup($prefs);
 		}
-		elseif ($prefs['format'] === 'gzip') // Was a Gzip file requested?
-		{
-			return gzencode($this->_backup($prefs));
-		}
 
-		return;
+		return gzencode($this->_backup($prefs));
 	}
 
 	//--------------------------------------------------------------------
