@@ -627,15 +627,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/stacks/{{stack}}",
+							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"projects",
-								"{{project}}",
 								"stacks",
 								"{{stack}}"
 							]
@@ -870,7 +868,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"title\": \"New task\",\n\t\"stack\": \"{{stack}}\"\n}",
+							"raw": "{\n\t\"title\": \"New task\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -878,15 +876,15 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/tasks",
+							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/tasks",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"projects",
-								"{{project}}",
+								"stacks",
+								"{{stack}}",
 								"tasks"
 							]
 						}
@@ -918,7 +916,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"title\": \"New task\",\n\t\"stack\": \"{{stack}}\"\n}",
+							"raw": "{\n\t\"title\": \"New task\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -926,15 +924,15 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/tasks?position=top",
+							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/tasks?position=top",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"projects",
-								"{{project}}",
+								"stacks",
+								"{{stack}}",
 								"tasks"
 							],
 							"query": [
@@ -942,32 +940,6 @@
 									"key": "position",
 									"value": "top"
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Single Task",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"tasks",
-								"{{task}}"
 							]
 						}
 					},
@@ -1009,7 +981,45 @@
 					"response": []
 				},
 				{
-					"name": "Tasks order",
+					"name": "Get Single Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"task\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"tasks",
+								"{{task}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "-Tasks order",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1045,7 +1055,7 @@
 					"response": []
 				},
 				{
-					"name": "All Tasks by Board",
+					"name": "-All Tasks by Board",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1072,7 +1082,7 @@
 					"response": []
 				},
 				{
-					"name": "All Tasks by Stack",
+					"name": "-All Tasks by Stack",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1099,7 +1109,7 @@
 					"response": []
 				},
 				{
-					"name": "Task watchers",
+					"name": "-Task watchers",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1126,7 +1136,7 @@
 					"response": []
 				},
 				{
-					"name": "Add Task watcher",
+					"name": "-Add Task watcher",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1153,7 +1163,7 @@
 					"response": []
 				},
 				{
-					"name": "Remove Task watcher",
+					"name": "-Remove Task watcher",
 					"request": {
 						"method": "GET",
 						"header": [

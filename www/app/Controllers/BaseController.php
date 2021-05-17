@@ -94,7 +94,7 @@ class BaseController extends Controller
             die();
         }
         $this->lockId = $id;
-        cache()->save($id, $user, 60);
+        cache()->save($this->lockId, $user, 30);
     }
 
     protected function unlock()

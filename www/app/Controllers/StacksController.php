@@ -72,14 +72,21 @@ class StacksController extends BaseController
         return $this->reply($stack);
     }
 
-    public function update_v1($idProject, $idStack)
+    public function update_v1($idStack)
     {
         $this->lock($idStack);
+
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($idStack);
+
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-UPDATE");
+        }
 
         helper("documents");
 
         $user = $this->request->user;
-        $document = documents_load($idProject, $user);
+        $document = documents_load($stack->project, $user);
 
         $stackData = $this->request->getJSON();
         unset($stackData->created);
@@ -122,12 +129,11 @@ class StacksController extends BaseController
         }
 
         // update the stack data
-        $stackModel = new StackModel();
-        if ($stackModel->update($idStack, $stackData) === false) {
+        if ($stackModel->update($stack->id, $stackData) === false) {
             return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
         }
 
-        $this->addActivity($idProject, $idStack, $this::ACTION_UPDATE, $this::SECTION_STACK);
+        $this->addActivity($stack->project, $stack->id, $this::ACTION_UPDATE, $this::SECTION_STACK);
 
         return $this->reply(true);
     }
@@ -174,7 +180,7 @@ class StacksController extends BaseController
 
     public function todo_v1($idStack)
     {
-        $this->lock();
+        $this->lock($idStack);
 
         $board = $this->request->board;
 

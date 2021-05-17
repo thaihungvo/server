@@ -76,7 +76,7 @@ $routes->get("/ping", "PingController::index");
     // create a stack
     $routes->post("/api/v1/projects/(:any)/stacks", "StacksController::add_v1/$1");
     // update a stack
-    $routes->put("/api/v1/projects/(:any)/stacks/(:any)", "StacksController::update_v1/$1/$2");
+    $routes->put("/api/v1/stacks/(:any)", "StacksController::update_v1/$1");
     // mark all tasks as complete
     $routes->get("/api/v1/projects/(:any)stacks/(:any)/done", "StacksController::done_v1/$1");
     // mark all tasks as to do
@@ -95,7 +95,13 @@ $routes->get("/ping", "PingController::index");
 
 // TASKS
     // create a task
-    $routes->post("/api/v1/projects/(:any)/tasks", "TasksController::add_v1/$1");
+    $routes->post("/api/v1/stacks/(:any)/tasks", "TasksController::add_v1/$1");
+    // update a task
+    $routes->put("/api/v1/tasks/(:any)", "TasksController::update_v1/$1");
+    // get single task
+    $routes->get("/api/v1/tasks/(:any)", "TasksController::one_v1/$1");
+    // delete a task
+    $routes->delete("/api/v1/tasks/(:any)", "TasksController::delete_v1/$1");
 
     // get watchers for the task
     $routes->get("/api/v1/tasks/(:any)/watchers", "TasksController::get_watchers_v1/$1");
@@ -107,12 +113,7 @@ $routes->get("/ping", "PingController::index");
     $routes->get("/api/v1/boards/(:any)/tasks", "TasksController::all_board_v1/$1");
     // tasks by stack
     $routes->get("/api/v1/stacks/(:any)/tasks", "TasksController::all_stack_v1/$1");
-    // single task
-    $routes->get("/api/v1/tasks/(:any)", "TasksController::one_v1/$1");
-    // update a task
-    $routes->put("/api/v1/tasks/(:any)", "TasksController::update_v1/$1");
-    // delete a task
-    $routes->delete("/api/v1/tasks/(:any)", "TasksController::delete_v1/$1");
+
 
 // PROJECT
     // retreives a project
