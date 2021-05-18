@@ -1324,7 +1324,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/35436ec7-d32b-4f50-bba5-b5f276f289f9/tags",
+							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/tags",
 							"host": [
 								"{{server}}"
 							],
@@ -1332,7 +1332,7 @@
 								"api",
 								"{{ver}}",
 								"projects",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
+								"{{project}}",
 								"tags"
 							]
 						}
@@ -1360,7 +1360,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{board}}/tags",
+							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/tags",
 							"host": [
 								"{{server}}"
 							],
@@ -1368,7 +1368,7 @@
 								"api",
 								"{{ver}}",
 								"projects",
-								"{{board}}",
+								"{{project}}",
 								"tags"
 							]
 						}
@@ -1396,15 +1396,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{board}}/tags/8decf5f4-91c7-11ea-b366-0d4c57d00ccc",
+							"raw": "{{server}}/api/{{ver}}/tags/8decf5f4-91c7-11ea-b366-0d4c57d00ccc",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"projects",
-								"{{board}}",
 								"tags",
 								"8decf5f4-91c7-11ea-b366-0d4c57d00ccc"
 							]
@@ -1442,11 +1440,193 @@
 		},
 		{
 			"name": "People",
-			"item": []
+			"item": [
+				{
+					"name": "Get People",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/people",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"people"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add person",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/people",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"people"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update person",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/people/1234-12345-12334-12423",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"people",
+								"1234-12345-12334-12423"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Person",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/people/1234-12345-12334-12423",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"people",
+								"1234-12345-12334-12423"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		},
 		{
 			"name": "Notepad",
-			"item": []
+			"item": [
+				{
+					"name": "Get Notepad",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/notepad/1234-1234-1234-1234",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"notepad",
+								"1234-1234-1234-1234"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Notepad",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/notepad/1234-1234-1234-1234",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"notepad",
+								"1234-1234-1234-1234"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/notepad/1234-1234-1234-1234",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"notepad",
+								"1234-1234-1234-1234"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
