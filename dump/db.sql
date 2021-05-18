@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.26)
 # Database: stacks
-# Generation Time: 2021-05-17 13:49:50 +0000
+# Generation Time: 2021-05-18 08:31:59 +0000
 # ************************************************************
 
 
@@ -37,20 +37,6 @@ CREATE TABLE `stk_activities` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-LOCK TABLES `stk_activities` WRITE;
-/*!40000 ALTER TABLE `stk_activities` DISABLE KEYS */;
-
-INSERT INTO `stk_activities` (`id`, `user`, `instance`, `parent`, `item`, `action`, `section`, `created`)
-VALUES
-	(1,1,'85e788f3-6bc7-466e-a187-43318ab26575','fdb1fc16-48b9-4f68-a381-9280db20ac75','','CREATE','folder','2021-05-17 15:39:22'),
-	(2,1,'85e788f3-6bc7-466e-a187-43318ab26575','d8794996-5bdc-4c9f-a91d-9dcf523c22d5','1','CREATE','project','2021-05-17 15:47:11'),
-	(3,1,'85e788f3-6bc7-466e-a187-43318ab26575','d8794996-5bdc-4c9f-a91d-9dcf523c22d5','fdb1fc16-48b9-4f68-a381-9280db20ac75','DELETE','document','2021-05-17 15:47:18'),
-	(4,1,'85e788f3-6bc7-466e-a187-43318ab26575','d8794996-5bdc-4c9f-a91d-9dcf523c22d5','d8794996-5bdc-4c9f-a91d-9dcf523c22d5','CREATE','project','2021-05-17 15:48:22'),
-	(5,1,'85e788f3-6bc7-466e-a187-43318ab26575','36704fe7-be20-4cf9-ba6c-e6577b29b268','77bc52f4-e51e-4b7e-9c9c-e16f462e2266','CREATE','task','2021-05-17 15:48:41'),
-	(6,1,'85e788f3-6bc7-466e-a187-43318ab26575','d8794996-5bdc-4c9f-a91d-9dcf523c22d5','','UPDATE','project','2021-05-17 15:48:41');
-
-/*!40000 ALTER TABLE `stk_activities` ENABLE KEYS */;
-UNLOCK TABLES;
 
 
 # Dump of table stk_attachments
@@ -95,16 +81,6 @@ CREATE TABLE `stk_documents` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-LOCK TABLES `stk_documents` WRITE;
-/*!40000 ALTER TABLE `stk_documents` DISABLE KEYS */;
-
-INSERT INTO `stk_documents` (`id`, `title`, `type`, `owner`, `everyone`, `folder`, `position`, `created`, `updated`, `deleted`)
-VALUES
-	('d8794996-5bdc-4c9f-a91d-9dcf523c22d5','Some document','project',1,1,'fdb1fc16-48b9-4f68-a381-9280db20ac75',1,'2021-05-17 15:47:11','2021-05-17 15:47:18',NULL),
-	('fdb1fc16-48b9-4f68-a381-9280db20ac75','Some folder','folder',1,1,'',1,'2021-05-17 15:39:22','2021-05-17 15:45:03',NULL);
-
-/*!40000 ALTER TABLE `stk_documents` ENABLE KEYS */;
-UNLOCK TABLES;
 
 
 # Dump of table stk_documents_members
@@ -148,15 +124,6 @@ CREATE TABLE `stk_projects_options` (
   UNIQUE KEY `board` (`project`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-LOCK TABLES `stk_projects_options` WRITE;
-/*!40000 ALTER TABLE `stk_projects_options` DISABLE KEYS */;
-
-INSERT INTO `stk_projects_options` (`project`, `hourlyFee`, `feeCurrency`, `archived_order`)
-VALUES
-	('d8794996-5bdc-4c9f-a91d-9dcf523c22d5',0,'USD','title-asc');
-
-/*!40000 ALTER TABLE `stk_projects_options` ENABLE KEYS */;
-UNLOCK TABLES;
 
 
 # Dump of table stk_projects_tags
@@ -193,15 +160,6 @@ CREATE TABLE `stk_stacks` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-LOCK TABLES `stk_stacks` WRITE;
-/*!40000 ALTER TABLE `stk_stacks` DISABLE KEYS */;
-
-INSERT INTO `stk_stacks` (`id`, `title`, `project`, `tag`, `position`, `created`, `updated`, `deleted`)
-VALUES
-	('77bc52f4-e51e-4b7e-9c9c-e16f462e2266','To Do','d8794996-5bdc-4c9f-a91d-9dcf523c22d5','',1,'2021-05-17 15:48:22','2021-05-17 15:48:22',NULL);
-
-/*!40000 ALTER TABLE `stk_stacks` ENABLE KEYS */;
-UNLOCK TABLES;
 
 
 # Dump of table stk_stacks_collapsed
@@ -218,15 +176,6 @@ CREATE TABLE `stk_stacks_collapsed` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-LOCK TABLES `stk_stacks_collapsed` WRITE;
-/*!40000 ALTER TABLE `stk_stacks_collapsed` DISABLE KEYS */;
-
-INSERT INTO `stk_stacks_collapsed` (`id`, `stack`, `collapsed`, `user`, `created`)
-VALUES
-	(1,'77bc52f4-e51e-4b7e-9c9c-e16f462e2266',0,1,'2021-05-17 15:48:22');
-
-/*!40000 ALTER TABLE `stk_stacks_collapsed` ENABLE KEYS */;
-UNLOCK TABLES;
 
 
 # Dump of table stk_tasks
@@ -259,15 +208,6 @@ CREATE TABLE `stk_tasks` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-LOCK TABLES `stk_tasks` WRITE;
-/*!40000 ALTER TABLE `stk_tasks` DISABLE KEYS */;
-
-INSERT INTO `stk_tasks` (`id`, `title`, `content`, `tags`, `startdate`, `duedate`, `cover`, `done`, `altTags`, `estimate`, `spent`, `progress`, `hourlyFee`, `archived`, `project`, `stack`, `position`, `owner`, `created`, `updated`, `deleted`)
-VALUES
-	('36704fe7-be20-4cf9-ba6c-e6577b29b268','New task','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'d8794996-5bdc-4c9f-a91d-9dcf523c22d5','77bc52f4-e51e-4b7e-9c9c-e16f462e2266',1,1,'2021-05-17 15:48:41',NULL,NULL);
-
-/*!40000 ALTER TABLE `stk_tasks` ENABLE KEYS */;
-UNLOCK TABLES;
 
 
 # Dump of table stk_tasks_assignees

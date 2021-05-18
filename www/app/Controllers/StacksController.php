@@ -6,12 +6,12 @@ use App\Models\StackCollapsedModel;
 
 class StacksController extends BaseController
 {
-    public function add_v1($idStack)
+    public function add_v1($idProject)
     {
         helper("documents");
 
         $user = $this->request->user;
-        $document = documents_load($idStack, $user);
+        $document = documents_load($idProject, $user);
         
         if (!$document) {
             $this->reply("Project not found", 404, "ERR-STACK-CREATE");
@@ -66,7 +66,7 @@ class StacksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
 
-        $this->addActivity($document->id, $idStack, $this::ACTION_CREATE, $this::SECTION_PROJECT);
+        $this->addActivity($document->id, $stackData->id, $this::ACTION_CREATE, $this::SECTION_PROJECT);
 
         $stack = $stackModel->find($stackData->id);
         return $this->reply($stack);
@@ -294,45 +294,31 @@ class StacksController extends BaseController
     {
         $this->lock($idStack);
 
-        $board = $this->request->board;
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($idStack);
 
-        // get all tasks connected to this stack
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-DELETE");
+        }
+
+        // delete all connected tasks
         $taskModel = new TaskModel();
-        $taskBuild = $taskModel->builder();
-        $taskQuery = $taskBuild->select("*")
-            ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
-            ->where('tasks_order.stack', $board->stack)
-            ->where('tasks.deleted', null)
-            ->get();
-
-        $tasks = $taskQuery->getResult();
-
-        $tasksIDs = array();
-        foreach ($tasks as $task) {
-            $tasksIDs[] = $task->id;
-        }
-
-        if (count($tasksIDs)) {
-            try {
-                if ($taskModel->delete($tasksIDs) === false) {
-                    return $this->reply($taskModel->errors(), 500, "ERR-STACK-DELETE-TASKS-ERROR");
-                }
-            } catch (\Exception $e) {
-                return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE-TASKS-ERROR");
-            }
-        }
+        $taskBuilder = $taskModel->builder();
+        $taskBuilder->set("deleted", "NOW()", false)
+            ->where("stack", $stack->id)
+            ->update();
 
         // delete selected stack
-        $stackModel = new StackModel();
         try {
-            if ($stackModel->delete([$board->stack]) === false) {
-                return $this->reply($stackModel->errors(), 500, "ERR-STACK-DELETE-ERROR");
+            if ($stackModel->delete([$stack->id]) === false) {
+                return $this->reply($stackModel->errors(), 500, "ERR-STACK-DELETE");
             }    
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE-ERROR");
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE");
         }
-        
 
-        return $this->reply(null, 200, "OK-STACK-DELETE-SUCCESS");
+        $this->addActivity($stack->project, $stack->id, $this::ACTION_DELETE, $this::SECTION_STACK);
+
+        return $this->reply(true);
     }
 }

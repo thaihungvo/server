@@ -10,12 +10,11 @@ if (!function_exists('tasks_load'))
     {
         $taskModel = new TaskModel();
         $taskBuilder = $taskModel->builder();
-        $taskQuery = $taskBuilder->select("tasks.*, tasks_order.stack, tasks_order.order")
-            ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
-            ->whereIn('tasks_order.stack', $stacksIDs)
-            ->where('tasks.deleted', NULL)
-            ->where('tasks.archived', NULL)
-            ->orderBy('tasks_order.`order`', 'ASC')
+        $taskQuery = $taskBuilder->select("*")
+            ->whereIn('stack', $stacksIDs)
+            ->where('deleted', NULL)
+            ->where('archived', NULL)
+            ->orderBy('position', 'ASC')
             ->get();
         $tasks = $taskQuery->getResult();
 

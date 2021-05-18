@@ -642,6 +642,32 @@
 					"response": []
 				},
 				{
+					"name": "Delete Stack",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"stacks",
+								"{{stack}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "-Stacks order",
 					"request": {
 						"method": "POST",
@@ -807,32 +833,6 @@
 								"stacks",
 								"{{stack}}",
 								"archive-done"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "-Delete Stack",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"stacks",
-								"{{stack}}"
 							]
 						}
 					},

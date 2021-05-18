@@ -11,9 +11,8 @@ class DocumentsController extends BaseController
         // get all the documents
         $documentModel = new DocumentModel();
         $documentBuilder = $documentModel->builder();
-        $documentQuery = $documentBuilder->select("documents.id, documents.title, documents.type, documents.updated, documents.created, documents.folder, documents.order")
+        $documentQuery = $documentBuilder->select("documents.id, documents.title, documents.type, documents.updated, documents.created, documents.folder")
             ->join("documents_members", "documents_members.document = documents.id", "left")
-            // ->join("documents_order", "documents_members.document = documents.id", "left")
             ->where("documents.deleted", NULL)
             ->groupStart()
                 ->where("documents.owner", $user->id)
@@ -21,7 +20,7 @@ class DocumentsController extends BaseController
                 ->orWhere("documents.everyone", 1)
             ->groupEnd()
             ->groupBy("documents.id")
-            ->orderBy("documents.order", "ASC")
+            ->orderBy("documents.position", "ASC")
             ->get();
         $documents = $documentQuery->getResult();
 
@@ -40,7 +39,6 @@ class DocumentsController extends BaseController
             foreach ($documents as &$document) {
                 if ($document->type !== $this::TYPE_FOLDER && $document->folder === $folder->id) {
                     unset($document->folder);
-                    unset($document->order);
                     $folder->records[] = $document;
                 }
             }
