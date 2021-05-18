@@ -136,12 +136,25 @@ if (!function_exists('documents_delete'))
     {
         $documentModel = new DocumentModel();
 
+        // delete the current document
         try {
             if ($documentModel->delete([$document->id]) === false) {
                 return $documentModel->errors();
             }    
         } catch (\Exception $e) {
             return $e->getMessage();
+        }
+
+        // in case the user deleted a folder
+        // then also delete all sub documents
+        if ($document->type === "folder") {
+            try {
+                if ($documentModel->where("folder", $document->id)->delete() === false) {
+                    return $documentModel->errors();
+                }    
+            } catch (\Exception $e) {
+                return $e->getMessage();
+            }
         }
 
         return true;
