@@ -21,20 +21,22 @@ services:
       MYSQL_PASSWORD: stacks
       MYSQL_ROOT_PASSWORD: stacks
     volumes:
-      - ./dump:/docker-entrypoint-initdb.d
+      - ./dump/db.sql:/docker-entrypoint-initdb.d/db.sql
       - ./conf:/etc/mysql/conf.d
       - persistent:/var/lib/mysql
     networks:
       - default
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    links:
-      - stacksdb:db
+  adminer:
+    image: adminer:latest
+    depends_on: 
+      - stacksdb
     ports:
-      - 8887:80
+      - '8887:8080'
     environment:
-      MYSQL_USER: stacks
-      MYSQL_PASSWORD: stacks
-      MYSQL_ROOT_PASSWORD: stacks
+      ADMINER_DEFAULT_DB_DRIVER: mysql
+      ADMINER_DEFAULT_DB_HOST: stacksdb
+      ADMINER_DEFAULT_DB_NAME: stacks
+      ADMINER_DESIGN: nette 
+      ADMINER_PLUGINS: tables-filter tinymce
 volumes:
   persistent:
