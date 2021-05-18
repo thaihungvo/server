@@ -60,24 +60,10 @@ class TasksController extends BaseController
             return $this->reply("Project not found", 404, "ERR-TASK-CREATE");
         }
 
-        if (!$taskData->stack) {
-            return $this->reply("Missing required field `stack`", 500, "ERR-TASK-CREATE");
-        }
-
         // enforce an id in case there"s none
         if (!isset($taskData->id)) {
             helper("uuid");
             $taskData->id = uuid();
-        }
-
-        // check if the stack exists
-        $stackModel = new StackModel();
-        $stack = $stackModel->where("project", $document->id)
-            ->where("id", $taskData->stack)
-            ->first();
-
-        if (!$stack) {
-            return $this->reply("Stack not found", 404, "ERR-TASK-CREATE");
         }
 
         $taskModel = new TaskModel();
@@ -198,8 +184,6 @@ class TasksController extends BaseController
             }
         }
 
-        
-
         // generate a list of new assignees
         if (isset($taskData->assignees)) {
             // delete all assigned task users
@@ -232,6 +216,9 @@ class TasksController extends BaseController
             }
         }
         
+        if (isset($taskData->tags)) {
+            $taskData->tags = json_encode($taskData->tags);
+        }
 
         unset($taskData->id);
         unset($taskData->order);
@@ -245,8 +232,8 @@ class TasksController extends BaseController
             return $this->reply(null, 500, "ERR-TASK-UPDATE");
         }
 
-        // Events::trigger("AFTER_task_UPDATE", $taskID);
-        // Events::trigger("update_board", $board->id);
+        $this->addActivity($stack->id, $task->id, $this::ACTION_UPDATE, $this::SECTION_TASK);
+        $this->addActivity($document->id, $task->id, $this::ACTION_UPDATE, $this::SECTION_BOARD);
 
         return $this->reply(true);
     }

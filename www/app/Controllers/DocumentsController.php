@@ -242,11 +242,15 @@ class DocumentsController extends BaseController
 
         switch ($document->type) {
             case $this::TYPE_FOLDER:
+                // TODO delete all data under it
+                $this->addActivity("", $document->folder, $this::ACTION_DELETE, $this::SECTION_DOCUMENT);
                 break;
             case $this::TYPE_PROJECT:
                 $this->addActivity($document->folder, $document->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENT);
                 break;
         }
+
+        $this->addActivity("", $document->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENTS);
 
         return $this->reply(true);
     }
