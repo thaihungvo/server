@@ -45,7 +45,6 @@ class BaseController extends Controller
     const SECTION_FOLDER = "folder";
     const SECTION_DOCUMENTS = "documents";
     const SECTION_DOCUMENT = "document";
-    
     const SECTION_PROJECT = "project";
     const SECTION_NOTEPAD = "notepad";
     const SECTION_PEOPLE = "prople";
