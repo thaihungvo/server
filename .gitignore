@@ -129,3 +129,5 @@ nb-configuration.xml
 /phpunit*.xml
 /.phpunit.*.cache
 server.todo
+
+/events/node_modules

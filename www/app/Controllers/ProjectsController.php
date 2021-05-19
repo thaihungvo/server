@@ -41,7 +41,15 @@ class ProjectsController extends BaseController
         $document->updated = $projectData->updated;
         $document->title = $projectData->title;
 
-        documents_update($document);
+        $result = documents_update($document);
+        if ($result !== true) {
+            return $this->reply($result, 500, "ERR-PROJECTS-UPDATE");
+        }
+
+        $result = projects_add_tags($document->id, $projectData->tags);
+        if ($result !== true) {
+            return $this->reply($result, 500, "ERR-PROJECTS-UPDATE");
+        }
 
         $this->addActivity("", $id, $this::ACTION_UPDATE, $this::SECTION_PROJECT);
         $this->addActivity("", $id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);

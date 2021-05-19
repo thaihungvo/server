@@ -5,9 +5,9 @@
 # http://www.sequelpro.com/
 # https://github.com/sequelpro/sequelpro
 #
-# Host: 127.0.0.1 (MySQL 5.7.26)
+# Host: 127.0.0.1 (MySQL 5.7.26-log)
 # Database: stacks
-# Generation Time: 2021-05-18 08:31:59 +0000
+# Generation Time: 2021-05-18 15:18:02 +0000
 # ************************************************************
 
 
@@ -186,7 +186,7 @@ DROP TABLE IF EXISTS `stk_tasks`;
 CREATE TABLE `stk_tasks` (
   `id` char(36) NOT NULL DEFAULT '',
   `title` text NOT NULL,
-  `content` text NOT NULL,
+  `description` text NOT NULL,
   `tags` text,
   `startdate` datetime DEFAULT NULL,
   `duedate` datetime DEFAULT NULL,

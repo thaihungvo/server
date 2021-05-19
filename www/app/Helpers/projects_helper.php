@@ -19,6 +19,38 @@ if (!function_exists('projects_load_tags'))
     }
 }
 
+if (!function_exists('projects_add_tags'))
+{
+    function projects_add_tags($projectId, $tags)
+    {
+        $tagModel = new TagModel();
+
+        try {
+            if ($tagModel->where("project", $projectId)->delete() === false) {
+                return $tagModel->errors();
+            }
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+
+        foreach ($tags as &$tag) {
+            $tag->project = $projectId;
+        }
+
+        $tagBuilder = $tagModel->builder();
+
+        try {
+            if ($tagBuilder->insertBatch($tags) === false) {
+                return $tagModel->errors();
+            }
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+
+        return true;
+    }
+}
+
 if (!function_exists('projects_load_stacks'))
 {
     function projects_load_stacks($id)
