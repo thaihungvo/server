@@ -114,16 +114,6 @@ $routes->get("/ping", "PingController::index");
     // tasks by stack
     $routes->get("/api/v1/stacks/(:any)/tasks", "TasksController::all_stack_v1/$1");
 
-// NOTEPAD
-    // create a notepad
-    $routes->post("/api/v1/documents/(:any)/notepads", "NotepadsController::add_v1/$1");
-    // update a notepad
-    $routes->put("/api/v1/notepads/(:any)", "NotepadsController::update_v1/$1");
-    // get single notepad
-    $routes->get("/api/v1/notepads/(:any)", "NotepadsController::one_v1/$1");
-    // delete a notepad
-    $routes->delete("/api/v1/notepads/(:any)", "NotepadsController::delete_v1/$1");
-
 // PROJECT
     // retreives a project
     $routes->get("/api/v1/projects/(:any)", "ProjectsController::one_v1/$1");
@@ -144,6 +134,14 @@ $routes->get("/ping", "PingController::index");
     $routes->get("/api/v1/download/(:any)", "FilesController::download_v1/$1");
     // update the attachments title
     $routes->put("/api/v1/attachment/(:any)", "FilesController::update_v1/$1");
+
+// NOTEPADS
+    // update a notepad
+    $routes->put("/api/v1/notepads/(:any)", "NotepadsController::update_v1/$1");
+    // get single notepad
+    $routes->get("/api/v1/notepads/(:any)", "NotepadsController::one_v1/$1");
+    // delete a notepad
+    $routes->delete("/api/v1/notepads/(:any)", "NotepadsController::delete_v1/$1");
 
 /**
  * --------------------------------------------------------------------

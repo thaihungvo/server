@@ -61,6 +61,11 @@ if (!function_exists('documents_create_options'))
             return projects_add_options($documentData->id, $documentData);
         }
 
+        if ($documentData->type === "notepad") {
+            helper("notepads");
+            return notepads_create($documentData->id);
+        }
+
         return true;
     }
 }

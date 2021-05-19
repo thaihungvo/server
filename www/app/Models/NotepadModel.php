@@ -5,7 +5,7 @@ use CodeIgniter\Model;
 class NotepadModel extends Model
 {
     protected $table      = "notepads";
-    protected $primaryKey = "id";
+    protected $primaryKey = "document";
     protected $returnType = "object";
 
     protected $useSoftDeletes = true;
@@ -15,7 +15,7 @@ class NotepadModel extends Model
     protected $useTimestamps = true;
     protected $createdField  = "created";
     protected $updatedField  = "updated";
-    protected $deletedField  = "deleted";
+    //protected $deletedField  = "deleted";
 
     protected $validationRules = [
         "document" => "required|min_length[35]",
