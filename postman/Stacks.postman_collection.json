@@ -1066,61 +1066,7 @@
 					"response": []
 				},
 				{
-					"name": "-All Tasks by Board",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/tasks",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"{{board}}",
-								"tasks"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "-All Tasks by Stack",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/tasks",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"stacks",
-								"{{stack}}",
-								"tasks"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "-Task watchers",
+					"name": "Task watchers",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1147,7 +1093,7 @@
 					"response": []
 				},
 				{
-					"name": "-Add Task watcher",
+					"name": "Add Task watcher",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1174,7 +1120,7 @@
 					"response": []
 				},
 				{
-					"name": "-Remove Task watcher",
+					"name": "Remove Task watcher",
 					"request": {
 						"method": "GET",
 						"header": [
