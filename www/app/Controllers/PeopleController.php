@@ -44,7 +44,6 @@ class PeopleController extends BaseController
     {
         $this->lock($peopleID);
 
-        $peopleModel = new PeopleModel();
         helper("people");
         $people = people_load($peopleID);
 
@@ -53,11 +52,12 @@ class PeopleController extends BaseController
         }
 
         $peopleData = $this->request->getJSON();
-
         unset($peopleData->id);
 
-        if ($peopleModel->update($peopleID, $peopleData) === false) {
-            return $this->reply(null, 500, "ERR-PEOPLE-UPDATE");
+        $result = people_update($peopleData);
+
+        if ($result !== true) {
+            return $this->reply($result, 500, "ERR-PEOPLE-UPDATE");
         }
 
         return $this->reply(true);

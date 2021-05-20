@@ -44,6 +44,31 @@ if (!function_exists('people_create'))
     }
 }
 
+if (!function_exists('people_update'))
+{
+    function people_update($peopleData)
+    {
+        $peopleModel = new PeopleModel();
+
+        $people = $peopleModel->where("deleted", NULL)
+            ->find($peopleData->id);
+
+        if (!$people) {
+            return "No people found with the requested id `".$peopleData->id."`";
+        }
+
+        try {
+            if ($peopleModel->update($peopleData->id, $peopleData) === false) {
+                return $peopleModel->errors();
+            }
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+
+        return true;
+    }
+}
+
 if (!function_exists('people_delete'))
 {
     function people_delete($people)
