@@ -10,12 +10,12 @@ class NotepadModel extends Model
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ["document", "content", "created", "updated"];
+    protected $allowedFields = ["document", "content", "created", "updated", "deleted"];
 
     protected $useTimestamps = true;
     protected $createdField  = "created";
     protected $updatedField  = "updated";
-    //protected $deletedField  = "deleted";
+    protected $deletedField  = "deleted";
 
     protected $validationRules = [
         "document" => "required|min_length[35]",

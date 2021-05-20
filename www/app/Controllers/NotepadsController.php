@@ -1,5 +1,6 @@
 <?php namespace App\Controllers;
 
+use App\Models\DocumentModel;
 use App\Models\NotepadModel;
 
 class NotepadsController extends BaseController
@@ -49,7 +50,7 @@ class NotepadsController extends BaseController
 
         $user = $this->request->user;
         
-        $notepadModel = new NotepadModel();
+        $documentModel = new DocumentModel();
         helper("notepads");
         $notepad = notepads_load($notepadID, $user->id);
 
@@ -59,14 +60,14 @@ class NotepadsController extends BaseController
 
         // delete selected notepad
         try {
-            if ($notepadModel->delete([$notepad->document]) === false) {
-                return $this->reply($notepadModel->errors(), 500, "ERR-NOTEPADS-DELETE");
+            if ($documentModel->delete([$notepad->id]) === false) {
+                return $this->reply($documentModel->errors(), 500, "ERR-NOTEPADS-DELETE");
             }
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-NOTEPADS-DELETE");
         }
 
-        $this->addActivity("", $notepad->document, $this::ACTION_DELETE, $this::SECTION_NOTEPAD);
+        //$this->addActivity("", $notepad->document, $this::ACTION_DELETE, $this::SECTION_NOTEPAD);
 
         return $this->reply(true);
     }
