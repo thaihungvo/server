@@ -33,6 +33,10 @@ if (!function_exists('projects_add_tags'))
             return $e->getMessage();
         }
 
+        if (!count($tags)) {
+            return true;
+        }
+
         foreach ($tags as &$tag) {
             $tag->project = $projectId;
         }
