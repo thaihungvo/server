@@ -7,47 +7,6 @@ use App\Models\TaskOrderModel;
 
 class BoardsController extends BaseController
 {
-    public function order_stacks_v1($id)
-    {
-        $this->lock();
-
-        $board = $this->request->board;
-        $orderData = $this->request->getJSON();
-
-        $stackOrderModel = new StackOrderModel();
-        
-        try {
-            $stackOrderModel->where('board', $board->id)
-                ->delete();
-        } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-STACK-ORDER");
-        }
-
-        $stackOrderBuilder = $stackOrderModel->builder();
-
-        $orders = [];
-        foreach ($orderData as  $i => $stackID) {
-            $orders[] = [
-                'board' => $board->id,
-                'stack' => $stackID,
-                'order' => $i + 1
-            ];
-        }
-
-        try {
-            if ($stackOrderBuilder->insertBatch($orders) === false) {
-                $errors = $stackOrderModel->errors();
-                return $this->reply($errors, 500, "ERR-STACK-ORDER");    
-            }
-        } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-STACK-ORDER");
-        }
-
-        Events::trigger("AFTER_stacks_ORDER", $board->id);
-
-        return $this->reply(null, 200, "OK-STACK-ORDER");
-    }
-
     public function order_tasks_v1($boardID, $stackID)
     {
         $this->lock();

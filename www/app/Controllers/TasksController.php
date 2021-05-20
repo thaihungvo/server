@@ -228,6 +228,18 @@ class TasksController extends BaseController
         unset($taskData->info);
         $taskData->archived = null;
 
+        if ($taskData->startdate) {
+            $taskData->startdate = substr(str_replace("T", " ", $taskData->startdate), 0, 19);
+        } else {
+            $taskData->startdate = NULL;
+        }
+
+        if ($taskData->duedate) {
+            $taskData->duedate = substr(str_replace("T", " ", $taskData->duedate), 0, 19);
+        } else {
+            $taskData->duedate = NULL;
+        }
+
         if ($taskModel->update($taskID, $taskData) === false) {
             return $this->reply(null, 500, "ERR-TASK-UPDATE");
         }

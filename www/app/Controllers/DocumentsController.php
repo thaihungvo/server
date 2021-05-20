@@ -179,7 +179,7 @@ class DocumentsController extends BaseController
         // update folders order
         if (count($foldersNeedUpdate)) {
             $foldersOrderQuery = array(
-                "INSERT INTO ".$db->prefixTable("documents")." (`id`, `order`) VALUES"
+                "INSERT INTO ".$db->prefixTable("documents")." (`id`, `position`) VALUES"
             );
 
             foreach ($foldersNeedUpdate as $i => $folder) {
@@ -190,7 +190,7 @@ class DocumentsController extends BaseController
                 $foldersOrderQuery[] = $value;
             }
 
-            $foldersOrderQuery[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `order`=VALUES(`order`);";
+            $foldersOrderQuery[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `position`=VALUES(`position`);";
             $foldersQuery = implode(" ", $foldersOrderQuery);
 
             if (!$db->query($foldersQuery)) {
@@ -201,7 +201,7 @@ class DocumentsController extends BaseController
         // update documents order
         if (count($documentsNeedUpdate)) {
             $documentsOrderQuery = array(
-                "INSERT INTO ".$db->prefixTable("documents")." (`id`, `folder`, `order`) VALUES"
+                "INSERT INTO ".$db->prefixTable("documents")." (`id`, `folder`, `position`) VALUES"
             );
 
             foreach ($documentsNeedUpdate as $i => $document) {
@@ -212,7 +212,7 @@ class DocumentsController extends BaseController
                 $documentsOrderQuery[] = $value;
             }
 
-            $documentsOrderQuery[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `folder`=VALUES(`folder`), `order`=VALUES(`order`);";
+            $documentsOrderQuery[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `folder`=VALUES(`folder`), `position`=VALUES(`position`);";
             $documentsQuery = implode(" ", $documentsOrderQuery);
 
             if (!$db->query($documentsQuery)) {

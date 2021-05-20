@@ -668,7 +668,7 @@
 					"response": []
 				},
 				{
-					"name": "-Stacks order",
+					"name": "Stacks order",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -688,7 +688,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/35436ec7-d32b-4f50-bba5-b5f276f289f9/order-stacks",
+							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/order",
 							"host": [
 								"{{server}}"
 							],
@@ -696,42 +696,15 @@
 								"api",
 								"{{ver}}",
 								"projects",
-								"35436ec7-d32b-4f50-bba5-b5f276f289f9",
-								"order-stacks"
+								"{{project}}",
+								"order"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "-Get Stacks list",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/stacks",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"{{board}}",
-								"stacks"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "-Mark all task as Done",
+					"name": "Mark all task as Done",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -758,7 +731,7 @@
 					"response": []
 				},
 				{
-					"name": "-Mark all tasks as To Do",
+					"name": "Mark all tasks as To Do",
 					"request": {
 						"method": "GET",
 						"header": [
