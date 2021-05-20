@@ -275,77 +275,14 @@ class TasksController extends BaseController
         return $this->reply(true);
     }
 
-    public function all_board_v1($id)
-    {
-        $board = $this->request->board;
-
-        $taskModel = new TaskModel();
-        $taskBuilder = $taskModel->builder();
-        $taskQuery = $taskBuilder->select("tasks.*")
-            ->join("tasks_order", "tasks_order.task = tasks.id")
-            ->where("tasks.deleted", NULL)
-            ->where("tasks_order.board", $board->id)
-            ->get();
-        $tasks = $taskQuery->getResult();
-
-        foreach ($tasks as &$task) {
-            $task->cover = (bool)$task->cover;
-            $task->done = (bool)$task->done;
-            $task->altTags = (bool)$task->altTags;
-            $task->progress = (int)$task->progress;
-            if (is_string($task->tags)) {
-                $task->tags = json_decode($task->tags);
-            }
-            if (is_string($task->info)) {
-                $task->info = json_decode($task->info);
-            }
-        }
-
-        return $this->reply($tasks);
-    }
-
-    public function all_stack_v1($stackID)
-    {
-        $board = $this->request->board;   
-
-        $taskModel = new TaskModel();
-
-        $builder = $taskModel->builder();
-        $query = $builder->select("tasks.*")
-            ->join("tasks_order", "tasks_order.task = tasks.id")
-            ->where("tasks.deleted", NULL)
-            ->where("tasks_order.stack", $stackID)
-            ->where("tasks_order.board", $board->id)
-            ->orderBy("tasks_order.`order`", "ASC")
-            ->get();
-
-        $tasks = $query->getResult();
-
-        foreach ($tasks as &$task) {
-            $task->cover = (bool)$task->cover;
-            $task->done = (bool)$task->done;
-            $task->altTags = (bool)$task->altTags;
-            $task->progress = (int)$task->progress;
-            if (is_string($task->tags)) {
-                $task->tags = json_decode($task->tags);
-            }
-            if (is_string($task->info)) {
-                $task->info = json_decode($task->info);
-            }
-        }
-
-        return $this->reply($tasks);
-    }
-
     public function get_watchers_v1($taskID)
     {
         $user = $this->request->user;
-        $board = $this->request->board;
 
         helper("watchers");
-        $watchers = tasks_watchers($board->task, $user);
+        $watchers = watchers_load($taskID, $user);
 
-        return $this->reply($watchers, 200, "OK-TASK-WATCHERS-SUCCESS");
+        return $this->reply($watchers);
     }
 
     public function add_watcher_v1($taskID)
@@ -366,25 +303,25 @@ class TasksController extends BaseController
         if (!count($watchers)) {
             try {
                 if ($taskWatcherModel->insert($watcher) === false) {
-                    return $this->reply($taskWatcherModel->errors(), 500, "ERR-TASK-ADD-WATCHER-ERROR");
+                    return $this->reply($taskWatcherModel->errors(), 500, "ERR-TASK-ADD-WATCHER");
                 }
             } catch (\Exception $e) {
-                return $this->reply($e->getMessage(), 500, "ERR-TASK-ADD-WATCHER-ERROR");
+                return $this->reply($e->getMessage(), 500, "ERR-TASK-ADD-WATCHER");
             }
         }
 
         // remove all stuck watchers        
         try {
             if ($taskWatcherModel->where("created <= DATE_SUB(NOW(), INTERVAL 2 HOUR)", NULL, false)->delete() === false) {
-                return $this->reply($taskModel->errors(), 500, "ERR-TASK-CLEAR-WATCHERS-ERROR");
+                return $this->reply($taskModel->errors(), 500, "ERR-TASK-ADD-WATCHER");
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-TASK-CLEAR-WATCHERS-ERROR");
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-ADD-WATCHER");
         }
 
-        Events::trigger("AFTER_task_watcher_ADD", $taskID);
+        $this->addActivity("", $taskID, $this::ACTION_CREATE, $this::SECTION_WATCHER);
 
-        return $this->reply(null, 200, "OK-TASK-ADD-WATCHERS-SUCCESS");
+        return $this->reply(true);
     }
 
     public function remove_watcher_v1($taskID)
@@ -394,15 +331,18 @@ class TasksController extends BaseController
         $taskWatcherModel = new TaskWatcherModel();
 
         try {
-            if ($taskWatcherModel->where("user", $user->id)->delete() === false) {
-                return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-DELETE-WATCHER-ERROR");
+            if ($taskWatcherModel
+                ->where("user", $user->id)
+                ->where("task", $taskID)->delete() === false
+            ) {
+                return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-DELETE-WATCHER");
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-WATCHER-ERROR");
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-WATCHER");
         }
 
-        Events::trigger("AFTER_task_watcher_REMOVE", $taskID);
+        $this->addActivity("", $taskID, $this::ACTION_DELETE, $this::SECTION_WATCHER);
 
-        return $this->reply(null, 200, "OK-TASK-DELETE-WATCHERS-SUCCESS");
+        return $this->reply(true);
     }
 }

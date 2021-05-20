@@ -3,9 +3,9 @@
 use App\Models\UserModel;
 use App\Models\TaskWatcherModel;
 
-if (!function_exists('tasks_watchers'))
+if (!function_exists('watchers_load'))
 {
-    function tasks_watchers($taskID, $user) 
+    function watchers_load($taskID, $user) 
 	{
 		$userModel = new UserModel();
         $userBuilder = $userModel->builder();
