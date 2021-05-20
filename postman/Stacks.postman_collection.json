@@ -204,7 +204,17 @@
 							"script": {
 								"exec": [
 									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"folder\", jsonData.data.id);"
+									"pm.environment.set(\"folder\", jsonData.data.id);",
+									"",
+									"pm.test(\"Add folder status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add folder response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -250,7 +260,16 @@
 							"script": {
 								"exec": [
 									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"document\", jsonData.data.id);"
+									"pm.environment.set(\"document\", jsonData.data.id);",
+									"",
+									"pm.test(\"Add document status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add document response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -327,6 +346,25 @@
 				},
 				{
 					"name": "Update Folder",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update folder status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Update folder response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.equal(true);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -338,7 +376,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"title\": \"Some folder\",\n  \"updated\": \"2021-05-20T08:32:25.998Z\",\n  \"type\": \"folder\"\n}",
+							"raw": "{\n  \"title\": \"Some updated folder\",\n  \"updated\": \"2021-05-20T08:32:25.998Z\",\n  \"type\": \"folder\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -552,6 +590,42 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Tasks order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    // stackID: [taskID, taskID, ...]\n\t\"60166fa5-918c-485c-9bea-4ce4ffefea47\": [\"ce8d16f6-9222-11ea-8c1c-870eb04b6723\", \"f15ce382-8a11-11ea-b94d-a87f862112f6\", \"fcdb8844-9222-11ea-8c1c-870eb04b6723\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/order-tasks",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"projects",
+								"{{project}}",
+								"order-tasks"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -758,7 +832,7 @@
 					"response": []
 				},
 				{
-					"name": "-Archive All tasks",
+					"name": "Archive All tasks",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -785,7 +859,7 @@
 					"response": []
 				},
 				{
-					"name": "-Archive done tasks",
+					"name": "Archive done tasks",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -986,42 +1060,6 @@
 								"{{ver}}",
 								"tasks",
 								"{{task}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "-Tasks order",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    // stack: [taskID, taskID, ...]\n\t\"60166fa5-918c-485c-9bea-4ce4ffefea47\": [\"ce8d16f6-9222-11ea-8c1c-870eb04b6723\", \"f15ce382-8a11-11ea-b94d-a87f862112f6\", \"fcdb8844-9222-11ea-8c1c-870eb04b6723\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/boards/{{board}}/order-tasks",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"boards",
-								"{{board}}",
-								"order-tasks"
 							]
 						}
 					},

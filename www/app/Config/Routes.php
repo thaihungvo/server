@@ -90,9 +90,6 @@ $routes->get("/ping", "PingController::index");
     // delete a stack
     $routes->delete("/api/v1/stacks/(:any)", "StacksController::delete_v1/$1");
 
-    // save tasks order inside a project
-    $routes->post("/api/v1/projects/(:any)/order-tasks", "BoardsController::order_tasks_v1/$1/$2");
-
 // TASKS
     // create a task
     $routes->post("/api/v1/stacks/(:any)/tasks", "TasksController::add_v1/$1");
@@ -120,6 +117,8 @@ $routes->get("/ping", "PingController::index");
     $routes->get("/api/v1/projects/(:any)", "ProjectsController::one_v1/$1");
     // update a project
     $routes->put("/api/v1/projects/(:any)", "ProjectsController::update_v1/$1");
+    // save tasks order inside a project
+    $routes->post("/api/v1/projects/(:any)/order-tasks", "ProjectsController::order_tasks_v1/$1");
 
 
 // FILES
