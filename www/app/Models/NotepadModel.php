@@ -10,7 +10,7 @@ class NotepadModel extends Model
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ["document", "content", "created", "updated", "deleted"];
+    protected $allowedFields = ["document", "content"];
 
     protected $useTimestamps = true;
     protected $createdField  = "created";
