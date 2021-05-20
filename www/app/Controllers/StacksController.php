@@ -218,77 +218,75 @@ class StacksController extends BaseController
 
     public function archive_all_v1($idStack)
     {
-        $this->lock();
+        $this->lock($idStack);
 
-        $board = $this->request->board;
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($idStack);
 
-        // get all tasks connected to this stack
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-ALL");
+        }
+
+        helper("documents");
+        $user = $this->request->user;
+        $document = documents_load($stack->project, $user);
+
+        if (!$document) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-ALL");
+        }
+
         $taskModel = new TaskModel();
-        $taskBuild = $taskModel->builder();
-        $taskQuery = $taskBuild->select("*")
-            ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
-            ->where('tasks_order.stack', $board->stack)
-            ->where('tasks.deleted', null)
-            ->get();
 
-        $tasks = $taskQuery->getResult();
-
-        $tasksIDs = array();
-        foreach ($tasks as $task) {
-            $tasksIDs[] = $task->id;
-        }
-
-        if (count($tasksIDs)) {
-            // update the archived date for the found tasks
-            $taskBuild = $taskModel->builder();
-            $taskQuery = $taskBuild->set('archived',  date('Y-m-d H:i:s'))
-                ->whereIn('id', $tasksIDs)
-                ->update();
-
-            if ($taskQuery === false) {
-                return $this->reply($taskModel->errors(), 500, "ERR-STACK-ARCHIVE-ALL-ERROR");
+        try {
+            if (
+                $taskModel->where("stack", $stack->id)
+                    ->set(["archived" => date("Y-m-d H:i:s")])
+                    ->update() === false
+            ) {
+                return $this->reply($taskModel->errors(), 500, "ERR-STACK-ARCHIVE-ALL");
             }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-ARCHIVE-ALL");
         }
 
-        return $this->reply(null, 200, "OK-STACK-ARCHIVE-ALL-SUCCESS");
+        return $this->reply(true);
     }
 
     public function archive_done_v1($idStack)
     {
-        $this->lock();
+        $this->lock($idStack);
 
-        $board = $this->request->board;
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($idStack);
 
-        // get all completed tasks connected to this stack
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-DONE");
+        }
+
+        helper("documents");
+        $user = $this->request->user;
+        $document = documents_load($stack->project, $user);
+
+        if (!$document) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-DONE");
+        }
+
         $taskModel = new TaskModel();
-        $taskBuild = $taskModel->builder();
-        $taskQuery = $taskBuild->select("*")
-            ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
-            ->where('tasks_order.stack', $board->stack)
-            ->where('tasks.done', 1)
-            ->where('tasks.deleted', null)
-            ->get();
 
-        $tasks = $taskQuery->getResult();
-
-        $tasksIDs = array();
-        foreach ($tasks as $task) {
-            $tasksIDs[] = $task->id;
-        }
-
-        if (count($tasksIDs)) {
-            // update the archived date for the found tasks
-            $taskBuild = $taskModel->builder();
-            $taskQuery = $taskBuild->set('archived',  date('Y-m-d H:i:s'))
-                ->whereIn('id', $tasksIDs)
-                ->update();
-
-            if ($taskQuery === false) {
-                return $this->reply($taskModel->errors(), 500, "ERR-STACK-ARCHIVE-DONE-ERROR");
+        try {
+            if (
+                $taskModel->where("stack", $stack->id)
+                    ->where("done", 1)
+                    ->set(["archived" => date("Y-m-d H:i:s")])
+                    ->update() === false
+            ) {
+                return $this->reply($taskModel->errors(), 500, "ERR-STACK-ARCHIVE-DONE");
             }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-ARCHIVE-DONE");
         }
 
-        return $this->reply(null, 200, "OK-STACK-ARCHIVE-DONE-SUCCESS");
+        return $this->reply(true);
     }
 
     public function delete_v1($idStack)
