@@ -130,6 +130,16 @@ $routes->get("/ping", "PingController::index");
     // update the attachments title
     $routes->put("/api/v1/attachment/(:any)", "FilesController::update_v1/$1");
 
+// PEOPLE
+    // update a people
+    $routes->post("/api/v1/people/(:any)", "PeopleController::add_v1/$1");
+    // update a people
+    $routes->put("/api/v1/people/(:any)", "PeopleController::update_v1/$1");
+    // get single people
+    $routes->get("/api/v1/people/(:any)", "PeopleController::one_v1/$1");
+    // delete a people
+    $routes->delete("/api/v1/people/(:any)", "PeopleController::delete_v1/$1");
+
 /**
  * --------------------------------------------------------------------
  * Additional Routing
