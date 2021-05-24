@@ -51,9 +51,7 @@ class ProjectsController extends BaseController
             return $this->reply($result, 500, "ERR-PROJECTS-UPDATE");
         }
 
-        $this->addActivity("", $id, $this::ACTION_UPDATE, $this::SECTION_PROJECT);
         $this->addActivity("", $id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
-        $this->addActivity("", $id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENTS);
 
         return $this->reply(true);
 	}
@@ -64,7 +62,7 @@ class ProjectsController extends BaseController
 
         helper("documents");
         $user = $this->request->user;
-        $document = documents_load($id, $user);
+        $document = documents_load($projectId, $user);
 
         if (!$document) {
             return $this->reply("Project not found", 404, "ERR-TASKS-ORDER");
@@ -92,7 +90,7 @@ class ProjectsController extends BaseController
             return $this->reply("Unable to update tasks order", 500, "ERR-TASKS-ORDER");
         }
 
-        $this->addActivity("", $document->id, $this::ACTION_UPDATE, $this::SECTION_PROJECT);
+        $this->addActivity("", $document->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
 
         return $this->reply(true);
     }

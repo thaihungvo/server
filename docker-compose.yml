@@ -26,6 +26,13 @@ services:
       - persistent:/var/lib/mysql
     networks:
       - default
+  events:
+    image: nodejs
+    ports:
+        - '3333:3333'
+    volumes:
+        - .:/events
+        - node_modules:/events/node_modules
   adminer:
     image: adminer:latest
     depends_on: 

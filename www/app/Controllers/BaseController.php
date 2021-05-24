@@ -41,17 +41,10 @@ class BaseController extends Controller
     const ACTION_DELETE = "DELETE";
     const ACTION_UNKNOWN = "UNKNOWN";
 
-    
-    const SECTION_FOLDER = "folder";
     const SECTION_DOCUMENTS = "documents";
     const SECTION_DOCUMENT = "document";
-    const SECTION_PROJECT = "project";
-    const SECTION_NOTEPAD = "notepad";
-    const SECTION_PEOPLE = "prople";
     const SECTION_TASK = "task";
-    const SECTION_STACK = "stack";
     const SECTION_WATCHER = "watcher";
-    const SECTION_UNKNOWN = "unknown";
 
 	/**
 	 * Constructor.
@@ -105,6 +98,6 @@ class BaseController extends Controller
 
     protected function addActivity($parent = "", $item, $action, $section)
     {
-        Events::trigger('activity', $parent, $action, $section, $item);
+        Events::trigger('activity', $item, $action, $section, $parent);
     }
 }

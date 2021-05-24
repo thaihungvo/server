@@ -66,7 +66,7 @@ class StacksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
 
-        $this->addActivity($document->id, $stackData->id, $this::ACTION_CREATE, $this::SECTION_PROJECT);
+        $this->addActivity($document->id, $stackData->id, $this::ACTION_CREATE, $this::SECTION_DOCUMENT);
 
         $stack = $stackModel->find($stackData->id);
         return $this->reply($stack);
@@ -133,7 +133,7 @@ class StacksController extends BaseController
             return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
         }
 
-        $this->addActivity($stack->project, $stack->id, $this::ACTION_UPDATE, $this::SECTION_STACK);
+        $this->addActivity($stack->project, $stack->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
 
         return $this->reply(true);
     }
@@ -316,7 +316,7 @@ class StacksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE");
         }
 
-        $this->addActivity($stack->project, $stack->id, $this::ACTION_DELETE, $this::SECTION_STACK);
+        $this->addActivity($stack->project, $stack->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENT);
 
         return $this->reply(true);
     }
@@ -357,7 +357,7 @@ class StacksController extends BaseController
             return $this->reply("Unable to update the stacks order", 500, "ERR-STACK-ORDER");
         }
 
-        $this->addActivity("", $document->id, $this::ACTION_UPDATE, $this::SECTION_PROJECT);
+        $this->addActivity("", $document->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
 
         return $this->reply(true);
     }

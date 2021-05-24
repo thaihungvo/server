@@ -2,14 +2,11 @@ const MySQLEvents = require("@rodrigogs/mysql-events");
 const server = require("http").createServer();
 const io = require("socket.io")(server);
 
-const clients = {};
-
 io.on("connection", client => {
-    client.on("event", data => {
-        /* … */
-    });
+    console.log("Connected", client.id);
+
     client.on("disconnect", () => {
-        /* … */
+        console.log("Disconnected", client.id);
     });
 });
 server.listen(3333);
@@ -28,6 +25,8 @@ const program = async () => {
     );
 
     await instance.start();
+    const debounce = null;
+    let data = [];
 
     instance.addTrigger({
         name: "Whole database instance",
@@ -35,6 +34,22 @@ const program = async () => {
         statement: MySQLEvents.STATEMENTS.ALL,
         onEvent: event => {
             console.log(event);
+
+            event.affectedRows.forEach(row => {
+                data.push(row.after);
+            });
+
+            if (debounce) {
+                clearTimeout(debounce);
+                debounce = null;
+            }
+
+            debounce = setTimeout(() => {
+                if (data.length) {
+                    io.emit("update", data);
+                    data = [];
+                }
+            }, 2000);
         },
     });
 

@@ -85,7 +85,7 @@ class DocumentsController extends BaseController
             return $this->reply($result, 500, "ERR-DOCUMENTS-CREATE");
         }
         
-        $this->addActivity($documentData->folder || "", $documentData->id, $this::ACTION_CREATE, $documentData->type);
+        $this->addActivity($documentData->folder || "", $documentData->id, $this::ACTION_CREATE, $this::SECTION_DOCUMENTS);
         
         return $this->reply(documents_load($documentData->id, $user));
     }
@@ -240,17 +240,7 @@ class DocumentsController extends BaseController
             return $this->reply($result, 500, "ERR-DOCUMENTS-DELETE");
         }
 
-        switch ($document->type) {
-            case $this::TYPE_FOLDER:
-                // TODO delete all data under it
-                $this->addActivity("", $document->folder, $this::ACTION_DELETE, $this::SECTION_DOCUMENT);
-                break;
-            case $this::TYPE_PROJECT:
-                $this->addActivity($document->folder, $document->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENT);
-                break;
-        }
-
-        $this->addActivity("", $document->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENTS);
+        $this->addActivity($document->folder || "", $document->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENTS);
 
         return $this->reply(true);
     }

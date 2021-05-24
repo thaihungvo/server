@@ -111,7 +111,7 @@ class TasksController extends BaseController
         $task = task_format($task);
 
         $this->addActivity($stack->id, $task->id, $this::ACTION_CREATE, $this::SECTION_TASK);
-        $this->addActivity("", $document->id, $this::ACTION_UPDATE, $this::SECTION_PROJECT);
+        $this->addActivity("", $document->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
 
         return $this->reply($task);
     }
@@ -245,7 +245,6 @@ class TasksController extends BaseController
         }
 
         $this->addActivity($stack->id, $task->id, $this::ACTION_UPDATE, $this::SECTION_TASK);
-        $this->addActivity($document->id, $task->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
 
         return $this->reply(true);
     }
