@@ -38,11 +38,6 @@ if (!function_exists('documents_create'))
             $documentData->position = intval($lastPosition->position) + 1;
         }
 
-        // $optionsResult = documents_create_options($documentData);
-        // if ($optionsResult !== true) {
-        //     return $optionsResult;
-        // }
-
         try {
             if ($documentModel->insert($documentData) === false) {
                 return $documentModel->errors();

@@ -33,20 +33,17 @@ $routes->setAutoRoute(true);
 // route since we don"t have to scan directories.
 $routes->get("/", "Home::index");
 
-// 0. PING
+// PING
 // used by the client to validate/test the server URL
 $routes->get("/ping", "PingController::index");
 
-// POLLING
-    $routes->get("/api/v1/updates", "UpdatesController::updates_v1");
-
-// 1. USER
+// USER
     // register user
     $routes->post("/register", "UserController::register_v1");
     // login user
     $routes->post("/login", "UserController::login_v1");
 
-// 2. DOCUMENTS
+// DOCUMENTS
     // get all documents
     $routes->get("/api/v1/documents", "DocumentsController::all_v1");
     // get a specific document
