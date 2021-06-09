@@ -17,6 +17,11 @@ if (!function_exists('documents_create'))
     {
         $documentModel = new DocumentModel();
         $documentData->position = 1;
+        if ($documentData->options) {
+            $documentData->options = json_encode($documentData->options);
+        } else {
+            $documentData->options = json_encode(documents_get_default_options($documentData->type));
+        }
 
         $documentModel
             ->where("type", $documentData->type)
@@ -33,10 +38,10 @@ if (!function_exists('documents_create'))
             $documentData->position = intval($lastPosition->position) + 1;
         }
 
-        $optionsResult = documents_create_options($documentData);
-        if ($optionsResult !== true) {
-            return $optionsResult;
-        }
+        // $optionsResult = documents_create_options($documentData);
+        // if ($optionsResult !== true) {
+        //     return $optionsResult;
+        // }
 
         try {
             if ($documentModel->insert($documentData) === false) {
@@ -50,18 +55,19 @@ if (!function_exists('documents_create'))
     }
 }
 
-if (!function_exists('documents_create_options'))
+if (!function_exists('documents_get_default_options'))
 {
-    function documents_create_options($documentData)
+    function documents_get_default_options($type)
     {
-        // PROJECT OPTIONS
-        if ($documentData->type === "project") {
-            helper("projects");
+        if ($type === "project") {
+            $projectOptions = new \stdClass();
+            $projectOptions->feeCurrency = "USD";
+            $projectOptions->archivedOrder = "archived-asc";
 
-            return projects_add_options($documentData->id, $documentData);
+            return $projectOptions;
         }
 
-        return true;
+        return new \stdClass();
     }
 }
 
@@ -70,6 +76,9 @@ if (!function_exists('documents_update'))
     function documents_update($documentData)
     {
         $documentModel = new DocumentModel();
+        if ($documentData->options) {
+            $documentData->options = json_encode($documentData->options);
+        }
 
         $document = $documentModel->where("deleted", NULL)
             ->find($documentData->id);
@@ -107,8 +116,8 @@ if (!function_exists('documents_load'))
     {
         $documentModel = new DocumentModel();
 
-        $recordBuilder = $documentModel->builder();
-        $recordQuery = $recordBuilder->select("documents.*")
+        $documentBuilder = $documentModel->builder();
+        $documentQuery = $documentBuilder->select("documents.*")
             ->join("documents_members", "documents_members.document = documents.id", "left")
             ->where("documents.deleted", NULL)
             ->where("documents.id", $documentID)
@@ -120,13 +129,18 @@ if (!function_exists('documents_load'))
             ->limit(1)
             ->get();
 
-        $records = $recordQuery->getResult();
+        $documents = $documentQuery->getResult();
         
-        if (!count($records)) {
+        if (!count($documents)) {
             return null;
         }
 
-        return $records[0];
+        $document = $documents[0];
+        if ($document->options) {
+            $document->options = json_decode($document->options);
+        }
+
+        return $document;
     }
 }
 

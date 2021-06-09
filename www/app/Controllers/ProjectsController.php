@@ -40,6 +40,7 @@ class ProjectsController extends BaseController
 
         $document->updated = $projectData->updated;
         $document->title = $projectData->title;
+        $document->options = $projectData->options;
 
         $result = documents_update($document);
         if ($result !== true) {

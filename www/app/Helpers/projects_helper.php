@@ -2,7 +2,6 @@
 
 use App\Models\StackModel;
 use App\Models\TagModel;
-use App\Models\ProjectOptionsModel;
 
 if (!function_exists('projects_load_tags'))
 {
@@ -117,45 +116,6 @@ if (!function_exists('projects_load'))
         $document->archived = [];
 
         return $document;
-    }
-}
-
-if (!function_exists('projects_add_options'))
-{
-    function projects_add_options($id, $data)
-    {
-        $projectOptionsModel = new ProjectOptionsModel();
-        $options = $projectOptionsModel->find($id);
-        $isUpdate = boolval($options);
-
-        if ($isUpdate) {
-            $options->project = $data->id;
-            $options->archived_order = isset($data->archived_order) ? $data->archived_order : $options->archived_order;
-            $options->hourlyFee = isset($data->hourlyFee) ? $data->hourlyFee : $options->hourlyFee;
-            $options->feeCurrency = isset($data->feeCurrency) ? $data->feeCurrency : $options->feeCurrency;
-        } else {
-            $options = new \stdClass();
-            $options->project = $data->id;
-            $options->archived_order = isset($data->archived_order) ? $data->archived_order : "title-asc";
-            $options->hourlyFee = isset($data->hourlyFee) ? $data->hourlyFee : 0;
-            $options->feeCurrency = isset($data->feeCurrency) ? $data->feeCurrency : "USD";
-        }
-        
-        try {
-            if ($isUpdate) {
-                if ($projectOptionsModel->update($id, $options) === false) {
-                    return $projectOptionsModel->errors();
-                }
-            } else {
-                if ($projectOptionsModel->insert($options) === false) {
-                    return $projectOptionsModel->errors();
-                }
-            }
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-
-        return true;
     }
 }
 

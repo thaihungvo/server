@@ -49,7 +49,7 @@ const program = async () => {
                     io.emit("update", data);
                     data = [];
                 }
-            }, 2000);
+            }, 1000);
         },
     });
 

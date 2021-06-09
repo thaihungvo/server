@@ -93,7 +93,7 @@ class DocumentsController extends BaseController
     public function update_v1($documentId)
     {
         $user = $this->request->user;
-        $recordData = $this->request->getJSON();
+        $documentData = $this->request->getJSON();
 
         // check for unknown record types
         if (!isset($documentId)) {
@@ -105,12 +105,8 @@ class DocumentsController extends BaseController
         helper("documents");
 
         // check for unknown record types
-        if (!documents_validate_type($recordData->type)) {
+        if (!documents_validate_type($documentData->type)) {
             return $this->reply("Document `type` missing or not valid", 500, "ERR-DOCUMENTS-UPDATE");
-        }
-
-        if ($recordData->type !== $this::TYPE_FOLDER && !isset($recordData->folder)) {
-            return $this->reply("Document `folder` missing or not valid", 500, "ERR-DOCUMENTS-UPDATE");
         }
 
         $document = documents_load($documentId, $user);
@@ -119,11 +115,13 @@ class DocumentsController extends BaseController
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-UPDATE");
         }
 
-        $result = documents_update($recordData);
+        $result = documents_update($documentData);
 
         if ($result !== true) {
             return $this->reply($result, 500, "ERR-DOCUMENTS-UPDATE");
         }
+
+        $this->addActivity($documentData->folder || "", $documentData->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENTS);
 
         return $this->reply(true);
     }
