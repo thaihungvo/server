@@ -1410,14 +1410,15 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/people",
+							"raw": "{{server}}/api/{{ver}}/people/{{document}}",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"people"
+								"people",
+								"{{document}}"
 							]
 						}
 					},
@@ -1435,14 +1436,15 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/people",
+							"raw": "{{server}}/api/{{ver}}/people/{{document}}",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"people"
+								"people",
+								"{{document}}"
 							]
 						}
 					},
@@ -1460,15 +1462,15 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/people/1234-12345-12334-12423",
+							"raw": "{{server}}/api/{{ver}}/person/123-123-123",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"people",
-								"1234-12345-12334-12423"
+								"person",
+								"123-123-123"
 							]
 						}
 					},
@@ -1486,14 +1488,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/people/1234-12345-12334-12423",
+							"raw": "{{server}}/api/{{ver}}/person/1234-12345-12334-12423",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"people",
+								"person",
 								"1234-12345-12334-12423"
 							]
 						}
@@ -1578,6 +1580,42 @@
 								"{{ver}}",
 								"notepad",
 								"1234-1234-1234-1234"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/search?q=hello%20world",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "hello%20world"
+								}
 							]
 						}
 					},

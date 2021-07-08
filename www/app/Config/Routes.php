@@ -137,6 +137,10 @@ $routes->get("/ping", "PingController::index");
     // delete a person
     $routes->delete("/api/v1/person/(:any)", "PeopleController::delete_v1/$1");
 
+// SEARCH
+    // get all query results
+    $routes->get("/api/v1/search", "SearchController::query_v1");
+
 /**
  * --------------------------------------------------------------------
  * Additional Routing
