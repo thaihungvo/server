@@ -41,9 +41,9 @@ Import the latest `sql` file from the `db` folder either using [phpMyAdmin](http
 
 The databse comes prepacked with 3 test users:
 
-* `admin@stacks.server` - `12345`
-* `l.skywalker@resistance.com` - `12345`
-* `d.vader@theempire.com` - `12345`
+* `admin@stacks.server` - `123456`
+* `l.skywalker@resistance.com` - `123456`
+* `d.vader@theempire.com` - `123456`
 
 ### Permissions
 Make sure all your files are using a permission of `644` for the files an `755` for the folders. The `writable` folder used for storing `cache`, `logs`, `session` data and `uploads` should be set to either `775` or `776`.
