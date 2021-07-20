@@ -5,6 +5,13 @@ More information can be found at the [official site](https://stacks.rocks).
 
 This repository holds the source code for **Stacks Server** only.
 
+* [Installation](#Installation)
+    * [Download](#Download)
+    * [Configuration](#Configuration)
+    * [Database](#Database)
+    * [Permissions](#Permissions)
+    * Real-time events server
+
 ## Server Requirements
 
 Apache or Nginx with PHP version 7.2 or higher is required, with the following extensions installed:
