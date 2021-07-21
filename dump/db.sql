@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.26-log)
 # Database: stacks
-# Generation Time: 2021-05-18 15:18:02 +0000
+# Generation Time: 2021-07-21 09:40:57 +0000
 # ************************************************************
 
 
@@ -75,6 +75,7 @@ CREATE TABLE `stk_documents` (
   `everyone` tinyint(1) NOT NULL DEFAULT '1',
   `folder` char(36) NOT NULL,
   `position` smallint(6) NOT NULL,
+  `options` text,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
@@ -110,18 +111,59 @@ CREATE TABLE `stk_files` (
 
 
 
-# Dump of table stk_projects_options
+# Dump of table stk_notepads
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `stk_projects_options`;
+DROP TABLE IF EXISTS `stk_notepads`;
 
-CREATE TABLE `stk_projects_options` (
-  `project` char(36) NOT NULL DEFAULT '',
-  `hourlyFee` float DEFAULT NULL,
-  `feeCurrency` varchar(10) DEFAULT NULL,
-  `archived_order` enum('title-asc','title-desc','created-asc','created-desc','updated-asc','updated-desc','archived-asc','archived-desc') NOT NULL DEFAULT 'title-asc',
-  PRIMARY KEY (`project`),
-  UNIQUE KEY `board` (`project`)
+CREATE TABLE `stk_notepads` (
+  `notepad` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `content` varchar(11) DEFAULT NULL,
+  PRIMARY KEY (`notepad`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+# Dump of table stk_people
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `stk_people`;
+
+CREATE TABLE `stk_people` (
+  `people` char(36) NOT NULL DEFAULT '',
+  `id` char(36) NOT NULL DEFAULT '',
+  `firstName` varchar(100) DEFAULT NULL,
+  `lastName` varchar(100) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `gender` enum('male','female','other') NOT NULL DEFAULT 'other',
+  `nickname` varchar(100) DEFAULT NULL,
+  `birthday` varchar(10) DEFAULT NULL,
+  `age` varchar(10) DEFAULT NULL,
+  `jobTitle` varchar(100) DEFAULT NULL,
+  `company` varchar(100) DEFAULT NULL,
+  `officePhone` varchar(100) DEFAULT NULL,
+  `cellPhone` varchar(100) DEFAULT NULL,
+  `homePhone` varchar(100) DEFAULT NULL,
+  `fax` varchar(100) DEFAULT NULL,
+  `address` varchar(100) DEFAULT NULL,
+  `county` varchar(100) DEFAULT NULL,
+  `zip` varchar(100) DEFAULT NULL,
+  `city` varchar(100) DEFAULT NULL,
+  `country` varchar(100) DEFAULT NULL,
+  `address2` varchar(100) DEFAULT NULL,
+  `website` text,
+  `notes` text,
+  `socialTwitter` text,
+  `socialFacebook` text,
+  `socialLinkedin` text,
+  `socialInstagram` text,
+  `socialOther` text,
+  `type` enum('standard','user','client','prospectiveClient','collaborator','friend','contractor','freelancer','unknown','other') DEFAULT 'other',
+  `avatar` tinyint(1) NOT NULL DEFAULT '0',
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  `deleted` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -198,6 +240,7 @@ CREATE TABLE `stk_tasks` (
   `progress` tinyint(4) DEFAULT NULL,
   `hourlyFee` float DEFAULT NULL,
   `archived` datetime DEFAULT NULL,
+  `priority` enum('low','medium','high') DEFAULT NULL,
   `project` char(36) NOT NULL DEFAULT '',
   `stack` char(36) NOT NULL,
   `position` smallint(6) NOT NULL,
@@ -279,7 +322,9 @@ LOCK TABLES `stk_users` WRITE;
 
 INSERT INTO `stk_users` (`id`, `email`, `password`, `nickname`, `firstName`, `lastName`, `created`, `updated`)
 VALUES
-	(1,'admin@stacks.rocks','$2y$12$125312471860a23d8a7f9euPiIN.dMgREE4ftjp2tTKn2HzVFpjs2','','',NULL,'2021-05-17 11:55:23','2021-05-17 11:55:23');
+	(1,'admin@stacks.rocks','$2y$12$125312471860a23d8a7f9euPiIN.dMgREE4ftjp2tTKn2HzVFpjs2','','Stacks','Admin','2021-05-17 11:55:23','2021-05-17 11:55:23'),
+	(2,'l.skywalker@resistance.com','$2y$12$50898043960a789ef3f43OcnEnMxmQVTV3UtdpA1pROpsAWOLKHiy','','Luke','Skywalker','2021-05-21 12:22:40','2021-05-21 12:22:40'),
+	(3,'d.vader@theempire.com','$2y$12$193758945060a78a02d2auQF/MqoEAYheAEURx4IKRXHYAA0oDFXK','','Darth','Vader','2021-05-21 12:23:00','2021-05-21 12:23:00');
 
 /*!40000 ALTER TABLE `stk_users` ENABLE KEYS */;
 UNLOCK TABLES;

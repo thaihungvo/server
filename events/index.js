@@ -14,10 +14,10 @@ server.listen(3333);
 const program = async () => {
     const instance = new MySQLEvents(
         {
-            host: "127.0.0.1",
+            host: "stacksdb",
             user: "root",
-            password: "root",
-            port: "8889",
+            password: "stacks",
+            port: "3306",
         },
         {
             startAtEnd: true,

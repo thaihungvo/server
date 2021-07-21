@@ -11,6 +11,7 @@ This repository holds the source code for **Stacks Server** only.
     * [Database](#Database)
     * [Permissions](#Permissions)
     * Real-time events server
+* Using Docker
 
 ## Server Requirements
 

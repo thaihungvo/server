@@ -1,15 +1,5 @@
 version: '3.1'
 services:
-  www:
-    build: .
-    ports:
-      - '8080:80'
-    volumes:
-      - ./www:/var/www/html/
-    links:
-      - stacksdb
-    networks:
-      - default
   stacksdb:
     image: mysql:8.0
     ports:
@@ -26,13 +16,30 @@ services:
       - persistent:/var/lib/mysql
     networks:
       - default
+  www:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-www
+    ports:
+      - '8888:80'
+    volumes:
+      - ./www:/var/www/html/
+    links:
+      - stacksdb
+    networks:
+      - default
   events:
-    image: nodejs
+    build:
+      context: .
+      dockerfile: ./Dockerfile-events
     ports:
         - '3333:3333'
     volumes:
         - .:/events
-        - node_modules:/events/node_modules
+    links:
+      - stacksdb
+    networks:
+      - default
   adminer:
     image: adminer:latest
     depends_on: 

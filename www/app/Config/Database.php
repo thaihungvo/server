@@ -32,7 +32,7 @@ class Database extends \CodeIgniter\Database\Config
 	public $default = [
 		'DSN'      => '',
 		'hostname' => 'stacksdb',
-		'username' => 'stacks',
+		'username' => 'root',
 		'password' => 'stacks',
 		'database' => 'stacks',
 		'DBDriver' => 'MySQLi',
