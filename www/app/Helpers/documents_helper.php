@@ -54,7 +54,6 @@ if (!function_exists('documents_load'))
         // removing unncessary prop
         unset($document->deleted);
         unset($document->position);
-        unset($document->owner);
 
         return $document;
     }
