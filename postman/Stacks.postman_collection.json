@@ -172,7 +172,199 @@
 			"name": "2. Documents",
 			"item": [
 				{
+					"name": "Various documents",
+					"item": [
+						{
+							"name": "Add Project",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"pm.environment.set(\"document\", jsonData.data.id);",
+											"",
+											"pm.test(\"Add document status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Add document response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.an(\"object\");",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"text\": \"New Project\",\n  \"parent\": 0,\n  \"data\": {\n    \"type\": \"project\"\n  }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/documents",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"documents"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add People",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"pm.environment.set(\"document\", jsonData.data.id);",
+											"",
+											"pm.test(\"Add document status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Add document response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.an(\"object\");",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"text\": \"New People\",\n  \"parent\": 0,\n  \"data\": {\n    \"type\": \"people\"\n  }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/documents",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"documents"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Notepad",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"pm.environment.set(\"document\", jsonData.data.id);",
+											"",
+											"pm.test(\"Add document status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Add document response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.an(\"object\");",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"text\": \"New Notepad\",\n  \"parent\": 0,\n  \"data\": {\n    \"type\": \"notepad\"\n  }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/documents",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"documents"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "Get All Documents",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"folder\", jsonData.data.id);",
+									"",
+									"pm.test(\"Get All Documents status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get All Documents response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -231,7 +423,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"title\": \"New Folder\",\n  \"created\": \"2021-04-20T08:32:25.998Z\",\n  \"type\": \"folder\"\n}",
+							"raw": "{\n  \"text\": \"New Folder\",\n  \"data\": {\n    \"created\": \"2021-04-20T08:32:25.998Z\",\n    \"type\": \"folder\"\n  }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -286,7 +478,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"title\": \"Some document\",\n  \"created\": \"2021-04-20T08:32:25.998Z\",\n  \"type\": \"project\",\n  \"folder\": \"{{folder}}\"\n}",
+							"raw": "{\n  \"text\": \"Some document\",\n  \"parent\": \"{{folder}}\",\n  \"data\": {\n    \"created\": \"2021-04-20T08:32:25.998Z\",\n    \"type\": \"project\"\n  }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -376,7 +568,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"title\": \"Some updated folder\",\n  \"updated\": \"2021-05-20T08:32:25.998Z\",\n  \"type\": \"folder\"\n}",
+							"raw": "{\n  \"text\": \"Some updated folder\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -411,7 +603,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"title\": \"Some project 2\",\n  \"updated\": \"2021-05-20T08:32:25.998Z\",\n  \"type\": \"project\",\n  \"folder\": \"d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\"\n}",
+							"raw": "{\n  \"text\": \"Some project 2\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -465,7 +657,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\": [\n    \"d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\",\n    \"w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\"\n  ]\n}",
+							"raw": "{\n    // parentId: [documentId, documentId, ...]\n  \"c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\": [\n    \"d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\",\n    \"w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\"\n  ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -489,6 +681,21 @@
 				},
 				{
 					"name": "Delete Document/Folder",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Delete document status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -518,79 +725,6 @@
 		{
 			"name": "2. Projects",
 			"item": [
-				{
-					"name": "Get Project",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"project\", jsonData.data.id);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{document}}",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"projects",
-								"{{document}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Project",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"title\": \"Renamed board\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"projects",
-								"w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Tasks order",
 					"request": {
@@ -633,14 +767,23 @@
 			"name": "3. Stacks",
 			"item": [
 				{
-					"name": "Create Stack",
+					"name": "Add Stack",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"stack\", jsonData.data.id);"
+									"pm.environment.set(\"stack\", jsonData.data.id);",
+									"",
+									"pm.test(\"Add Stack status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add Stack response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -1066,7 +1209,7 @@
 					"response": []
 				},
 				{
-					"name": "Task watchers",
+					"name": "Get Task watchers",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1270,7 +1413,7 @@
 			"name": "6. Tags",
 			"item": [
 				{
-					"name": "Get Tags",
+					"name": "Get All Tags",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1281,15 +1424,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/tags",
+							"raw": "{{server}}/api/{{ver}}/tags",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"projects",
-								"{{project}}",
 								"tags"
 							]
 						}
@@ -1298,6 +1439,28 @@
 				},
 				{
 					"name": "Add Tag",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"tag\", jsonData.data.id);",
+									"",
+									"pm.test(\"Add Tag status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add tag response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1317,15 +1480,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/tags",
+							"raw": "{{server}}/api/{{ver}}/tags",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"projects",
-								"{{project}}",
 								"tags"
 							]
 						}
@@ -1334,6 +1495,22 @@
 				},
 				{
 					"name": "Update Tag",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Update Tag status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -1353,7 +1530,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/tags/8decf5f4-91c7-11ea-b366-0d4c57d00ccc",
+							"raw": "{{server}}/api/{{ver}}/tags/{{tag}}",
 							"host": [
 								"{{server}}"
 							],
@@ -1361,7 +1538,49 @@
 								"api",
 								"{{ver}}",
 								"tags",
-								"8decf5f4-91c7-11ea-b366-0d4c57d00ccc"
+								"{{tag}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Tag",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Delete Tag status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/tags/{{tag}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"tags",
+								"{{tag}}"
 							]
 						}
 					},
@@ -1615,6 +1834,42 @@
 								{
 									"key": "q",
 									"value": "hello%20world"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "11. Updates",
+			"item": [
+				{
+					"name": "Get latest updates",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/updates?since=100",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"updates"
+							],
+							"query": [
+								{
+									"key": "since",
+									"value": "100"
 								}
 							]
 						}
