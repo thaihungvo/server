@@ -28,18 +28,6 @@ services:
       - stacksdb
     networks:
       - default
-  events:
-    build:
-      context: .
-      dockerfile: ./Dockerfile-events
-    ports:
-        - '3333:3333'
-    volumes:
-        - .:/events
-    links:
-      - stacksdb
-    networks:
-      - default
   adminer:
     image: adminer:latest
     depends_on: 

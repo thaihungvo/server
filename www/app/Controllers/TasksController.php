@@ -136,7 +136,6 @@ class TasksController extends BaseController
         $taskData = $this->request->getJSON();
         helper("uuid");
 
-
         // generate list of new extensions
         if (isset($taskData->extensions)) {
             // Managing extensions

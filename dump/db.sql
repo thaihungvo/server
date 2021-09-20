@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.26-log)
 # Database: stacks
-# Generation Time: 2021-07-21 09:40:57 +0000
+# Generation Time: 2021-09-20 10:07:01 +0000
 # ************************************************************
 
 
@@ -34,7 +34,9 @@ CREATE TABLE `stk_activities` (
   `action` enum('CREATE','UPDATE','DELETE','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
   `section` varchar(10) NOT NULL DEFAULT 'UNKNOWN',
   `created` datetime NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `instance` (`instance`),
+  KEY `created` (`created`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -69,11 +71,11 @@ DROP TABLE IF EXISTS `stk_documents`;
 
 CREATE TABLE `stk_documents` (
   `id` char(36) NOT NULL DEFAULT '',
-  `title` varchar(100) NOT NULL,
+  `text` varchar(100) NOT NULL DEFAULT '',
   `type` enum('folder','project','notepad','people') NOT NULL DEFAULT 'project',
   `owner` int(11) NOT NULL,
   `everyone` tinyint(1) NOT NULL DEFAULT '1',
-  `folder` char(36) NOT NULL,
+  `parent` char(36) NOT NULL DEFAULT '',
   `position` smallint(6) NOT NULL,
   `options` text,
   `created` datetime DEFAULT NULL,
@@ -117,9 +119,13 @@ CREATE TABLE `stk_files` (
 DROP TABLE IF EXISTS `stk_notepads`;
 
 CREATE TABLE `stk_notepads` (
-  `notepad` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `notepad` char(36) NOT NULL DEFAULT '',
   `content` varchar(11) DEFAULT NULL,
-  PRIMARY KEY (`notepad`)
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  `deleted` datetime DEFAULT NULL,
+  PRIMARY KEY (`notepad`),
+  UNIQUE KEY `notepad` (`notepad`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -168,23 +174,6 @@ CREATE TABLE `stk_people` (
 
 
 
-# Dump of table stk_projects_tags
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `stk_projects_tags`;
-
-CREATE TABLE `stk_projects_tags` (
-  `id` char(36) NOT NULL DEFAULT '',
-  `title` varchar(100) NOT NULL DEFAULT '',
-  `color` varchar(7) NOT NULL DEFAULT '',
-  `project` char(36) NOT NULL DEFAULT '',
-  `created` datetime DEFAULT NULL,
-  `updated` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-
 # Dump of table stk_stacks
 # ------------------------------------------------------------
 
@@ -220,6 +209,24 @@ CREATE TABLE `stk_stacks_collapsed` (
 
 
 
+# Dump of table stk_tags
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `stk_tags`;
+
+CREATE TABLE `stk_tags` (
+  `id` char(36) NOT NULL DEFAULT '',
+  `title` varchar(100) NOT NULL DEFAULT '',
+  `color` varchar(7) NOT NULL DEFAULT '',
+  `project` char(36) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  `deleted` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
 # Dump of table stk_tasks
 # ------------------------------------------------------------
 
@@ -230,6 +237,7 @@ CREATE TABLE `stk_tasks` (
   `title` text NOT NULL,
   `description` text NOT NULL,
   `tags` text,
+  `status` varchar(36) DEFAULT NULL,
   `startdate` datetime DEFAULT NULL,
   `duedate` datetime DEFAULT NULL,
   `cover` tinyint(1) DEFAULT NULL,

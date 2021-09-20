@@ -11,7 +11,7 @@ class DocumentsController extends BaseController
         // get all the documents
         $documentModel = new DocumentModel();
         $documentBuilder = $documentModel->builder();
-        $documentQuery = $documentBuilder->select("documents.id, documents.title, documents.type, documents.updated, documents.created, documents.folder")
+        $documentQuery = $documentBuilder->select("documents.id, documents.text, documents.type, documents.updated, documents.created, documents.parent")
             ->join("documents_members", "documents_members.document = documents.id", "left")
             ->where("documents.deleted", NULL)
             ->groupStart()
@@ -25,75 +25,65 @@ class DocumentsController extends BaseController
         $documents = $documentQuery->getResult();
 
         $folders = array();
-        foreach ($documents as $document) {
+        foreach ($documents as &$document) {
+            if ($document->parent === "0") {
+                $document->parent = 0;
+            }
+
             if ($document->type === $this::TYPE_FOLDER) {
-                $folders[] = $document;
+                // $folders[] = $document;
+                $document->droppable = true;
             }
+
+            $document->data = new \stdClass();
+            $document->data->type = $document->type;
+            unset($document->type);
+            $document->data->created = $document->created;
+            unset($document->created);
+            $document->data->updated = $document->updated;
+            unset($document->updated);
         }
 
-        foreach ($folders as &$folder) {
-            if (!isset($folder->records)) {
-                $folder->records = array();
-            }
-            unset($folder->order);
-            foreach ($documents as &$document) {
-                if ($document->type !== $this::TYPE_FOLDER && $document->folder === $folder->id) {
-                    unset($document->folder);
-                    $folder->records[] = $document;
-                }
-            }
-        }
+        $response = new \stdClass();
+        $response->documents = $documents;
+        $response->tags = array();
 
-        return $this->reply($folders);
+        return $this->reply($response);
     }
 
 	public function one_v1($documentId)
 	{
         $user = $this->request->user;
         helper("documents");
-
-        $document = documents_load($documentId, $user);
-
-        return $this->reply($document);
+        return $this->reply(documents_load($documentId, $user));
     }
 
     public function add_v1()
     {
+        $documentModel = new DocumentModel();
         $user = $this->request->user;
-        $documentData = $this->request->getJSON();
+        $documentData = $documentModel->toDB($this->request->getJSON());
         $documentData->owner = $user->id;
 
-        if (!isset($documentData->id)) {
-            helper('uuid');
-            $documentData->id = uuid();
+        // inserting the new document
+        try {
+            if ($documentModel->insert($documentData) === false) {
+                return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-CREATE");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-CREATE");
         }
 
-        helper("documents");
-
-        // check for unknown record types
-        if (!documents_validate_type($documentData->type)) {
-            return $this->reply("Document type missing or not valid", 500, "ERR-DOCUMENTS-CREATE");
-        }
-
-        if ($documentData->type !== $this::TYPE_FOLDER && !isset($documentData->folder)) {
-            return $this->reply("Missing folder id", 500, "ERR-DOCUMENTS-CREATE");
-        }
-
-        $result = documents_create($documentData);
-
-        if ($result !== true) {
-            return $this->reply($result, 500, "ERR-DOCUMENTS-CREATE");
-        }
-        
-        $this->addActivity($documentData->folder || "", $documentData->id, $this::ACTION_CREATE, $this::SECTION_DOCUMENTS);
-        
+        // inserting activity
+        $this->addActivity($documentData->parent, $documentData->id, $this::ACTION_CREATE, $this::SECTION_DOCUMENTS);
         return $this->reply(documents_load($documentData->id, $user));
     }
 
     public function update_v1($documentId)
     {
+        $documentModel = new DocumentModel();
         $user = $this->request->user;
-        $documentData = $this->request->getJSON();
+        $documentData = $documentModel->toDB($this->request->getJSON());
 
         // check for unknown record types
         if (!isset($documentId)) {
@@ -102,27 +92,48 @@ class DocumentsController extends BaseController
 
         $this->lock($documentId);
 
+        // checking if the requested document exists
         helper("documents");
-
-        // check for unknown record types
-        if (!documents_validate_type($documentData->type)) {
-            return $this->reply("Document `type` missing or not valid", 500, "ERR-DOCUMENTS-UPDATE");
-        }
-
         $document = documents_load($documentId, $user);
-        
         if (!$document) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-UPDATE");
         }
 
-        $result = documents_update($documentData);
+        // fixing data id prop
+        $documentData->id = $document->id;
 
-        if ($result !== true) {
-            return $this->reply($result, 500, "ERR-DOCUMENTS-UPDATE");
+        // reverting back to the old parent in case it's missing
+        if (!isset($documentData->parent)) {
+            $documentData->parent = $document->parent;
         }
 
-        $this->addActivity($documentData->folder || "", $documentData->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENTS);
+        // adding updated date in case it's missing
+        if (!isset($documentData->updated)) {
+            $documentData->updated = date("Y-m-d H:i:s");
+        }
 
+        // just in case someone tries to change types
+        unset($documentData->type);
+        unset($documentData->created);
+
+        // checking if someone without privilages changes the visibility
+        if ($documentData->everyone != $document->everyone && $documentData->owner != $document->owner) {
+            $documentData->everyone = $document->everyone;
+        }
+        // checking that the owner stays the same
+        $documentData->owner = $document->owner;
+
+        // updating the document
+        try {
+            if ($documentModel->update($document->id, $documentData) === false) {
+                return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-UPDATE");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-UPDATE");
+        }
+
+        // inserting activity
+        $this->addActivity($documentData->parent, $documentData->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENTS);
         return $this->reply(true);
     }
 
@@ -133,84 +144,35 @@ class DocumentsController extends BaseController
         
         // get all documents
         $documentModel = new DocumentModel();
-        $documents = $documentModel->orderBy("order", "asc")->findAll();
+        $documents = $documentModel->orderBy("position", "asc")->findAll();
 
-        $foldersNeedUpdate = array();
         $documentsNeedUpdate = array();
-
-        $folderOrder = 1;
-        
-        foreach ($orderData as $folderID => $documentsOrder) {
-            foreach ($documents as &$document) {
-                if (
-                    $document->type === $this::TYPE_FOLDER &&
-                    $document->id === $folderID &&
-                    $document->order != $folderOrder
-                ) {
-                    $document->order = $folderOrder;
-                    $foldersNeedUpdate[] = $document;
-                }
-            }
-
-            $documentOrder = 1;
-
-            foreach ($documentsOrder as $documentID) {
-                foreach ($documents as &$document) {
-                    if (
-                        $document->type !== $this::TYPE_FOLDER &&
-                        $document->id === $documentID &&
-                        ($document->order != $documentOrder || $document->folder != $folderID)
-                    ) {
-                        $document->order = $documentOrder;
-                        $document->folder = $folderID;
-                        $documentsNeedUpdate[] = $document;
-                    }
-                }
-
-                $documentOrder++;
-            }
-            
-
-            $folderOrder++;
-        }
-
-        // update folders order
-        if (count($foldersNeedUpdate)) {
-            $foldersOrderQuery = array(
-                "INSERT INTO ".$db->prefixTable("documents")." (`id`, `position`) VALUES"
-            );
-
-            foreach ($foldersNeedUpdate as $i => $folder) {
-                $value = "(". $db->escape($folder->id) .", ". $db->escape($folder->order) .")";
-                if ($i < count($foldersNeedUpdate) - 1) {
-                    $value .= ",";
-                }
-                $foldersOrderQuery[] = $value;
-            }
-
-            $foldersOrderQuery[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `position`=VALUES(`position`);";
-            $foldersQuery = implode(" ", $foldersOrderQuery);
-
-            if (!$db->query($foldersQuery)) {
-                return $this->reply("Unable to update folders order", 500, "ERR-DOCUMENTS-REORDER");
+        foreach ($orderData as $parentId => $documentsOrder) {
+            foreach ($documentsOrder as $documentOrder => $documentId) {
+                $document = new \stdClass();
+                $document->id = $documentId;
+                $document->order = $documentOrder + 1;
+                $document->parent = $parentId;
+                $documentsNeedUpdate[] = $document;
             }
         }
+
 
         // update documents order
         if (count($documentsNeedUpdate)) {
             $documentsOrderQuery = array(
-                "INSERT INTO ".$db->prefixTable("documents")." (`id`, `folder`, `position`) VALUES"
+                "INSERT INTO ".$db->prefixTable("documents")." (`id`, `parent`, `position`) VALUES"
             );
 
             foreach ($documentsNeedUpdate as $i => $document) {
-                $value = "(". $db->escape($document->id) .", ". $db->escape($document->folder) .", ". $db->escape($document->order) .")";
+                $value = "(". $db->escape($document->id) .", ". $db->escape($document->parent) .", ". $db->escape($document->order) .")";
                 if ($i < count($documentsNeedUpdate) - 1) {
                     $value .= ",";
                 }
                 $documentsOrderQuery[] = $value;
             }
 
-            $documentsOrderQuery[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `folder`=VALUES(`folder`), `position`=VALUES(`position`);";
+            $documentsOrderQuery[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `parent`=VALUES(`parent`), `position`=VALUES(`position`);";
             $documentsQuery = implode(" ", $documentsOrderQuery);
 
             if (!$db->query($documentsQuery)) {
@@ -232,14 +194,50 @@ class DocumentsController extends BaseController
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-DELETE");
         }
 
-        $result = documents_delete($document);
-
-        if ($result !== true) {
-            return $this->reply($result, 500, "ERR-DOCUMENTS-DELETE");
+        // documents that require other to be deleted
+        $documentsToCleanUp = array();
+        if ($document->type !== "folder") {
+            $documentsToCleanUp[] = $document;
         }
 
-        $this->addActivity($document->folder || "", $document->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENTS);
+        $documentModel = new DocumentModel();
+        try {
+            if ($documentModel->delete([$document->id]) === false) {
+                return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE");
+            }    
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-DELETE");
+        }
 
+        // in case the user deleted a folder
+        // then also delete all sub documents
+        if ($document->type === "folder") {
+            $documents = $documentModel->findAll();
+            $documentsToDelete = documents_get_tree($documents, $document->id);
+            $idsToDelete = array();
+
+            foreach ($documentsToDelete as $documentToDelete) {
+                $idsToDelete[] = $documentToDelete->id;
+                if ($documentToDelete->type !== "folder") {
+                    $documentsToCleanUp[] = $documentToDelete;
+                }
+            }
+
+            try {
+                if ($documentModel->delete($idsToDelete) === false) {
+                    return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE");
+                }    
+            } catch (\Exception $e) {
+                return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-DELETE");
+            }
+        }
+
+        // cleaning up
+        if (count($documentsToCleanUp)) {
+            documents_clean_up($documentsToCleanUp);
+        }
+
+        $this->addActivity($document->parent, $document->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENTS);
         return $this->reply(true);
     }
 }

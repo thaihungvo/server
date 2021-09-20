@@ -1,34 +1,21 @@
 <?php namespace App\Controllers;
 
 use App\Models\TagModel;
-use App\Models\BoardModel;
 
 class TagsController extends BaseController
 {
-    public function all_v1($id)
+    public function all_v1()
     {
-        $user = $this->request->user;
-        $board = $this->request->board;
-
         $tagModel = new TagModel();
-        $tags = $tagModel->where('board', $board->id)->findAll();
-
-        return $this->reply($tags);
+        return $this->reply($tagModel->findAll());
     }
 
-    public function add_v1($id)
-    {
-        $this->lock();
-        
-        $user = $this->request->user;
-        $board = $this->request->board;
-
+    public function add_v1()
+    {        
         $tagModel = new TagModel();
         $tagData = $this->request->getJSON();
 
         helper('uuid');
-
-        $tagData->board = $board->id;
 
         if (!isset($tagData->id)) {
             $tagData->id = uuid();
@@ -36,40 +23,60 @@ class TagsController extends BaseController
 
         try {
             if ($tagModel->insert($tagData) === false) {
-                $errors = $tagModel->errors();
-                return $this->reply($errors, 500, "ERR-BOARD-TAGS-CREATE");
+                return $this->reply($tagModel->errors(), 500, "ERR-TAGS-CREATE");
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-BOARD-TAGS-CREATE");
+            return $this->reply($e->getMessage(), 500, "ERR-TAGS-CREATE");
         }
 
-        $tag = $tagModel->find($tagData->id);
-
-        return $this->reply($tag, 200, "OK-BOARD-TAGS-CREATE-SUCCESS");
+        return $this->reply($tagData);
     }
 
-    public function update_v1($idBoard, $idTag)
+    public function update_v1($idTag)
 	{
-        $user = $this->request->user;
-        $board = $this->request->board;
-
         $tagModel = new TagModel();
-        $tag = $tagModel
-            ->where('board', $board->id)
-            ->find($idTag);
+        $tag = $tagModel->find($idTag);
 
         if (!$tag) {
-            return $this->reply(null, 404, "ERR-BOARDS-TAG-NOT-FOUND-MSG");
+            return $this->reply(null, 404, "ERR-TAG-NOT-FOUND");
         }
 
         $tagData = $this->request->getJSON();
 
         unset($tagData->id);
-
-        if ($tagModel->update($tag->id, $tagData) === false) {
-            return $this->reply(null, 404, "ERR-BOARDS-TAG-UPDATE");
+        unset($tagData->create);
+        if (!isset($tagData->updated)) {
+            $tagData->updated = date('Y-m-d H:i:s');
         }
 
-        return $this->reply(null, 200, "OK-BOARDS-TAG-UPDATE-SUCCESS");
+        try {
+            if ($tagModel->update($tag->id, $tagData) === false) {
+                return $this->reply($tagModel->errors(), 500, "ERR-TAGS-UPDATE");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-TAGS-UPDATE");
+        }
+
+        return $this->reply(true);
+    }
+
+    public function delete_v1($idTag)
+	{
+        $tagModel = new TagModel();
+        $tag = $tagModel->find($idTag);
+
+        if (!$tag) {
+            return $this->reply(null, 404, "ERR-TAG-NOT-FOUND");
+        }
+
+        try {
+            if ($tagModel->delete([$idTag]) === false) {
+                return $this->reply($tagModel->errors(), 500, "ERR-TAG-DELETE");
+            }    
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-TAG-DELETE");
+        }
+
+        return $this->reply(true);
     }
 }

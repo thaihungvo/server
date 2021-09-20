@@ -4,7 +4,7 @@ use CodeIgniter\Model;
 
 class TagModel extends Model
 {
-    protected $table      = "projects_tags";
+    protected $table      = "tags";
     protected $primaryKey = "id";
     protected $returnType = "object";
 
@@ -13,11 +13,11 @@ class TagModel extends Model
     protected $useTimestamps = true;
     protected $createdField  = "created";
     protected $updatedField  = "updated";
+    protected $deletedField  = "deleted";
 
     protected $validationRules = [
         "id" => "required|min_length[35]",
         "title" => "required|alpha_numeric_punct",
-        "color" => "required|alpha_numeric_punct",
-        "project" => "required|min_length[35]"
+        "color" => "required|alpha_numeric_punct"
     ];
 }

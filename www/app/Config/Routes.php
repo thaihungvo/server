@@ -43,6 +43,10 @@ $routes->get("/ping", "PingController::index");
     // login user
     $routes->post("/login", "UserController::login_v1");
 
+// UPDATES
+    // get updates
+    $routes->get("/api/v1/updates", "UpdatesController::updates_v1");
+
 // DOCUMENTS
     // get all documents
     $routes->get("/api/v1/documents", "DocumentsController::all_v1");
@@ -62,12 +66,14 @@ $routes->get("/ping", "PingController::index");
     $routes->get("/api/v1/members", "MembersController::all_v1/$1");
 
 // TAGS
-    // get all boards tags
-    $routes->get("/api/v1/boards/(:any)/tags", "TagsController::all_v1/$1");
+    // get all tags
+    $routes->get("/api/v1/tags", "TagsController::all_v1");
     // add a new tag
-    $routes->post("/api/v1/boards/(:any)/tags", "TagsController::add_v1/$1");
+    $routes->post("/api/v1/tags", "TagsController::add_v1");
     // update a tag
-    $routes->put("/api/v1/boards/(:any)/tags/(:any)", "TagsController::update_v1/$1/$2");
+    $routes->put("/api/v1/tags/(:any)", "TagsController::update_v1/$1");
+    // delete a tag
+    $routes->delete("/api/v1/tags/(:any)", "TagsController::delete_v1/$1");
 
 // STACKS
     // create a stack
@@ -105,10 +111,6 @@ $routes->get("/ping", "PingController::index");
 
 
 // PROJECT
-    // retreives a project
-    $routes->get("/api/v1/projects/(:any)", "ProjectsController::one_v1/$1");
-    // update a project
-    $routes->put("/api/v1/projects/(:any)", "ProjectsController::update_v1/$1");
     // save tasks order inside a project
     $routes->post("/api/v1/projects/(:any)/order-tasks", "ProjectsController::order_tasks_v1/$1");
 

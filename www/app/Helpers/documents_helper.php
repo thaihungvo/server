@@ -2,53 +2,6 @@
 
 use App\Models\DocumentModel;
 
-if (!function_exists('documents_validate_type'))
-{
-    function documents_validate_type($type)
-    {
-        $types = array("folder", "project", "notepad", "people");
-        return in_array($type, $types);
-    }
-}
-
-if (!function_exists('documents_create'))
-{
-    function documents_create($documentData)
-    {
-        $documentModel = new DocumentModel();
-        $documentData->position = 1;
-        if ($documentData->options) {
-            $documentData->options = json_encode($documentData->options);
-        } else {
-            $documentData->options = json_encode(documents_get_default_options($documentData->type));
-        }
-
-        $documentModel
-            ->where("type", $documentData->type)
-            ->orderBy("position", "desc");
-            
-        
-        if ($documentData->type !== "folder") {
-            $documentModel->where("folder", $documentData->folder);
-        }
-
-        $lastPosition = $documentModel->first();
-
-        if ($lastPosition) {
-            $documentData->position = intval($lastPosition->position) + 1;
-        }
-
-        try {
-            if ($documentModel->insert($documentData) === false) {
-                return $documentModel->errors();
-            }
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-
-        return true;
-    }
-}
 
 if (!function_exists('documents_get_default_options'))
 {
@@ -63,45 +16,6 @@ if (!function_exists('documents_get_default_options'))
         }
 
         return new \stdClass();
-    }
-}
-
-if (!function_exists('documents_update'))
-{
-    function documents_update($documentData)
-    {
-        $documentModel = new DocumentModel();
-        if ($documentData->options) {
-            $documentData->options = json_encode($documentData->options);
-        }
-
-        $document = $documentModel->where("deleted", NULL)
-            ->find($documentData->id);
-
-        if (!$document) {
-            return "No document found with the requested id `".$documentData->id."`";
-        }
-        
-        // just in case someone tries to change types
-        unset($documentData->type);
-        unset($documentData->created);
-
-        // in case everyone was not set will enforce it to 1
-        if (!isset($documentData->everyone)) {
-            $documentData->everyone = 1;
-        } else {
-            $documentData->everyone = intval($documentData->everyone);
-        }
-
-        try {
-            if ($documentModel->update($documentData->id, $documentData) === false) {
-                return $documentModel->errors();
-            }
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-
-        return true;
     }
 }
 
@@ -135,37 +49,81 @@ if (!function_exists('documents_load'))
             $document->options = json_decode($document->options);
         }
 
+        documents_expand_document($document);
+
+        // removing unncessary prop
+        unset($document->deleted);
+        unset($document->position);
+        unset($document->owner);
+
         return $document;
     }
 }
 
-if (!function_exists('documents_delete'))
+if (!function_exists('documents_expand_document'))
 {
-    function documents_delete($document)
+    function documents_expand_document(&$document)
     {
-        $documentModel = new DocumentModel();
-
-        // delete the current document
-        try {
-            if ($documentModel->delete([$document->id]) === false) {
-                return $documentModel->errors();
-            }    
-        } catch (\Exception $e) {
-            return $e->getMessage();
+        switch ($document->type) {
+            case "project":
+                helper("projects");
+                projects_expand($document);
+                break;
+            case "people":
+                helper("people");
+                people_expand($document);
+                break;
+            case "notepad":
+                helper("notepads");
+                notepads_expand($document);
+                break;
+            default:
+                break;
         }
+    }
+}
 
-        // in case the user deleted a folder
-        // then also delete all sub documents
-        if ($document->type === "folder") {
-            try {
-                if ($documentModel->where("folder", $document->id)->delete() === false) {
-                    return $documentModel->errors();
-                }    
-            } catch (\Exception $e) {
-                return $e->getMessage();
+if (!function_exists('documents_clean_up'))
+{
+    function documents_clean_up($documents)
+    {
+        foreach ($documents as $document) {        
+            switch ($document->type) {
+                case "project":
+                    helper("projects");
+                    projects_clean_up($document);
+                    break;
+                case "people":
+                    helper("people");
+                    people_clean_up($document);
+                    break;
+                case "notepad":
+                    helper("notepads");
+                    notepads_clean_up($document);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+}
+
+if (!function_exists('documents_get_tree'))
+{
+    function documents_get_tree($documents, $folderId)
+    {
+        $tree = array();
+
+        foreach ($documents as $document) {
+            if ($document->parent !== $folderId) continue;
+            if ($document->type === "folder") {
+                $tree[] = $document;
+                $tree = array_merge($tree, documents_get_tree($documents, $document->id));
+            } else {
+                $tree[] = $document;
             }
         }
 
-        return true;
+        return $tree;
     }
 }

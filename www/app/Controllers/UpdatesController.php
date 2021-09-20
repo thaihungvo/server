@@ -1,10 +1,32 @@
 <?php namespace App\Controllers;
 
 use CodeIgniter\Events\Events;
+use App\Models\ActivityModel;
 
 class UpdatesController extends BaseController
 {
     public function updates_v1()
+    {
+        $tenMinutesAgo = strtotime('-2 minutes');
+        $requestDate = $this->request->getGet("since");
+        
+        $date = isset($requestDate) ? intval($requestDate) : $tenMinutesAgo;
+        if ($date < $tenMinutesAgo) $date = $tenMinutesAgo;
+        $user = $this->request->user;
+
+        $activityModel = new ActivityModel();
+        $activityBuilder = $activityModel->builder();
+        $activityQuery = $activityBuilder->select("*")
+            ->where("instance !=", $user->instance)
+            ->where("created >", date('Y-m-d H:i:s', $date))
+            ->orderBy('created', 'DESC')
+            ->get();
+
+        $activities = $activityQuery->getResult();
+        return $this->reply($activities);
+    }
+
+    public function updates()
     {
         $session = session();
         $session->destroy();
