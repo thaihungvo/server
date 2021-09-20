@@ -223,12 +223,14 @@ class DocumentsController extends BaseController
                 }
             }
 
-            try {
-                if ($documentModel->delete($idsToDelete) === false) {
-                    return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE");
-                }    
-            } catch (\Exception $e) {
-                return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-DELETE");
+            if (count($idsToDelete)) {
+                try {
+                    if ($documentModel->delete($idsToDelete) === false) {
+                        return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE");
+                    }    
+                } catch (\Exception $e) {
+                    return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-DELETE");
+                }
             }
         }
 
