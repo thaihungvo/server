@@ -5,7 +5,7 @@ use App\Models\TagModel;
 use App\Models\TaskModel;
 
 if (!function_exists("projects_expand")) {
-    function projects_expand(&$document) {
+    function projects_expand(&$document, $user) {
         // load project tags
         $tagModel = new TagModel();
         $tags = $tagModel->where("project", $document->id)->findAll();
@@ -15,7 +15,7 @@ if (!function_exists("projects_expand")) {
         $document->tags = $tags;
 
         // load board stacks
-        $document->stacks = projects_load_stacks($document->id);
+        $document->stacks = projects_load_stacks($document->id, $user);
 
         $document->archived = [];
 
@@ -62,12 +62,12 @@ if (!function_exists('projects_add_tags'))
 
 if (!function_exists('projects_load_stacks'))
 {
-    function projects_load_stacks($id)
+    function projects_load_stacks($id, $user)
     {
         $stackModel = new StackModel();
         $stackBuilder = $stackModel->builder();
         $stackQuery = $stackBuilder->select("stacks.*, stacks_collapsed.collapsed")
-            ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id', 'left')
+            ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id AND stacks_collapsed.user = '.$user->id, 'left')
             ->where('stacks.project', $id)
             ->where('stacks.deleted', NULL)
             ->orderBy('position', 'ASC')

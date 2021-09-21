@@ -40,16 +40,14 @@ if (!function_exists('documents_load'))
 
         $documents = $documentQuery->getResult();
         
-        if (!count($documents)) {
-            return null;
-        }
+        if (!count($documents)) return null;
 
         $document = $documents[0];
         if ($document->options) {
             $document->options = json_decode($document->options);
         }
 
-        documents_expand_document($document);
+        documents_expand_document($document, $user);
 
         // removing unncessary prop
         unset($document->deleted);
@@ -61,12 +59,12 @@ if (!function_exists('documents_load'))
 
 if (!function_exists('documents_expand_document'))
 {
-    function documents_expand_document(&$document)
+    function documents_expand_document(&$document, $user)
     {
         switch ($document->type) {
             case "project":
                 helper("projects");
-                projects_expand($document);
+                projects_expand($document, $user);
                 break;
             case "people":
                 helper("people");
