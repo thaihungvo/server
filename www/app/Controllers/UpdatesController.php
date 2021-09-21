@@ -14,15 +14,14 @@ class UpdatesController extends BaseController
         if ($date < $tenMinutesAgo) $date = $tenMinutesAgo;
         $user = $this->request->user;
 
-        $activityModel = new ActivityModel();
-        $activityBuilder = $activityModel->builder();
-        $activityQuery = $activityBuilder->select("*")
-            ->where("instance !=", $user->instance)
-            ->where("created >", date('Y-m-d H:i:s', $date))
-            ->orderBy('created', 'DESC')
-            ->get();
+        $date = date('Y-m-d H:i:s', $date);
 
-        $activities = $activityQuery->getResult();
+        $activityModel = new ActivityModel();
+        $activities = $activityModel->where("instance !=", $user->instance)
+            ->where("created >", $date)
+            ->orderBy("created", "desc")
+            ->findAll();
+
         return $this->reply($activities);
     }
 
