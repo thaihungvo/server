@@ -726,7 +726,7 @@
 			"name": "2. Projects",
 			"item": [
 				{
-					"name": "Tasks order",
+					"name": "Order Stack",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -738,7 +738,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    // stackID: [taskID, taskID, ...]\n\t\"60166fa5-918c-485c-9bea-4ce4ffefea47\": [\"ce8d16f6-9222-11ea-8c1c-870eb04b6723\", \"f15ce382-8a11-11ea-b94d-a87f862112f6\", \"fcdb8844-9222-11ea-8c1c-870eb04b6723\"]\n}",
+							"raw": "{\n    \"stack\": \"1234-1234-1234-1234\",\n    \"position\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -746,7 +746,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/order-tasks",
+							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/order-stack",
 							"host": [
 								"{{server}}"
 							],
@@ -755,7 +755,43 @@
 								"{{ver}}",
 								"projects",
 								"{{project}}",
-								"order-tasks"
+								"order-stack"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Order Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"task\": \"1234-1234-1234-1234\",\n\t\"stack\": \"1234-1234-1234-1234\",\n    \"position\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/order-task",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"projects",
+								"{{project}}",
+								"order-task"
 							]
 						}
 					},
@@ -879,42 +915,6 @@
 								"{{ver}}",
 								"stacks",
 								"{{stack}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Stacks order",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "[\"60166fa5-918c-485c-9bea-4ce4ffefea47\", \"9b8004ea-89e8-11ea-be55-2474dae7f827\"]",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/order",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"projects",
-								"{{project}}",
-								"order"
 							]
 						}
 					},

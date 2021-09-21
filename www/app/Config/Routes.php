@@ -84,8 +84,6 @@ $routes->get("/ping", "PingController::index");
     $routes->get("/api/v1/stacks/(:any)/done", "StacksController::done_v1/$1");
     // mark all tasks as to do
     $routes->get("/api/v1/stacks/(:any)/todo", "StacksController::todo_v1/$1");
-    // save stacks order inside a project
-    $routes->post("/api/v1/projects/(:any)/order", "StacksController::order_v1/$1");
     // archive all completed tasks
     $routes->get("/api/v1/stacks/(:any)/archive-done", "StacksController::archive_done_v1/$1");
     // archive all tasks
@@ -111,8 +109,10 @@ $routes->get("/ping", "PingController::index");
 
 
 // PROJECT
+    // save stacks order inside a project
+    $routes->post("/api/v1/projects/(:any)/order-stack", "ProjectsController::order_stack_v1/$1");
     // save tasks order inside a project
-    $routes->post("/api/v1/projects/(:any)/order-tasks", "ProjectsController::order_tasks_v1/$1");
+    $routes->post("/api/v1/projects/(:any)/order-task", "ProjectsController::order_task_v1/$1");
 
 
 // FILES

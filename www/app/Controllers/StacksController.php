@@ -321,44 +321,44 @@ class StacksController extends BaseController
         return $this->reply(true);
     }
 
-    public function order_v1($idProject)
-    {
-        $this->lock($idProject);
+    // public function order_v1($idProject)
+    // {
+    //     $this->lock($idProject);
 
-        helper("documents");
+    //     helper("documents");
 
-        $user = $this->request->user;
-        $document = documents_load($idProject, $user);
+    //     $user = $this->request->user;
+    //     $document = documents_load($idProject, $user);
 
-        if (!$document) {
-            return $this->reply("Project not found", 404, "ERR-STACK-ORDER");
-        }
+    //     if (!$document) {
+    //         return $this->reply("Project not found", 404, "ERR-STACK-ORDER");
+    //     }
 
-        $orderData = $this->request->getJSON();
-        $db = db_connect();
+    //     $orderData = $this->request->getJSON();
+    //     $db = db_connect();
 
-        $query = array(
-            "INSERT INTO ".$db->prefixTable("stacks")." (`id`, `project`, `position`) VALUES"
-        );
+    //     $query = array(
+    //         "INSERT INTO ".$db->prefixTable("stacks")." (`id`, `project`, `position`) VALUES"
+    //     );
 
-        $orders = array();
-        foreach ($orderData as $i => $stack) {
-            $value = "(". $db->escape($stack) .", ". $db->escape($document->id) .", ". $db->escape($i + 1) .")";
-            if ($i < count($orderData) - 1) {
-                $value .= ",";
-            }
-            $query[] = $value;
-        }
+    //     $orders = array();
+    //     foreach ($orderData as $i => $stack) {
+    //         $value = "(". $db->escape($stack) .", ". $db->escape($document->id) .", ". $db->escape($i + 1) .")";
+    //         if ($i < count($orderData) - 1) {
+    //             $value .= ",";
+    //         }
+    //         $query[] = $value;
+    //     }
 
-        $query[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `project`=VALUES(`project`), `position`=VALUES(`position`);";
-        $query = implode(" ", $query);
+    //     $query[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `project`=VALUES(`project`), `position`=VALUES(`position`);";
+    //     $query = implode(" ", $query);
 
-        if (!$db->query($query)) {
-            return $this->reply("Unable to update the stacks order", 500, "ERR-STACK-ORDER");
-        }
+    //     if (!$db->query($query)) {
+    //         return $this->reply("Unable to update the stacks order", 500, "ERR-STACK-ORDER");
+    //     }
 
-        $this->addActivity("", $document->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
+    //     $this->addActivity("", $document->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
 
-        return $this->reply(true);
-    }
+    //     return $this->reply(true);
+    // }
 }
