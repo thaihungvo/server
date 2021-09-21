@@ -119,12 +119,13 @@ class TasksController extends BaseController
     public function update_v1($taskID)
     {
         $this->lock($taskID);
-
+        
+        $user = $this->request->user;
         $taskModel = new TaskModel();
         $task = $taskModel->find($taskID);
 
         helper("documents");
-        $document = documents_load($task->project, $user->id);
+        $document = documents_load($task->project, $user);
 
         $stackModel = new StackModel();
         $stack = $stackModel->find($task->stack);
@@ -220,7 +221,7 @@ class TasksController extends BaseController
         }
 
         unset($taskData->id);
-        unset($taskData->order);
+        unset($taskData->position);
         unset($taskData->project);
         unset($taskData->stack);
         unset($taskData->assignees);

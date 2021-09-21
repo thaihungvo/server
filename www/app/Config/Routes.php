@@ -130,8 +130,6 @@ $routes->get("/ping", "PingController::index");
     $routes->put("/api/v1/attachment/(:any)", "FilesController::update_v1/$1");
 
 // PEOPLE
-    // retreives a people list
-    $routes->get("/api/v1/people/(:any)", "PeopleController::get_v1/$1");
     // add a new persone to a people list
     $routes->post("/api/v1/people/(:any)", "PeopleController::add_v1/$1");
     // update a person

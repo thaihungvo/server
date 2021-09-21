@@ -1,5 +1,6 @@
 <?php namespace App\Controllers;
 
+use App\Models\TaskModel;
 class ProjectsController extends BaseController
 {
     public function order_tasks_v1($projectId)
@@ -16,27 +17,65 @@ class ProjectsController extends BaseController
         
         $orderData = $this->request->getJSON();
 
-        $db = db_connect();
-        $query = array(
-            "INSERT INTO ".$db->prefixTable("tasks")." (`id`, `stack`, `position`) VALUES"
-        );
-
-        $values = array();
-        foreach ($orderData as $stack => $tasks) {
-            foreach ($tasks as $index => $task) {
-                $values[] = "(". $db->escape($task) .", ". $db->escape($stack) .", ". $db->escape($index + 1) .")";
-            }
+        if (!isset($orderData->task) || !isset($orderData->stack)) {
+            return $this->reply("Task not found", 404, "ERR-TASKS-ORDER");
         }
 
-        $query[] = implode(", ", $values);
-        $query[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `stack`=VALUES(`stack`), `position`=VALUES(`position`);";
-        $query = implode(" ", $query);
+        $taskModel = new TaskModel();
+        $movedTask = $taskModel->find($orderData->task);
 
-        if (!$db->query($query)) {
+        if (!$movedTask) {
+            return $this->reply("Task not found", 404, "ERR-TASKS-ORDER");
+        }
+
+        $db = db_connect();
+        
+        $db->transBegin();
+
+        // reset ordering
+        if (!$db->query("SET @counter = 0;")) {
+            return $this->reply("Unable to update tasks order", 500, "ERR-TASKS-ORDER");
+        }
+        $query = array();
+        $query[] = "UPDATE ".$db->prefixTable("tasks");
+        $query[] = "SET `position` = @counter := @counter + 1";
+        $query[] = "WHERE stack = ". $db->escape($orderData->stack);
+        $query[] = "AND id <> ". $db->escape($movedTask->id);
+        $query[] = "ORDER BY `position`";
+        if (!$db->query(implode(" ", $query))) {
             return $this->reply("Unable to update tasks order", 500, "ERR-TASKS-ORDER");
         }
 
-        $this->addActivity("", $document->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
+        // increase the ordering
+        $query = array();
+        $query[] = "UPDATE ".$db->prefixTable("tasks");
+        $query[] = "SET `position` = `position` + 1";
+        $query[] = "WHERE stack = ". $db->escape($orderData->stack) ." AND `position` >= ". $db->escape($orderData->position + 1);
+        $query[] = "ORDER BY `position`";
+        
+        if (!$db->query(implode(" ", $query))) {
+            return $this->reply("Unable to update tasks order", 500, "ERR-TASKS-ORDER");
+        }
+
+        // update the moved task
+        $query = array();
+        $query[] = "UPDATE ".$db->prefixTable("tasks");
+        $query[] = "SET `position` = ".$db->escape($orderData->position + 1). ", stack = ".$db->escape($orderData->stack);
+        $query[] = "WHERE id = ". $db->escape($movedTask->id);
+        
+        if (!$db->query(implode(" ", $query))) {
+            return $this->reply("Unable to update tasks order", 500, "ERR-TASKS-ORDER");
+        }
+
+        if ($db->transStatus() === false) {
+            $db->transRollback();
+            error_log("ERROR TRANSACTION\n\n");
+            return $this->reply("Transaction erro", 500, "ERR-TASKS-ORDER");
+        } else {
+            $db->transCommit();
+        }
+
+        $this->addActivity($movedTask->stack, $movedTask->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
 
         return $this->reply(true);
     }
