@@ -50,6 +50,8 @@ $routes->get("/ping", "PingController::index");
 // DOCUMENTS
     // get all documents
     $routes->get("/api/v1/documents", "DocumentsController::all_v1");
+    // update a documents options
+    $routes->put("/api/v1/documents/(:any)/options", "DocumentsController::update_options_v1/$1");
     // get a specific document
     $routes->get("/api/v1/documents/(:any)", "DocumentsController::one_v1/$1");
     // update a document
@@ -60,6 +62,7 @@ $routes->get("/ping", "PingController::index");
     $routes->post("/api/v1/documents/order", "DocumentsController::order_v1");
     // delete a document or folder
     $routes->delete("/api/v1/documents/(:any)", "DocumentsController::delete_v1/$1");
+    
 
 // MEMBERS
     // get all members
@@ -130,6 +133,8 @@ $routes->get("/ping", "PingController::index");
     $routes->put("/api/v1/attachment/(:any)", "FilesController::update_v1/$1");
 
 // PEOPLE
+    // get list of people for the assignee picker
+    $routes->get("/api/v1/people/(:any)", "PeopleController::get_v1/$1");
     // add a new persone to a people list
     $routes->post("/api/v1/people/(:any)", "PeopleController::add_v1/$1");
     // update a person

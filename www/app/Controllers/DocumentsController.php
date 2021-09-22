@@ -242,4 +242,28 @@ class DocumentsController extends BaseController
         $this->addActivity($document->parent, $document->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENTS);
         return $this->reply(true);
     }
+
+    public function update_options_v1($documentId)
+    {
+        $options = $this->request->getJSON();
+        $user = $this->request->user;
+        helper("documents");
+
+        $document = documents_load($documentId, $user);
+
+        if (!isset($document->id)) {
+            return $this->reply("Document not found", 404, "ERR-DOCUMENTS-OPTIONS");
+        }
+
+        $documentModel = new DocumentModel();
+        try {
+            if ($documentModel->update($document->id, ["options" => json_encode($options)]) === false) {
+                return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-OPTIONS");
+            }    
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-OPTIONS");
+        }
+
+        return $this->reply(true);
+    }
 }

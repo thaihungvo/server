@@ -537,60 +537,6 @@
 					"response": []
 				},
 				{
-					"name": "Update Folder",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Update folder status test\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Update folder response\", function () {",
-									"    const responseJson = pm.response.json();",
-									"    pm.expect(responseJson.data).to.equal(true);",
-									"});",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"text\": \"Some updated folder\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents/{{folder}}",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"documents",
-								"{{folder}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Update Document",
 					"request": {
 						"method": "PUT",
@@ -603,7 +549,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"text\": \"Some project 2\"\n}",
+							"raw": "{\n  \"text\": \"Some new title\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -715,6 +661,42 @@
 								"{{ver}}",
 								"documents",
 								"{{document}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Options",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"feeCurrency\":\"USD\",\n    \"archivedOrder\":\"archived-asc\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/documents/{{document}}/options",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"documents",
+								"{{document}}",
+								"options"
 							]
 						}
 					},
