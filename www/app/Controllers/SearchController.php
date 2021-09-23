@@ -12,10 +12,10 @@ class SearchController extends BaseController
         }
 
         $queryTasks = array(
-            "SELECT tasks.*, project.title as projectTitle, stacks.title as stackTitle, folder.title as folderTitle FROM ".$db->prefixTable("tasks")." as tasks",
+            "SELECT tasks.id, tasks.title, project.text as projectTitle, project.id as projectId, stacks.title as stackTitle, folder.text as folderTitle FROM ".$db->prefixTable("tasks")." as tasks",
             "LEFT JOIN ".$db->prefixTable("documents")." as project ON project.id = tasks.project",
             "LEFT JOIN ".$db->prefixTable("stacks")." as stacks ON stacks.id = tasks.stack",
-            "LEFT JOIN ".$db->prefixTable("documents")." as folder ON folder.id = project.folder",
+            "LEFT JOIN ".$db->prefixTable("documents")." as folder ON folder.id = project.parent",
             "WHERE tasks.title LIKE '%".$db->escapeString(urldecode($searchQuery))."%'"
         );
 
@@ -27,12 +27,13 @@ class SearchController extends BaseController
             $search->title = $task->title;
             $search->type = "project";
             $search->itemId = $task->id;
-            $search->recordId = $task->project;
-            $search->parents = array(
-                $task->folderTitle,
-                $task->projectTitle,
-                $task->stackTitle
-            );
+            $search->recordId = $task->projectId;
+            $search->parents = array();
+            if ($task->folderTitle) {
+                $search->parents[] = $task->folderTitle;
+            }
+            $search->parents[] = $task->projectTitle;
+            $search->parents[] = $task->stackTitle;
 
             $searchResults[] = $search;
         }

@@ -7,14 +7,8 @@ class UpdatesController extends BaseController
 {
     public function updates_v1()
     {
-        $tenMinutesAgo = strtotime('-2 minutes');
-        $requestDate = $this->request->getGet("since");
-        
-        $date = isset($requestDate) ? intval($requestDate) : $tenMinutesAgo;
-        if ($date < $tenMinutesAgo) $date = $tenMinutesAgo;
         $user = $this->request->user;
-
-        $date = date('Y-m-d H:i:s', $date);
+        $date = date('Y-m-d H:i:s', strtotime('-3 seconds'));
 
         $activityModel = new ActivityModel();
         $activities = $activityModel->where("instance !=", $user->instance)
