@@ -144,7 +144,7 @@ class TasksController extends BaseController
             $taskExtensionModel = new TaskExtensionModel();
             try {
                 if ($taskExtensionModel->where("task", $taskData->id)->delete() === false) {
-                    return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-UPDATE");
+                    return $this->reply($taskExtensionModel->errors(), 500, "ERR-TASK-UPDATE");
                 }
             } catch (\Exception $e) {
                 return $this->reply($e->getMessage(), 500, "ERR-TASK-UPDATE");
@@ -197,10 +197,10 @@ class TasksController extends BaseController
             }
 
             $assignees = array();
-            foreach ($taskData->assignees as $userID) {
+            foreach ($taskData->assignees as $person) {
                 $assignee = new \stdClass();
                 $assignee->task = $taskData->id;
-                $assignee->user = $userID;
+                $assignee->person = $person;
                 $assignees[] = $assignee;
             }
 
@@ -208,7 +208,7 @@ class TasksController extends BaseController
             if (count($assignees)) {
                 try {
                     if ($taskAssigneeModel->insertBatch($assignees) === false) {
-                        return $this->reply($taskOrderModel->errors(), 500, "ERR-TASK-ASSIGNEES");    
+                        return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-ASSIGNEES");    
                     }
                 } catch (\Exception $e) {
                     return $this->reply($e->getMessage(), 500, "ERR-TASK-ASSIGNEES");

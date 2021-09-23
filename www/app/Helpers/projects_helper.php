@@ -14,9 +14,9 @@ if (!function_exists("projects_expand")) {
         }
         $document->tags = $tags;
 
-        // load board stacks
+        // load project stacks
         $document->stacks = projects_load_stacks($document->id, $user);
-
+        // TODO: moved archived task to their place
         $document->archived = [];
 
         unset($document->order);
