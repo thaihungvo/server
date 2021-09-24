@@ -133,14 +133,16 @@ $routes->get("/ping", "PingController::index");
     $routes->put("/api/v1/attachment/(:any)", "FilesController::update_v1/$1");
 
 // PEOPLE
-    // get list of people for the assignee picker
-    $routes->get("/api/v1/people/(:any)", "PeopleController::get_v1/$1");
     // add a new persone to a people list
     $routes->post("/api/v1/people/(:any)", "PeopleController::add_v1/$1");
     // update a person
     $routes->put("/api/v1/person/(:any)", "PeopleController::update_v1/$1");
     // delete a person
     $routes->delete("/api/v1/person/(:any)", "PeopleController::delete_v1/$1");
+
+// NOTEPADS
+    // update a notepad
+    $routes->put("/api/v1/notepads/(:any)", "NotepadsController::update_v1/$1");
 
 // SEARCH
     // get all query results

@@ -1600,32 +1600,6 @@
 			"name": "8. People",
 			"item": [
 				{
-					"name": "Get People",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/people/{{document}}",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"people",
-								"{{document}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Add person",
 					"request": {
 						"method": "POST",
@@ -1709,32 +1683,6 @@
 			"name": "9. Notepad",
 			"item": [
 				{
-					"name": "Get Notepad",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/notepad/1234-1234-1234-1234",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"notepad",
-								"1234-1234-1234-1234"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Update Notepad",
 					"request": {
 						"method": "PUT",
@@ -1745,34 +1693,17 @@
 								"type": "text"
 							}
 						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/notepad/1234-1234-1234-1234",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"notepad",
-								"1234-1234-1234-1234"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "New Request",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Hello world\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
 							}
-						],
+						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/notepad/1234-1234-1234-1234",
+							"raw": "{{server}}/api/{{ver}}/notepad/{{document}}",
 							"host": [
 								"{{server}}"
 							],
@@ -1780,7 +1711,7 @@
 								"api",
 								"{{ver}}",
 								"notepad",
-								"1234-1234-1234-1234"
+								"{{document}}"
 							]
 						}
 					},
