@@ -100,4 +100,11 @@ class BaseController extends Controller
     {
         Events::trigger('activity', $item, $action, $section, $parent);
     }
+
+    protected function notify()
+    {
+        $user = $this->request->user;
+
+        Events::trigger("notify", $user);
+    }
 }

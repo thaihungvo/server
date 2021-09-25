@@ -1,6 +1,7 @@
 <?php namespace Config;
 
 use CodeIgniter\Events\Events;
+use App\Events\Notifications;
 
 /*
  * --------------------------------------------------------------------
@@ -60,4 +61,6 @@ Events::on('pre_system', function () {
 
         cache()->save("last-update", strtotime("now"));
     });
+
+    Events::on("notify", "App\Events\Notifications::send");
 });

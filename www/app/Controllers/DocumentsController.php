@@ -55,7 +55,8 @@ class DocumentsController extends BaseController
 	{
         $user = $this->request->user;
         helper("documents");
-        return $this->reply(documents_load($documentId, $user));
+        $document = documents_load($documentId, $user);
+        return $this->reply($document);
     }
 
     public function add_v1()
