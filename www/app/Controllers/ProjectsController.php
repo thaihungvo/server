@@ -79,7 +79,22 @@ class ProjectsController extends BaseController
             $db->transCommit();
         }
 
-        $this->addActivity($movedStack->project, $movedStack->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
+        $this->addActivities(
+            [
+                [
+                    "parent" => $movedStack->project,
+                    "item" => $movedStack->id,
+                    "section" => $this::SECTION_DOCUMENT,
+                    "action" => $this::ACTION_UPDATE,
+                ],
+                [
+                    "parent" => "",
+                    "item" => $document->id,
+                    "section" => $this::SECTION_DOCUMENT,
+                    "action" => $this::ACTION_UPDATE,
+                ]
+            ]
+        );
 
         return $this->reply(true);
     }
@@ -158,7 +173,22 @@ class ProjectsController extends BaseController
             $db->transCommit();
         }
 
-        $this->addActivity($movedTask->stack, $movedTask->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
+        $this->addActivities(
+            [
+                [
+                    "parent" => $movedTask->stack,
+                    "item" => $movedTask->id,
+                    "section" => $this::SECTION_DOCUMENT,
+                    "action" => $this::ACTION_UPDATE,
+                ],
+                [
+                    "parent" => "",
+                    "item" => $document->id,
+                    "section" => $this::SECTION_DOCUMENT,
+                    "action" => $this::ACTION_UPDATE,
+                ]
+            ]
+        );
 
         return $this->reply(true);
     }

@@ -98,7 +98,12 @@ class BaseController extends Controller
 
     protected function addActivity($parent = "", $item, $action, $section)
     {
-        Events::trigger('activity', $item, $action, $section, $parent);
+        Events::trigger('activities', [["item" => $item, "action" => $action, "section" => $section, "parent" => $parent]]);
+    }
+
+    protected function addActivities($activities)
+    {
+        Events::trigger('activities', $activities);
     }
 
     protected function notify()
