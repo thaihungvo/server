@@ -17,6 +17,7 @@ if (!function_exists('tasks_assignees'))
             ->join('people', 'people.id = tasks_assignees.person', 'left')
             ->whereIn('tasks_assignees.task', $tasksIDs)
             ->get();
-        return $taskAssigneeQuery->getResult();
+        $assignees = $taskAssigneeQuery->getResult();
+        return $assignees;
     }
 }

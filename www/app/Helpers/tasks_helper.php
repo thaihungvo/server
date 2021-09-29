@@ -36,7 +36,7 @@ if (!function_exists('tasks_load'))
 
                 if ($assignee->task === $task->id) {
                     unset($assignee->task);
-                    $task->assignees[] = $assignee;
+                    $task->assignees[] = ["id" => $assignee->id, "name" => $assignee->firstName ." ". $assignee->lastName];
                 }
             }
         }
