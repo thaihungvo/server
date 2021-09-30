@@ -128,7 +128,7 @@ $routes->get("/ping", "PingController::index");
     // delete all files and links for the specific task
     $routes->delete("/api/v1/attachments/(:any)", "FilesController::delete_all_v1/$1");
     // download an attachment or redirect in case of a link
-    $routes->get("/api/v1/download/(:any)", "FilesController::download_v1/$1");
+    $routes->get("/download/(:any)", "FilesController::download_v1/$1");
     // update the attachments title
     $routes->put("/api/v1/attachment/(:any)", "FilesController::update_v1/$1");
 

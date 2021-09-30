@@ -117,9 +117,29 @@ class FilesController extends BaseController
         }
     }
 
-    public function download_v1()
+    public function download_v1($attachmentId)
     {
+        $attachmentModel = new AttachmentModel();
+        $attachment = $attachmentModel->find($attachmentId);
+        if (!$attachment) {
+            return $this->reply("Attachment not found", 404, "ERR-FILE-DOWNLOAD");
+        }
 
+        if ($attachment->type === "link") {
+            header('Location: '.$attachment->content);
+            die;
+        }
+
+        header("Cache-Control: public");
+        header("Content-Description: File Transfer");
+        header("Content-Disposition: attachment; filename=".$attachment->content);
+        header("Content-Type: application/zip");
+        header("Content-Transfer-Encoding: binary");
+
+        $filePath =  WRITEPATH . "uploads/attachments/". $attachment->hash;
+
+        // read the file from disk
+        readfile($filePath);
     }
 
     public function update_v1()
