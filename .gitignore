@@ -131,3 +131,4 @@ nb-configuration.xml
 server.todo
 
 /events/node_modules
+.nova/

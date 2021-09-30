@@ -17,7 +17,7 @@ class TasksController extends BaseController
         $task = $taskModel->find($taskID);
 
         helper("documents");
-        $document = documents_load($task->project, $user->id);
+        $document = documents_load($task->project, $user);
 
         $stackModel = new StackModel();
         $stack = $stackModel->find($task->stack);
@@ -110,8 +110,10 @@ class TasksController extends BaseController
         helper("tasks");
         $task = task_format($task);
 
-        $this->addActivity($stack->id, $task->id, $this::ACTION_CREATE, $this::SECTION_TASK);
-        $this->addActivity("", $document->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
+        $this->addActivities([
+            ["parent" => $stack->id, "item" => $task->id, "action" => $this::ACTION_CREATE, "section" => $this::SECTION_TASK],
+            ["parent" => "", "item" => $document->id, "action" => $this::ACTION_UPDATE, "section" => $this::SECTION_DOCUMENT]
+        ]);
 
         return $this->reply($task);
     }
@@ -269,7 +271,10 @@ class TasksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-TASKS-DELETE");
         }
 
-        $this->addActivity($task->stack, $task->id, $this::ACTION_DELETE, $this::SECTION_TASK);
+        $this->addActivities([
+            ["parent" => $task->stack, "item" => $task->id, "action" => $this::ACTION_DELETE, "section" => $this::SECTION_TASK],
+            ["parent" => "", "item" => $task->project, "action" => $this::ACTION_UPDATE, "section" => $this::SECTION_DOCUMENT]
+        ]);
 
         return $this->reply(true);
     }
