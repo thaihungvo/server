@@ -104,6 +104,7 @@ class FilesController extends BaseController
     {
         $attachmentModel = new AttachmentModel();
         $attachment = $attachmentModel->find($attachmentId);
+
         if (!$attachment) {
             return $this->reply("Attachment not found", 404, "ERR-FILE-DELETE");
         }
@@ -115,6 +116,14 @@ class FilesController extends BaseController
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-FILE-DELETE");
         }
+
+        try {
+            unlink(WRITEPATH . "uploads/attachments/". $attachment->hash); 
+        } catch(Exception $e) { 
+            
+        } 
+
+        return $this->reply(true);
     }
 
     public function download_v1($attachmentId)
