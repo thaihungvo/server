@@ -50,10 +50,11 @@ Events::on('pre_system', function () {
 
         $request = \Config\Services::request();
         $user = $request->user;
+        $date = date("Y-m-d H:i:s", \strtotime("now"));
         
         $query = array(
             "INSERT INTO ". $db->prefixTable("activities") ." (`user`, `instance`, `parent`, `item`, `action`, `section`, `created`)",
-            "VALUES ('".$db->escapeString($user->id)."', '".$db->escapeString($user->instance)."', '".$db->escapeString($parent)."', '".$db->escapeString($item)."', '".$db->escapeString($action)."', '".$db->escapeString($section)."', '". date("Y-m-d H:i:s", \strtotime("now")) ."')"
+            "VALUES ('".$db->escapeString($user->id)."', '".$db->escapeString($user->instance)."', '".$db->escapeString($parent)."', '".$db->escapeString($item)."', '".$db->escapeString($action)."', '".$db->escapeString($section)."', '". $date ."')"
         );
 
         $db->query(implode(" ", $query));
@@ -69,6 +70,7 @@ Events::on('pre_system', function () {
 
         $request = \Config\Services::request();
         $user = $request->user;
+        $date = date("Y-m-d H:i:s", \strtotime("now"));
         
         $query = array();
         $query[] = "INSERT INTO ". $db->prefixTable("activities") ." (`user`, `instance`, `parent`, `item`, `action`, `section`, `created`)";
@@ -76,7 +78,7 @@ Events::on('pre_system', function () {
         foreach ($activities as $i => $activity) {
             $value = "";
             if ($i == 0) $value .= "VALUES ";
-            $value .= "('".$db->escapeString($user->id)."', '".$db->escapeString($user->instance)."', '".$db->escapeString(isset($activity["parent"]) ? $activity["parent"] : "")."', '".$db->escapeString($activity["item"])."', '".$db->escapeString($activity["action"])."', '".$db->escapeString($activity["section"])."', '". date("Y-m-d H:i:s", \strtotime("now")) ."')";
+            $value .= "('".$db->escapeString($user->id)."', '".$db->escapeString($user->instance)."', '".$db->escapeString(isset($activity["parent"]) ? $activity["parent"] : "")."', '".$db->escapeString($activity["item"])."', '".$db->escapeString($activity["action"])."', '".$db->escapeString($activity["section"])."', '". $date ."')";
             if ($i < count($activities) - 1) {
                 $value .= ",";
             }

@@ -139,13 +139,16 @@ class TasksController extends BaseController
         $taskData = $this->request->getJSON();
         helper("uuid");
 
+        $db = db_connect();
+        $db->transStart();
+
         // generate list of new extensions
         if (isset($taskData->extensions)) {
             // Managing extensions
             // delete the current task extensions
             $taskExtensionModel = new TaskExtensionModel();
             try {
-                if ($taskExtensionModel->where("task", $taskData->id)->delete() === false) {
+                if ($taskExtensionModel->where("task", $task->id)->delete() === false) {
                     return $this->reply($taskExtensionModel->errors(), 500, "ERR-TASK-UPDATE");
                 }
             } catch (\Exception $e) {
@@ -230,21 +233,19 @@ class TasksController extends BaseController
         unset($taskData->info);
         $taskData->archived = null;
 
-        if ($taskData->startdate) {
+        if (isset($taskData->startdate)) {
             $taskData->startdate = substr(str_replace("T", " ", $taskData->startdate), 0, 19);
-        } else {
-            $taskData->startdate = NULL;
         }
 
-        if ($taskData->duedate) {
+        if (isset($taskData->duedate)) {
             $taskData->duedate = substr(str_replace("T", " ", $taskData->duedate), 0, 19);
-        } else {
-            $taskData->duedate = NULL;
         }
 
         if ($taskModel->update($taskID, $taskData) === false) {
             return $this->reply(null, 500, "ERR-TASK-UPDATE");
         }
+
+        $db->transComplete();
 
         $this->addActivity($stack->id, $task->id, $this::ACTION_UPDATE, $this::SECTION_TASK);
 
