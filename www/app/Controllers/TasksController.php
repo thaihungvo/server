@@ -194,7 +194,7 @@ class TasksController extends BaseController
             // delete all assigned task users
             $taskAssigneeModel = new TaskAssigneeModel();
             try {
-                if ($taskAssigneeModel->where("task", $taskData->id)->delete() === false) {
+                if ($taskAssigneeModel->where("task", $task->id)->delete() === false) {
                     return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-UPDATE");
                 }
             } catch (\Exception $e) {
@@ -204,7 +204,7 @@ class TasksController extends BaseController
             $assignees = array();
             foreach ($taskData->assignees as $person) {
                 $assignee = new \stdClass();
-                $assignee->task = $taskData->id;
+                $assignee->task = $task->id;
                 $assignee->person = $person;
                 $assignees[] = $assignee;
             }
