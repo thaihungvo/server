@@ -50,6 +50,8 @@ $routes->get("/ping", "PingController::index");
 // DOCUMENTS
     // get all documents
     $routes->get("/api/v1/documents", "DocumentsController::all_v1");
+    // get a documents attachments
+    $routes->get("/api/v1/documents/(:any)/attachments", "DocumentsController::attachments_v1/$1");
     // update a documents options
     $routes->put("/api/v1/documents/(:any)/options", "DocumentsController::update_options_v1/$1");
     // get a specific document
@@ -128,7 +130,7 @@ $routes->get("/ping", "PingController::index");
     // delete all files and links for the specific task
     $routes->delete("/api/v1/attachments/(:any)", "FilesController::delete_all_v1/$1");
     // download an attachment or redirect in case of a link
-    $routes->get("/download/(:any)", "FilesController::download_v1/$1");
+    $routes->get("/api/v1/download/(:any)", "FilesController::download_v1/$1");
     // update the attachments title
     $routes->put("/api/v1/attachment/(:any)", "FilesController::update_v1/$1");
 

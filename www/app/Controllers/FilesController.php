@@ -6,14 +6,8 @@ use App\Models\TaskModel;
 
 class FilesController extends BaseController
 {
-	public function upload_v1($taskId)
+	public function upload_v1($resourceId)
 	{
-        $taskModel = new TaskModel();
-        $task = $taskModel->find($taskId);
-        if (!$task) {
-            return $this->reply("Task not found", 404, "ERR-ATTACHMENT-CREATE");
-        }
-
         $user = $this->request->user;
 
         $chunk = $this->request->getBody();
@@ -35,7 +29,7 @@ class FilesController extends BaseController
 
         if (file_exists($uploadPath)) {
             // the current user tries to upload a file that's already on the server
-            $savedAttachment = $this->saveAttachment($task, $fileName, $fileSize, $fileHash);
+            $savedAttachment = $this->saveAttachment($resourceId, $fileName, $fileSize, $fileHash);
             if ($savedAttachment === false) {
                 return $this->reply(null, 500, "ERR-ATTACHMENT-CREATE");
             }
@@ -71,7 +65,7 @@ class FilesController extends BaseController
             return $this->reply(null, 500, "ERR-FILE-RENAME");
         }
 
-        $savedAttachment = $this->saveAttachment($task, $fileName, $fileSize, $fileHash);
+        $savedAttachment = $this->saveAttachment($resourceId, $fileName, $fileSize, $fileHash);
         if ($savedAttachment === false) {
             return $this->reply(null, 500, "ERR-ATTACHMENT-CREATE");
         }
@@ -120,7 +114,7 @@ class FilesController extends BaseController
         try {
             unlink(WRITEPATH . "uploads/attachments/". $attachment->hash); 
         } catch(Exception $e) { 
-            
+            return $this->reply("Unable to delete attachment", 500, "ERR-FILE-DELETE");
         } 
 
         return $this->reply(true);
@@ -156,7 +150,7 @@ class FilesController extends BaseController
 
     }
 
-    private function saveAttachment($task, $fileName, $fileSize, $fileHash)
+    private function saveAttachment($resourceId, $fileName, $fileSize, $fileHash)
     {
         $user = $this->request->user;
 
@@ -164,7 +158,7 @@ class FilesController extends BaseController
 
         $attachment = new \stdClass();
         $attachment->owner = $user->id;
-        $attachment->task = $task->id;
+        $attachment->resource = $resourceId;
         $attachment->title = $fileName;
         $attachment->content = $fileName;
         $attachment->hash = $fileHash;
@@ -173,13 +167,8 @@ class FilesController extends BaseController
         $attachment->type = "file";
 
         try {
-            if ($attachmentModel->insert($attachment) === false) {
-                $errors = $attachmentModel->errors();
-                // return $this->reply($errors, 500, "ERR-ATTACHMENT-CREATE");
-                return false;
-            }
+            if ($attachmentModel->insert($attachment) === false) return false;
         } catch (\Exception $e) {
-            // return $this->reply($e->getMessage(), 500, "ERR-ATTACHMENT-CREATE");
             return false;
         }
 

@@ -114,14 +114,26 @@ if (!function_exists("projects_clean_up")) {
     function projects_clean_up($document) {
         // delete all stacks
         $stackModel = new StackModel();
-        $stackModel->where("project", $document->id)->delete();
+        try {
+            if ($stackModel->where("project", $document->id)->delete() === false) return false;
+        } catch (\Exception $e) {
+            return false;
+        }
 
         // delete all tasks
         $taskModel = new TaskModel();
-        $taskModel->where("project", $document->id)->delete();
+        try {
+            if ($taskModel->where("project", $document->id)->delete() === false) return false;
+        } catch (\Exception $e) {
+            return false;
+        }
 
         // delete all tags
         $tagModel = new TagModel();
-        $tagModel->where("project", $document->id)->delete();
+        try {
+            if ($tagModel->where("project", $document->id)->delete() === false) return false;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

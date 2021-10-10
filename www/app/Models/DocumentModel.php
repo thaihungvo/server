@@ -21,7 +21,7 @@ class DocumentModel extends Model
         "text" => "required|alpha_numeric_punct",
         "parent" => "required|alpha_numeric_punct",
         "owner" => "required|integer",
-        "type" => "in_list[folder,project,notepad,people]",
+        "type" => "in_list[folder,project,notepad,people,file]",
         "position" => "required|numeric"
     ];
 

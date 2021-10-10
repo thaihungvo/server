@@ -16,7 +16,11 @@ if (!function_exists("people_clean_up")) {
 
         // delete all people for this document
         $personModel = new PersonModel();
-        $personModel->where("people", $document->id)->delete();
+        try {
+            if ($personModel->where("people", $document->id)->delete() === false) return false;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }
 

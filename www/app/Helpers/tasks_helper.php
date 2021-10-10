@@ -59,7 +59,7 @@ if (!function_exists('tasks_load'))
         $attachments = array();
         if (count($tasksIDs)) {        
             $attachmentModel = new AttachmentModel();
-            $attachments = $attachmentModel->whereIn("task", $tasksIDs)->findAll();
+            $attachments = $attachmentModel->whereIn("resource", $tasksIDs)->findAll();
         }
 
         // attach the extensions to every task
@@ -74,8 +74,8 @@ if (!function_exists('tasks_load'))
 
             // insert the attachments in the task extension
             foreach ($attachments as $attachment) {
-                if ($attachment->task == $task->id && isset($task->extensions)) {
-                    unset($attachment->task);
+                if ($attachment->resource == $task->id && isset($task->extensions)) {
+                    unset($attachment->resource);
 
                     foreach ($task->extensions as &$extension) {
                         if ($extension->type == "attachments") {

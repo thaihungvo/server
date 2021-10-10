@@ -16,7 +16,11 @@ if (!function_exists("notepads_clean_up")) {
 
         // delete all contents for this document
         $notepadModel = new NotepadModel();
-        $notepadModel->where("notepad", $document->id)->delete();
+        try {
+            if ($notepadModel->where("notepad", $document->id)->delete() === false) return false;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }
 

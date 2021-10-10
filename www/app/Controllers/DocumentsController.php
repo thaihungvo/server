@@ -1,6 +1,7 @@
 <?php namespace App\Controllers;
 
 use App\Models\DocumentModel;
+use App\Models\AttachmentModel;
 
 class DocumentsController extends BaseController
 {
@@ -133,6 +134,20 @@ class DocumentsController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-UPDATE");
         }
 
+        // in case it's a file document
+        // we also need to rename the file
+        if ($document->type === "file") {
+            $attachmentModel = new AttachmentModel();
+            try {
+                if ($attachmentModel->wherein("resource", [$document->id])->set("content", $documentData->text)->update() === false) {
+                    return $this->reply($attachmentModel->errors(), 500, "ERR-DOCUMENTS-UPDATE");
+                }
+            } catch (\Exception $e) {
+                return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-UPDATE");
+            }
+            
+        }
+
         // inserting activity
         $this->addActivity($documentData->parent, $documentData->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENTS);
         return $this->reply(true);
@@ -237,7 +252,9 @@ class DocumentsController extends BaseController
 
         // cleaning up
         if (count($documentsToCleanUp)) {
-            documents_clean_up($documentsToCleanUp);
+            if (!documents_clean_up($documentsToCleanUp)) {
+                return $this->reply("Unable to delete document", 500, "ERR-DOCUMENTS-DELETE");
+            }
         }
 
         $this->addActivity($document->parent, $document->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENTS);
@@ -266,5 +283,21 @@ class DocumentsController extends BaseController
         }
 
         return $this->reply(true);
+    }
+
+    public function attachments_v1($documentId)
+    {
+        $user = $this->request->user;
+        helper("documents");
+
+        $document = documents_load($documentId, $user);
+
+        if (!isset($document->id)) {
+            return $this->reply("Document not found", 404, "ERR-DOCUMENTS-ATTACHMENTS");
+        }
+
+        $attachmentModel = new AttachmentModel();
+        $attachments = $attachmentModel->where("resource", $documentId)->find();
+        return $this->reply($attachments);
     }
 }

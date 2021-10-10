@@ -74,6 +74,10 @@ if (!function_exists('documents_expand_document'))
                 helper("notepads");
                 notepads_expand($document);
                 break;
+            case "file":
+                helper("files");
+                files_expand($document);
+                break;
             default:
                 break;
         }
@@ -88,15 +92,19 @@ if (!function_exists('documents_clean_up'))
             switch ($document->type) {
                 case "project":
                     helper("projects");
-                    projects_clean_up($document);
+                    return projects_clean_up($document);
                     break;
                 case "people":
                     helper("people");
-                    people_clean_up($document);
+                    return people_clean_up($document);
                     break;
                 case "notepad":
                     helper("notepads");
-                    notepads_clean_up($document);
+                    return notepads_clean_up($document);
+                    break;
+                case "file":
+                    helper("files");
+                    return files_clean_up($document);
                     break;
                 default:
                     break;
