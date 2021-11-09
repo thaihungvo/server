@@ -68,8 +68,10 @@ if (!function_exists('documents_load_counters'))
         $documentQuery = $documentBuilder->select("COUNT(". $db->protectIdentifiers("tasks", true) .".`id`) AS totalTasks, COUNT(". $db->protectIdentifiers("people", true) .".`id`) AS totalPeople, SUM(CASE WHEN ". $db->protectIdentifiers("tasks", true) .".`duedate` < '". $today ."' AND ". $db->protectIdentifiers("tasks", true) .".`done` = 0 THEN 1 ELSE 0 END) AS warning, documents.id")
             ->join("tasks", "tasks.project = documents.id", "left")
             ->join("people", "people.people = documents.id", "left")
-            ->where("documents.type", "project")
-            ->orWhere("documents.type", "people")
+            ->whereIn("documents.type", ["project", "people"])
+            ->where("documents.deleted", NULL)
+            ->where("tasks.deleted", NULL)
+            ->where("people.deleted", NULL)
             ->groupBy("documents.id")
             ->get();
         $counters = $documentQuery->getResult();
