@@ -11,7 +11,7 @@ class StacksController extends BaseController
         helper("documents");
 
         $user = $this->request->user;
-        $document = documents_load($idProject, $user);
+        $document = documents_load_document($idProject, $user);
         
         if (!$document) {
             $this->reply("Project not found", 404, "ERR-STACK-CREATE");
@@ -86,7 +86,7 @@ class StacksController extends BaseController
         helper("documents");
 
         $user = $this->request->user;
-        $document = documents_load($stack->project, $user);
+        $document = documents_load_document($stack->project, $user);
 
         $stackData = $this->request->getJSON();
         unset($stackData->created);
@@ -151,7 +151,7 @@ class StacksController extends BaseController
 
         helper("documents");
         $user = $this->request->user;
-        $document = documents_load($stack->project, $user);
+        $document = documents_load_document($stack->project, $user);
 
         if (!$document) {
             return $this->reply("Stack not found", 404, "ERR-STACK-DONE");
@@ -190,7 +190,7 @@ class StacksController extends BaseController
 
         helper("documents");
         $user = $this->request->user;
-        $document = documents_load($stack->project, $user);
+        $document = documents_load_document($stack->project, $user);
 
         if (!$document) {
             return $this->reply("Stack not found", 404, "ERR-STACK-TODO");
@@ -229,7 +229,7 @@ class StacksController extends BaseController
 
         helper("documents");
         $user = $this->request->user;
-        $document = documents_load($stack->project, $user);
+        $document = documents_load_document($stack->project, $user);
 
         if (!$document) {
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-ALL");
@@ -265,7 +265,7 @@ class StacksController extends BaseController
 
         helper("documents");
         $user = $this->request->user;
-        $document = documents_load($stack->project, $user);
+        $document = documents_load_document($stack->project, $user);
 
         if (!$document) {
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-DONE");
@@ -328,7 +328,7 @@ class StacksController extends BaseController
     //     helper("documents");
 
     //     $user = $this->request->user;
-    //     $document = documents_load($idProject, $user);
+    //     $document = documents_load_document($idProject, $user);
 
     //     if (!$document) {
     //         return $this->reply("Project not found", 404, "ERR-STACK-ORDER");

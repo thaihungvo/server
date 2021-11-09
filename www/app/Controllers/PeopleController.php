@@ -9,7 +9,7 @@ class PeopleController extends BaseController
         helper("documents");
 
         $user = $this->request->user;
-        $document = documents_load($peopleId, $user);
+        $document = documents_load_document($peopleId, $user);
 
         if (!$document) {
             return $this->reply("People list not found", 404, "ERR-PEOPLE-ADD");
@@ -44,7 +44,7 @@ class PeopleController extends BaseController
         helper("documents");
 
         $user = $this->request->user;
-        $document = documents_load($person->people, $user);
+        $document = documents_load_document($person->people, $user);
 
         if (!$document) {
             return $this->reply("People list not found", 404, "ERR-PEOPLE-UPDATE");
@@ -78,7 +78,7 @@ class PeopleController extends BaseController
         helper("documents");
 
         $user = $this->request->user;
-        $document = documents_load($person->people, $user);
+        $document = documents_load_document($person->people, $user);
 
         if (!$document) {
             return $this->reply("People list not found", 404, "ERR-PEOPLE-DELETE");

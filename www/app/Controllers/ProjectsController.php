@@ -10,7 +10,7 @@ class ProjectsController extends BaseController
 
         helper("documents");
         $user = $this->request->user;
-        $document = documents_load($projectId, $user);
+        $document = documents_load_document($projectId, $user);
 
         if (!$document) {
             return $this->reply("Project not found", 404, "ERR-STACK-ORDER");
@@ -105,7 +105,7 @@ class ProjectsController extends BaseController
 
         helper("documents");
         $user = $this->request->user;
-        $document = documents_load($projectId, $user);
+        $document = documents_load_document($projectId, $user);
 
         if (!$document) {
             return $this->reply("Project not found", 404, "ERR-TASKS-ORDER");

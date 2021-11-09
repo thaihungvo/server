@@ -17,7 +17,7 @@ class TasksController extends BaseController
         $task = $taskModel->find($taskID);
 
         helper("documents");
-        $document = documents_load($task->project, $user);
+        $document = documents_load_document($task->project, $user);
 
         $stackModel = new StackModel();
         $stack = $stackModel->find($task->stack);
@@ -54,7 +54,7 @@ class TasksController extends BaseController
         }
 
         helper("documents");
-        $document = documents_load($stack->project, $user);
+        $document = documents_load_document($stack->project, $user);
 
         if (!$document) {
             return $this->reply("Project not found", 404, "ERR-TASK-CREATE");
@@ -70,10 +70,15 @@ class TasksController extends BaseController
 
         $taskData->updated = null;
         $taskData->archived = null;
+        $taskData->completed = null;
         $taskData->owner = $user->id;
         $taskData->project = $document->id;
         $taskData->stack = $stack->id;
         $taskData->position = 1;
+
+        if (isset($taskData->repeats)) {
+            $taskData->repeats = \json_encode($taskData->repeats);
+        }
 
         // get the last order number in from that project and stack
         if ($position === "bottom") {
@@ -127,7 +132,7 @@ class TasksController extends BaseController
         $task = $taskModel->find($taskID);
 
         helper("documents");
-        $document = documents_load($task->project, $user);
+        $document = documents_load_document($task->project, $user);
 
         $stackModel = new StackModel();
         $stack = $stackModel->find($task->stack);
@@ -221,8 +226,14 @@ class TasksController extends BaseController
             }
         }
         
+        // convert tags to string
         if (isset($taskData->tags)) {
             $taskData->tags = json_encode($taskData->tags);
+        }
+
+        // convert repeats to string
+        if (isset($taskData->repeats)) {
+            $taskData->repeats = json_encode($taskData->repeats);
         }
 
         unset($taskData->id);
@@ -239,6 +250,10 @@ class TasksController extends BaseController
 
         if (isset($taskData->duedate)) {
             $taskData->duedate = substr(str_replace("T", " ", $taskData->duedate), 0, 19);
+        }
+
+        if (isset($taskData->completed)) {
+            $taskData->completed = substr(str_replace("T", " ", $taskData->completed), 0, 19);
         }
 
         if ($taskModel->update($taskID, $taskData) === false) {

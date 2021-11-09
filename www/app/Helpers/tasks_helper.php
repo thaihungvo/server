@@ -110,6 +110,10 @@ if (!function_exists('task_format'))
             $task->tags = json_decode($task->tags);
         }
 
+        if (is_string($task->repeats)) {
+            $task->repeats = json_decode($task->repeats);
+        }
+
         unset($task->order);
         unset($task->stack);
         unset($task->project);

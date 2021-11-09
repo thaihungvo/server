@@ -9,41 +9,8 @@ class DocumentsController extends BaseController
 	{
         $user = $this->request->user;
 
-        // get all the documents
-        $documentModel = new DocumentModel();
-        $documentBuilder = $documentModel->builder();
-        $documentQuery = $documentBuilder->select("documents.id, documents.text, documents.type, documents.updated, documents.created, documents.parent")
-            ->join("documents_members", "documents_members.document = documents.id", "left")
-            ->where("documents.deleted", NULL)
-            ->groupStart()
-                ->where("documents.owner", $user->id)
-                ->orWhere("documents_members.user", $user->id)
-                ->orWhere("documents.everyone", 1)
-            ->groupEnd()
-            ->groupBy("documents.id")
-            ->orderBy("documents.position", "ASC")
-            ->get();
-        $documents = $documentQuery->getResult();
-
-        $folders = array();
-        foreach ($documents as &$document) {
-            if ($document->parent === "0") {
-                $document->parent = 0;
-            }
-
-            if ($document->type === $this::TYPE_FOLDER) {
-                // $folders[] = $document;
-                $document->droppable = true;
-            }
-
-            $document->data = new \stdClass();
-            $document->data->type = $document->type;
-            unset($document->type);
-            $document->data->created = $document->created;
-            unset($document->created);
-            $document->data->updated = $document->updated;
-            unset($document->updated);
-        }
+        helper("documents");
+        $documents = documents_load_documents($user, true);
 
         $response = new \stdClass();
         $response->documents = $documents;
@@ -56,7 +23,12 @@ class DocumentsController extends BaseController
 	{
         $user = $this->request->user;
         helper("documents");
-        $document = documents_load($documentId, $user);
+
+        if (!isset($documentId)) {
+            return $this->reply(null, 500, "ERR-DOCUMENTS-GET");
+        }
+
+        $document = documents_load_document($documentId, $user);
         return $this->reply($document);
     }
 
@@ -78,7 +50,7 @@ class DocumentsController extends BaseController
 
         // inserting activity
         $this->addActivity($documentData->parent, $documentData->id, $this::ACTION_CREATE, $this::SECTION_DOCUMENTS);
-        return $this->reply(documents_load($documentData->id, $user));
+        return $this->reply(documents_load_document($documentData->id, $user));
     }
 
     public function update_v1($documentId)
@@ -96,7 +68,7 @@ class DocumentsController extends BaseController
 
         // checking if the requested document exists
         helper("documents");
-        $document = documents_load($documentId, $user);
+        $document = documents_load_document($documentId, $user);
         if (!$document) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-UPDATE");
         }
@@ -204,7 +176,7 @@ class DocumentsController extends BaseController
         $user = $this->request->user;
         helper("documents");
 
-        $document = documents_load($id, $user);
+        $document = documents_load_document($id, $user);
 
         if (!isset($document->id)) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-DELETE");
@@ -267,7 +239,7 @@ class DocumentsController extends BaseController
         $user = $this->request->user;
         helper("documents");
 
-        $document = documents_load($documentId, $user);
+        $document = documents_load_document($documentId, $user);
 
         if (!isset($document->id)) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-OPTIONS");
@@ -290,7 +262,7 @@ class DocumentsController extends BaseController
         $user = $this->request->user;
         helper("documents");
 
-        $document = documents_load($documentId, $user);
+        $document = documents_load_document($documentId, $user);
 
         if (!isset($document->id)) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-ATTACHMENTS");

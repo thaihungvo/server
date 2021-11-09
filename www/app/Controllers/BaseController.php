@@ -35,6 +35,7 @@ class BaseController extends Controller
     const TYPE_PROJECT = "project";
     const TYPE_NOTEPAD = "notepad";
     const TYPE_PEOPLE = "people";
+    const TYPE_FILE = "file";
 
     const ACTION_CREATE = "CREATE";
     const ACTION_UPDATE = "UPDATE";
