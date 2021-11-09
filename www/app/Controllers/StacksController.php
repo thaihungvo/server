@@ -89,6 +89,9 @@ class StacksController extends BaseController
         $document = documents_load_document($stack->project, $user);
 
         $stackData = $this->request->getJSON();
+        if (!isset($stackData->maxTasks)) {
+            $stackData->maxTasks = NULL;
+        }
         unset($stackData->created);
 
         // forcing the stack project id
