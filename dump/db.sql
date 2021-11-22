@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.26-log)
 # Database: stacks
-# Generation Time: 2021-09-20 10:07:01 +0000
+# Generation Time: 2021-11-22 07:39:14 +0000
 # ************************************************************
 
 
@@ -49,12 +49,12 @@ DROP TABLE IF EXISTS `stk_attachments`;
 CREATE TABLE `stk_attachments` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `owner` int(11) NOT NULL,
-  `task` char(36) NOT NULL DEFAULT '',
+  `resource` char(36) NOT NULL DEFAULT '',
   `title` text,
   `extension` varchar(10) NOT NULL DEFAULT '',
   `size` int(11) DEFAULT NULL,
   `content` text,
-  `hash` varchar(20) DEFAULT '',
+  `hash` varchar(100) DEFAULT '',
   `type` enum('file','link') NOT NULL DEFAULT 'file',
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
@@ -72,7 +72,7 @@ DROP TABLE IF EXISTS `stk_documents`;
 CREATE TABLE `stk_documents` (
   `id` char(36) NOT NULL DEFAULT '',
   `text` varchar(100) NOT NULL DEFAULT '',
-  `type` enum('folder','project','notepad','people') NOT NULL DEFAULT 'project',
+  `type` enum('folder','project','notepad','people','file') NOT NULL DEFAULT 'project',
   `owner` int(11) NOT NULL,
   `everyone` tinyint(1) NOT NULL DEFAULT '1',
   `parent` char(36) NOT NULL DEFAULT '',
@@ -120,7 +120,7 @@ DROP TABLE IF EXISTS `stk_notepads`;
 
 CREATE TABLE `stk_notepads` (
   `notepad` char(36) NOT NULL DEFAULT '',
-  `content` varchar(11) DEFAULT NULL,
+  `content` longtext,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
@@ -184,6 +184,7 @@ CREATE TABLE `stk_stacks` (
   `title` varchar(100) NOT NULL DEFAULT '',
   `project` char(36) NOT NULL DEFAULT '',
   `tag` text NOT NULL,
+  `maxTasks` int(6) DEFAULT NULL,
   `position` smallint(6) NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
@@ -248,7 +249,9 @@ CREATE TABLE `stk_tasks` (
   `progress` tinyint(4) DEFAULT NULL,
   `hourlyFee` float DEFAULT NULL,
   `archived` datetime DEFAULT NULL,
+  `completed` datetime DEFAULT NULL,
   `priority` enum('low','medium','high') DEFAULT NULL,
+  `repeats` text,
   `project` char(36) NOT NULL DEFAULT '',
   `stack` char(36) NOT NULL,
   `position` smallint(6) NOT NULL,
@@ -268,9 +271,9 @@ DROP TABLE IF EXISTS `stk_tasks_assignees`;
 
 CREATE TABLE `stk_tasks_assignees` (
   `task` char(36) NOT NULL DEFAULT '',
-  `user` int(11) NOT NULL,
-  PRIMARY KEY (`task`,`user`),
-  UNIQUE KEY `task` (`task`,`user`)
+  `person` char(36) NOT NULL DEFAULT '',
+  PRIMARY KEY (`task`,`person`),
+  UNIQUE KEY `task` (`task`,`person`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -287,6 +290,7 @@ CREATE TABLE `stk_tasks_extensions` (
   `title` varchar(255) DEFAULT '',
   `content` text,
   `options` text,
+  `position` int(11) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
