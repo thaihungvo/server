@@ -44,6 +44,7 @@ class BaseController extends Controller
 
     const SECTION_DOCUMENTS = "documents";
     const SECTION_DOCUMENT = "document";
+    const SECTION_STACK = "stack";
     const SECTION_TASK = "task";
     const SECTION_WATCHER = "watcher";
 

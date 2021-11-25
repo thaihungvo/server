@@ -80,6 +80,7 @@ if (!function_exists('projects_load_stacks'))
             foreach ($stacks as &$stack) {
                 $stack->collapsed = boolval($stack->collapsed);
                 $stack->tag = json_decode($stack->tag);
+                $stack->automation = json_decode($stack->automation);
                 
                 unset($stack->project);
                 unset($stack->deleted);

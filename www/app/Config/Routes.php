@@ -83,6 +83,8 @@ $routes->get("/ping", "PingController::index");
 // STACKS
     // create a stack
     $routes->post("/api/v1/projects/(:any)/stacks", "StacksController::add_v1/$1");
+    // get a stack
+    $routes->get("/api/v1/stacks/(:any)", "StacksController::get_v1/$1");
     // update a stack
     $routes->put("/api/v1/stacks/(:any)", "StacksController::update_v1/$1");
     // mark all tasks as complete

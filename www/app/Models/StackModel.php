@@ -10,7 +10,7 @@ class StackModel extends Model
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ["id", "title", "project", "tag", "maxTasks", "position", "created", "updated"];
+    protected $allowedFields = ["id", "title", "project", "tag", "maxTasks", "automation", "position", "created", "updated"];
 
     protected $useTimestamps = true;
     protected $createdField  = "created";

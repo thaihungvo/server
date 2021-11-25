@@ -701,6 +701,33 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Document attachments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/documents/{{document}}/attachments",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"documents",
+								"{{document}}",
+								"attachments"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -861,6 +888,32 @@
 								}
 							}
 						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"stacks",
+								"{{stack}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Stack",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}",
 							"host": [

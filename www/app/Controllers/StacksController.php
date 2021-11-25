@@ -24,6 +24,9 @@ class StacksController extends BaseController
         if (isset($stackData->tag)) {
             $stackData->tag = json_encode($stackData->tag);
         }
+        if (isset($stackData->automation)) {
+            $stackData->automation = json_encode($stackData->automation);
+        }
 
         if (!isset($stackData->position)) {
             $lastPosition = $stackModel
@@ -66,9 +69,33 @@ class StacksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
 
-        $this->addActivity($document->id, $stackData->id, $this::ACTION_CREATE, $this::SECTION_DOCUMENT);
-
         $stack = $stackModel->find($stackData->id);
+        return $this->reply($stack);
+    }
+
+    public function get_v1($idStack)
+    {
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($idStack);
+
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-GET");
+        }
+
+        if (isset($stack->tag)) {
+            $stack->tag = json_decode($stack->tag);
+        }
+        if (isset($stack->automation)) {
+            $stack->automation = json_decode($stack->automation);
+        }
+
+        unset($stack->project);
+        unset($stack->position);
+
+        $stackCollapsedModel = new StackCollapsedModel();
+        $stackCollapsed = $stackCollapsedModel->where("stack", $idStack)->first();
+        $stack->collapsed = (bool)$stackCollapsed->collapsed;
+
         return $this->reply($stack);
     }
 
@@ -104,6 +131,13 @@ class StacksController extends BaseController
             $stackData->tag = "";
         }
 
+        // saving stack automation
+        if (isset($stackData->automation)) {
+            $stackData->automation = json_encode($stackData->automation);
+        } else {
+            $stackData->automation = "";
+        }
+
         // saving collapsed state of the stack for the current user
         if (isset($stackData->collapsed)) {
             $stackCollapsedModel = new StackCollapsedModel();
@@ -136,7 +170,7 @@ class StacksController extends BaseController
             return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
         }
 
-        $this->addActivity($stack->project, $stack->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
+        $this->addActivity($stack->project, $stack->id, $this::ACTION_UPDATE, $this::SECTION_STACK);
 
         return $this->reply(true);
     }
