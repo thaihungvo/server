@@ -2,6 +2,7 @@
 
 use App\Models\DocumentModel;
 use App\Models\AttachmentModel;
+use App\Models\TagModel;
 
 class DocumentsController extends BaseController
 {
@@ -14,7 +15,12 @@ class DocumentsController extends BaseController
 
         $response = new \stdClass();
         $response->documents = $documents;
-        $response->tags = array();
+
+        $tagModel = new TagModel();
+        $response->tags = $tagModel->where("project", NULL)->findAll();
+        foreach ($response->tags as &$tag) {
+            unset($tag->project);
+        }
 
         return $this->reply($response);
     }

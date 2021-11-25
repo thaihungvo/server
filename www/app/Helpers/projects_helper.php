@@ -110,8 +110,10 @@ if (!function_exists('projects_load_stacks'))
     }
 }
 
-if (!function_exists("projects_clean_up")) {
-    function projects_clean_up($document) {
+if (!function_exists("projects_clean_up")) 
+{
+    function projects_clean_up($document) 
+    {
         // delete all stacks
         $stackModel = new StackModel();
         try {
