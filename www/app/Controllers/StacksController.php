@@ -69,6 +69,8 @@ class StacksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
 
+        $this->addActivity($document->id, $stackData->id, $this::ACTION_CREATE, $this::SECTION_STACK);
+
         $stack = $stackModel->find($stackData->id);
         return $this->reply($stack);
     }
@@ -90,7 +92,7 @@ class StacksController extends BaseController
         }
 
         unset($stack->project);
-        unset($stack->position);
+        $stack->position = intval($stack->position);
 
         $stackCollapsedModel = new StackCollapsedModel();
         $stackCollapsed = $stackCollapsedModel->where("stack", $idStack)->first();
