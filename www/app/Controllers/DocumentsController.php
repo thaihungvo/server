@@ -55,8 +55,17 @@ class DocumentsController extends BaseController
         }
 
         // inserting activity
-        $this->addActivity($documentData->parent, $documentData->id, $this::ACTION_CREATE, $this::SECTION_DOCUMENTS);
-        return $this->reply(documents_load_document($documentData->id, $user));
+        $this->addActivity(
+            $documentData->id,
+            $documentData->parent,
+            $documentData->id,
+            $this::ACTION_CREATE,
+            $this::SECTION_DOCUMENTS
+        );
+        
+        $document = documents_load_document($documentData->id, $user);
+
+        return $this->reply($document);
     }
 
     public function update_v1($documentId)
@@ -127,7 +136,13 @@ class DocumentsController extends BaseController
         }
 
         // inserting activity
-        $this->addActivity($documentData->parent, $documentData->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENTS);
+        $this->addActivity(
+            $documentData->id,
+            $documentData->parent,
+            $documentData->id,
+            $this::ACTION_UPDATE,
+            $this::SECTION_DOCUMENTS
+        );
         return $this->reply(true);
     }
 
@@ -235,7 +250,13 @@ class DocumentsController extends BaseController
             }
         }
 
-        $this->addActivity($document->parent, $document->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENTS);
+        $this->addActivity(
+            $document->id,
+            $document->parent,
+            $document->id,
+            $this::ACTION_DELETE,
+            $this::SECTION_DOCUMENTS
+        );
         return $this->reply(true);
     }
 

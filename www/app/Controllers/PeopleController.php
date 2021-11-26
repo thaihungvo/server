@@ -27,7 +27,13 @@ class PeopleController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-PEOPLE-ADD");
         }
         
-        $this->addActivity($document->parent, $document->id, $this::ACTION_CREATE, $this::SECTION_DOCUMENT);
+        $this->addActivity(
+            $document->id,
+            $document->parent, 
+            $document->id, 
+            $this::ACTION_CREATE, 
+            $this::SECTION_DOCUMENT
+        );
         
         return $this->reply(true);
     }
@@ -61,7 +67,13 @@ class PeopleController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-PEOPLE-UPDATE");
         }
         
-        $this->addActivity($document->parent, $document->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
+        $this->addActivity(
+            $document->id,
+            $document->parent, 
+            $document->id, 
+            $this::ACTION_UPDATE, 
+            $this::SECTION_DOCUMENT
+        );
         
         return $this->reply(true);
     }
@@ -92,7 +104,13 @@ class PeopleController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-PEOPLE-DELETE");
         }
         
-        $this->addActivity($document->parent, $document->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENT);
+        $this->addActivity(
+            $document->id,
+            $document->parent, 
+            $document->id, 
+            $this::ACTION_DELETE, 
+            $this::SECTION_DOCUMENT
+        );
         
         return $this->reply(true);
     }

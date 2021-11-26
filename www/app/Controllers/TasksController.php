@@ -13,23 +13,27 @@ class TasksController extends BaseController
     {
         $user = $this->request->user;
 
-        $taskModel = new TaskModel();
-        $task = $taskModel->find($taskID);
+        helper("tasks");
+        $task = task_load($taskID);
+
+        if (!$task) {
+            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
+        }
 
         helper("documents");
         $document = documents_load_document($task->project, $user);
+        if (!$document) {
+            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
+        }
 
         $stackModel = new StackModel();
         $stack = $stackModel->find($task->stack);
 
-        if (!$document || !$task || !$stack) {
+        if (!$stack) {
             return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
         }
 
-        helper("tasks");
-        $task = task_format($task);
-
-        return $this->reply($task);
+        return $this->reply(task_format($task));
     }
 
     public function add_v1($stackId)
@@ -115,10 +119,13 @@ class TasksController extends BaseController
         helper("tasks");
         $task = task_format($task);
 
-        $this->addActivities([
-            ["parent" => $stack->id, "item" => $task->id, "action" => $this::ACTION_CREATE, "section" => $this::SECTION_TASK],
-            ["parent" => "", "item" => $document->id, "action" => $this::ACTION_UPDATE, "section" => $this::SECTION_DOCUMENT]
-        ]);
+        $this->addActivity(
+            $document->id,
+            $stack->id, 
+            $task->id, 
+            $this::ACTION_CREATE, 
+            $this::SECTION_TASK
+        );
 
         return $this->reply($task);
     }
@@ -131,13 +138,21 @@ class TasksController extends BaseController
         $taskModel = new TaskModel();
         $task = $taskModel->find($taskID);
 
+        if (!$task) {
+            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
+        }
+
         helper("documents");
         $document = documents_load_document($task->project, $user);
+
+        if (!$document) {
+            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
+        }
 
         $stackModel = new StackModel();
         $stack = $stackModel->find($task->stack);
 
-        if (!$document || !$task || !$stack) {
+        if (!$stack) {
             return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
         }
 
@@ -262,7 +277,13 @@ class TasksController extends BaseController
 
         $db->transComplete();
 
-        $this->addActivity($stack->id, $task->id, $this::ACTION_UPDATE, $this::SECTION_TASK);
+        $this->addActivity(
+            $document->id,
+            $stack->id, 
+            $task->id, 
+            $this::ACTION_UPDATE, 
+            $this::SECTION_TASK
+        );
 
         return $this->reply(true);
     }
@@ -287,10 +308,13 @@ class TasksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-TASKS-DELETE");
         }
 
-        $this->addActivities([
-            ["parent" => $task->stack, "item" => $task->id, "action" => $this::ACTION_DELETE, "section" => $this::SECTION_TASK],
-            ["parent" => "", "item" => $task->project, "action" => $this::ACTION_UPDATE, "section" => $this::SECTION_DOCUMENT]
-        ]);
+        $this->addActivity(
+            $task->project, 
+            $task->stack, 
+            $task->id, 
+            $this::ACTION_DELETE, 
+            $this::SECTION_TASK
+        );
 
         return $this->reply(true);
     }
@@ -339,7 +363,13 @@ class TasksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-TASK-ADD-WATCHER");
         }
 
-        $this->addActivity("", $taskID, $this::ACTION_CREATE, $this::SECTION_WATCHER);
+        $this->addActivity(
+            "",
+            "", 
+            $taskID, 
+            $this::ACTION_CREATE, 
+            $this::SECTION_WATCHER
+        );
 
         return $this->reply(true);
     }
@@ -361,7 +391,13 @@ class TasksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-WATCHER");
         }
 
-        $this->addActivity("", $taskID, $this::ACTION_DELETE, $this::SECTION_WATCHER);
+        $this->addActivity(
+            "",
+            "", 
+            $taskID, 
+            $this::ACTION_DELETE, 
+            $this::SECTION_WATCHER
+        );
 
         return $this->reply(true);
     }

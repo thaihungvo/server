@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.26-log)
 # Database: stacks
-# Generation Time: 2021-11-22 07:39:14 +0000
+# Generation Time: 2021-11-26 09:09:34 +0000
 # ************************************************************
 
 
@@ -29,6 +29,7 @@ CREATE TABLE `stk_activities` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user` int(10) unsigned NOT NULL,
   `instance` char(36) NOT NULL DEFAULT '',
+  `document` char(36) NOT NULL,
   `parent` char(36) NOT NULL DEFAULT '',
   `item` char(36) DEFAULT NULL,
   `action` enum('CREATE','UPDATE','DELETE','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
@@ -185,6 +186,7 @@ CREATE TABLE `stk_stacks` (
   `project` char(36) NOT NULL DEFAULT '',
   `tag` text NOT NULL,
   `maxTasks` int(6) DEFAULT NULL,
+  `automation` text,
   `position` smallint(6) NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
@@ -237,6 +239,7 @@ CREATE TABLE `stk_tasks` (
   `id` char(36) NOT NULL DEFAULT '',
   `title` text NOT NULL,
   `description` text NOT NULL,
+  `showDescription` tinyint(1) NOT NULL DEFAULT '0',
   `tags` text,
   `status` varchar(36) DEFAULT NULL,
   `startdate` datetime DEFAULT NULL,

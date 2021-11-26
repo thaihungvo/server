@@ -69,7 +69,13 @@ class StacksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
 
-        $this->addActivity($document->id, $stackData->id, $this::ACTION_CREATE, $this::SECTION_STACK);
+        $this->addActivity(
+            $document->id,
+            $document->id, 
+            $stackData->id, 
+            $this::ACTION_CREATE, 
+            $this::SECTION_STACK
+        );
 
         $stack = $stackModel->find($stackData->id);
         return $this->reply($stack);
@@ -172,7 +178,13 @@ class StacksController extends BaseController
             return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
         }
 
-        $this->addActivity($stack->project, $stack->id, $this::ACTION_UPDATE, $this::SECTION_STACK);
+        $this->addActivity(
+            $document->id,
+            $stack->project, 
+            $stack->id, 
+            $this::ACTION_UPDATE, 
+            $this::SECTION_STACK
+        );
 
         return $this->reply(true);
     }
@@ -355,49 +367,14 @@ class StacksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE");
         }
 
-        $this->addActivity($stack->project, $stack->id, $this::ACTION_DELETE, $this::SECTION_DOCUMENT);
+        $this->addActivity(
+            $stack->project, 
+            $stack->project, 
+            $stack->id, 
+            $this::ACTION_DELETE, 
+            $this::SECTION_DOCUMENT
+        );
 
         return $this->reply(true);
     }
-
-    // public function order_v1($idProject)
-    // {
-    //     $this->lock($idProject);
-
-    //     helper("documents");
-
-    //     $user = $this->request->user;
-    //     $document = documents_load_document($idProject, $user);
-
-    //     if (!$document) {
-    //         return $this->reply("Project not found", 404, "ERR-STACK-ORDER");
-    //     }
-
-    //     $orderData = $this->request->getJSON();
-    //     $db = db_connect();
-
-    //     $query = array(
-    //         "INSERT INTO ".$db->prefixTable("stacks")." (`id`, `project`, `position`) VALUES"
-    //     );
-
-    //     $orders = array();
-    //     foreach ($orderData as $i => $stack) {
-    //         $value = "(". $db->escape($stack) .", ". $db->escape($document->id) .", ". $db->escape($i + 1) .")";
-    //         if ($i < count($orderData) - 1) {
-    //             $value .= ",";
-    //         }
-    //         $query[] = $value;
-    //     }
-
-    //     $query[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `project`=VALUES(`project`), `position`=VALUES(`position`);";
-    //     $query = implode(" ", $query);
-
-    //     if (!$db->query($query)) {
-    //         return $this->reply("Unable to update the stacks order", 500, "ERR-STACK-ORDER");
-    //     }
-
-    //     $this->addActivity("", $document->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
-
-    //     return $this->reply(true);
-    // }
 }

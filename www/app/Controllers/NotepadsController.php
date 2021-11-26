@@ -39,7 +39,13 @@ class NotepadsController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-NOTEPADS-UPDATE");
         }
         
-        $this->addActivity($document->parent, $document->id, $this::ACTION_UPDATE, $this::SECTION_DOCUMENT);
+        $this->addActivity(
+            $document->id,
+            $document->parent,
+            $document->id,
+            $this::ACTION_UPDATE,
+            $this::SECTION_DOCUMENT
+        );
         
         return $this->reply(true);
     }
