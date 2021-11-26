@@ -4,7 +4,7 @@ use App\Models\StackModel;
 use App\Models\TaskModel;
 class ProjectsController extends BaseController
 {
-    public function order_stack_v1($projectId)
+    public function set_order_stacks_v1($projectId)
     {
         $this->lock($projectId);
 
@@ -79,27 +79,45 @@ class ProjectsController extends BaseController
             $db->transCommit();
         }
 
-        $this->addActivities(
-            [
-                [
-                    "parent" => $movedStack->project,
-                    "item" => $movedStack->id,
-                    "section" => $this::SECTION_DOCUMENT,
-                    "action" => $this::ACTION_UPDATE,
-                ],
-                [
-                    "parent" => "",
-                    "item" => $document->id,
-                    "section" => $this::SECTION_DOCUMENT,
-                    "action" => $this::ACTION_UPDATE,
-                ]
-            ]
+        $this->addActivity(
+            $document->id,
+            $movedStack->project, 
+            $movedStack->id, 
+            $this::ACTION_UPDATE,
+            $this::SECTION_STACKORDER
         );
 
         return $this->reply(true);
     }
 
-    public function order_task_v1($projectId)
+    public function get_order_stacks_v1($projectId)
+    {
+        $this->lock($projectId);
+
+        helper("documents");
+        $user = $this->request->user;
+        $document = documents_load_document($projectId, $user);
+
+        if (!$document) {
+            return $this->reply("Project not found", 404, "ERR-STACK-ORDER");
+        }
+        
+        $stackModel = new StackModel();
+        $stacks = $stackModel->where("project", $document->id)
+            ->orderBy("position", "asc")
+            ->find();
+
+        $stackIds = array();
+        if (count($stacks)) {
+            foreach ($stacks as $stack) {
+                $stackIds[] = $stack->id;
+            }
+        }
+
+        return $this->reply($stackIds);
+    }
+
+    public function set_order_tasks_v1($projectId)
     {
         $this->lock($projectId);
 
@@ -173,23 +191,45 @@ class ProjectsController extends BaseController
             $db->transCommit();
         }
 
-        $this->addActivities(
-            [
-                [
-                    "parent" => $movedTask->stack,
-                    "item" => $movedTask->id,
-                    "section" => $this::SECTION_DOCUMENT,
-                    "action" => $this::ACTION_UPDATE,
-                ],
-                [
-                    "parent" => "",
-                    "item" => $document->id,
-                    "section" => $this::SECTION_DOCUMENT,
-                    "action" => $this::ACTION_UPDATE,
-                ]
-            ]
+        $this->addActivity(
+            $document->id,
+            $movedTask->stack, 
+            $movedTask->id, 
+            $this::ACTION_UPDATE,
+            $this::SECTION_TASKORDER
         );
 
         return $this->reply(true);
+    }
+
+    public function get_order_tasks_v1($projectId)
+    {
+        $this->lock($projectId);
+
+        helper("documents");
+        $user = $this->request->user;
+        $document = documents_load_document($projectId, $user);
+
+        if (!$document) {
+            return $this->reply("Project not found", 404, "ERR-TASK-ORDER");
+        }
+        
+        $taskModel = new TaskModel();
+        $tasks = $taskModel->where("project", $document->id)
+            ->orderBy("position", "asc")
+            ->find();
+
+        $taskIds = new \stdClass();
+        if (count($tasks)) {
+            foreach ($tasks as $task) {
+                $stackId = $task->stack;
+                if (!property_exists($taskIds, $stackId)) {
+                    $taskIds->$stackId = array();
+                }
+                $taskIds->$stackId[] = $task->id;
+            }
+        }
+
+        return $this->reply($taskIds);
     }
 }
