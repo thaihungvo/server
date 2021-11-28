@@ -118,12 +118,10 @@ $routes->get("/ping", "PingController::index");
 // PROJECT
     // save stacks order inside a project
     $routes->post("/api/v1/projects/(:any)/order-stack", "ProjectsController::set_order_stacks_v1/$1");
-    // get stacks order inside a project
-    $routes->get("/api/v1/projects/(:any)/order-stack", "ProjectsController::get_order_stacks_v1/$1");
     // save tasks order inside a project
     $routes->post("/api/v1/projects/(:any)/order-task", "ProjectsController::set_order_tasks_v1/$1");
-    // get tasks order inside a project
-    $routes->get("/api/v1/projects/(:any)/order-task", "ProjectsController::get_order_tasks_v1/$1");
+    // get stacks and tasks order in a project
+    $routes->get("/api/v1/projects/(:any)/order", "ProjectsController::get_order_v1/$1");
 
 
 // FILES

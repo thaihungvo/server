@@ -747,7 +747,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"stack\": \"1234-1234-1234-1234\",\n    \"position\": 1\n}",
+							"raw": "{\n    \"stack\": \"1234-1234-1234-1234\",\n    \"position\": 0\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -771,7 +771,7 @@
 					"response": []
 				},
 				{
-					"name": "Order Task",
+					"name": "Set Tasks Order",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -783,7 +783,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"task\": \"1234-1234-1234-1234\",\n\t\"stack\": \"1234-1234-1234-1234\",\n    \"position\": 1\n}",
+							"raw": "{\n    \"task\": \"1234-1234-1234-1234\",\n\t\"stack\": \"1234-1234-1234-1234\",\n    \"position\": 0\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -801,6 +801,33 @@
 								"projects",
 								"{{project}}",
 								"order-task"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Order",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/order",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"projects",
+								"{{project}}",
+								"order"
 							]
 						}
 					},

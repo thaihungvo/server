@@ -84,37 +84,10 @@ class ProjectsController extends BaseController
             $movedStack->project, 
             $movedStack->id, 
             $this::ACTION_UPDATE,
-            $this::SECTION_STACKORDER
+            $this::SECTION_ORDER
         );
 
         return $this->reply(true);
-    }
-
-    public function get_order_stacks_v1($projectId)
-    {
-        $this->lock($projectId);
-
-        helper("documents");
-        $user = $this->request->user;
-        $document = documents_load_document($projectId, $user);
-
-        if (!$document) {
-            return $this->reply("Project not found", 404, "ERR-STACK-ORDER");
-        }
-        
-        $stackModel = new StackModel();
-        $stacks = $stackModel->where("project", $document->id)
-            ->orderBy("position", "asc")
-            ->find();
-
-        $stackIds = array();
-        if (count($stacks)) {
-            foreach ($stacks as $stack) {
-                $stackIds[] = $stack->id;
-            }
-        }
-
-        return $this->reply($stackIds);
     }
 
     public function set_order_tasks_v1($projectId)
@@ -196,13 +169,13 @@ class ProjectsController extends BaseController
             $movedTask->stack, 
             $movedTask->id, 
             $this::ACTION_UPDATE,
-            $this::SECTION_TASKORDER
+            $this::SECTION_ORDER
         );
 
         return $this->reply(true);
     }
 
-    public function get_order_tasks_v1($projectId)
+    public function get_order_v1($projectId)
     {
         $this->lock($projectId);
 
@@ -219,17 +192,17 @@ class ProjectsController extends BaseController
             ->orderBy("position", "asc")
             ->find();
 
-        $taskIds = new \stdClass();
+        $order = new \stdClass();
         if (count($tasks)) {
             foreach ($tasks as $task) {
                 $stackId = $task->stack;
-                if (!property_exists($taskIds, $stackId)) {
-                    $taskIds->$stackId = array();
+                if (!property_exists($order, $stackId)) {
+                    $order->$stackId = array();
                 }
-                $taskIds->$stackId[] = $task->id;
+                $order->$stackId[] = $task->id;
             }
         }
 
-        return $this->reply($taskIds);
+        return $this->reply($order);
     }
 }
