@@ -5,7 +5,19 @@ More information can be found at the [official site](https://stacks.rocks).
 
 This repository holds the source code for **Stacks Server** only.
 
-## Server Requirements
+* [Manual Installation](#Installation)
+    * [Server Requirements](#Server-Requirements)
+    * [Download](#Download)
+    * [Configuration](#Configuration)
+    * [Database](#Database)
+    * [Permissions](#Permissions)
+    * Real-time events server
+* [Using Docker](#Using-Docker)
+
+
+## Installation
+
+### Server Requirements
 
 Apache or Nginx with PHP version 7.2 or higher is required, with the following extensions installed:
 
@@ -18,10 +30,6 @@ Additionally, make sure that the following extensions are enabled in your PHP:
 - json (enabled by default - don't turn it off)
 - xml (enabled by default - don't turn it off)
 - [mysqlnd](http://php.net/manual/en/mysqlnd.install.php)
-
-> Make sure your server supports `HTTP/2` and [SSE](https://en.wikipedia.org/wiki/Server-sent_events) to enable automatic data polling from the **Stacks Client**
-
-## Installation
 
 ### Download
 Download the repository by going in the [Releases](https://github.com/stacks-task-manager/server/releases) section found on the right sidebar and download the `ZIP` file for the latest release 
@@ -36,27 +44,39 @@ Download the repository by going in the [Releases](https://github.com/stacks-tas
 | **Application Timezone** | `app/Config/App.php` | `102` | The default timezone that will be used in your application to display dates with the date helper, and can be retrieved through `app_timezone()` |
 | **JWT Authentication Tokens** | `app/Config/Constants.php` | `85` | [JSON Web Tokens](https://jwt.io/) are an open, industry standard RFC 7519 method for representing claims securely between two parties. [Example](https://www.grc.com/passwords.htm) on how to generate a good token. |
 
+All these configs could also be done via the `.env` file in the `www` folder.
+
 ### Database
-Import the latest `sql` file from the `db` folder either using [phpMyAdmin](https://www.phpmyadmin.net/) or any other `MySQL` client of your choosing.
+Import the latest `sql` file from the `dump/db.sql` folder either using [phpMyAdmin](https://www.phpmyadmin.net/) or any other `MySQL` client of your choosing.
 
 The databse comes prepacked with 3 test users:
 
-* `admin@stacks.server` - `12345`
-* `l.skywalker@resistance.com` - `12345`
-* `d.vader@theempire.com` - `12345`
+* `admin@stacks.server` - `123456`
+* `l.skywalker@resistance.com` - `123456`
+* `d.vader@theempire.com` - `123456`
 
 ### Permissions
 Make sure all your files are using a permission of `644` for the files an `755` for the folders. The `writable` folder used for storing `cache`, `logs`, `session` data and `uploads` should be set to either `775` or `776`.
 
+## Using Docker
+1. Install Docker [from the homepage](https://www.docker.com/products/docker).
+   Everything in this repo was built and tested on Docker 1.13.1 and Docker Compose
+   1.10.0 – other versions may or may not work.
+2. Install `docker-compose` [from the homepage](https://docs.docker.com/compose/install/).
+3. (Git) clone this project and navigate to it in your terminal.
+
+### Running for the first time
+Run everything with
+
+```
+docker-compose up -d --build
+```
+
 
 ## Client configuration
-**Stacks Client** can add and connect to multiple **Stack Servers** by enabling the `Beta Features` option from the `Preferences`. Follow these steps to enable the `Beta Features` and connect to your **Stacks Server**:
+**Stacks Client** can add and connect to multiple **Stack Servers**:
 
-* open the preferences by pressing `CMD + ,` on Mac and `CTRL + ,` on Windows and Linux
-* scroll down to the last preferences section called `BETA`
-* toggle on the option called `Enable app Beta features`
-* a new `User` icon should now be visible in the toolbar
-* click the `User` button and select `Add a new account`
+* click the `+` in the Workspaces sidebar and select `Add online workspace`
 * a popup will appear asking for:
 	* the **Stacks Server** URL (make sure you leave out the last `/` from the URL. E.g.: `https://mywebsite.com/my-stacks-server`)
 	* username

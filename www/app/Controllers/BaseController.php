@@ -1,6 +1,8 @@
 <?php
 namespace App\Controllers;
 
+use CodeIgniter\Events\Events;
+
 /**
  * Class BaseController
  *
@@ -27,6 +29,25 @@ class BaseController extends Controller
 	 * @var array
 	 */
     protected $helpers = [];
+    protected $lockId = null;
+
+    const TYPE_FOLDER = "folder";
+    const TYPE_PROJECT = "project";
+    const TYPE_NOTEPAD = "notepad";
+    const TYPE_PEOPLE = "people";
+    const TYPE_FILE = "file";
+
+    const ACTION_CREATE = "CREATE";
+    const ACTION_UPDATE = "UPDATE";
+    const ACTION_DELETE = "DELETE";
+    const ACTION_UNKNOWN = "UNKNOWN";
+
+    const SECTION_DOCUMENTS = "documents";
+    const SECTION_DOCUMENT = "document";
+    const SECTION_STACK = "stack";
+    const SECTION_TASK = "task";
+    const SECTION_ORDER = "order";
+    const SECTION_WATCHER = "watcher";
 
 	/**
 	 * Constructor.
@@ -43,7 +64,8 @@ class BaseController extends Controller
 		// $this->session = \Config\Services::session();
 	}
 
-    public function reply($data = null, $code = 200, $msg = null, $unlock = true) {
+    public function reply($data = null, $code = 200, $msg = null, $unlock = true)
+    {
         $response = new \stdClass();
         $response->message = $msg;
         $response->code = $code;
@@ -56,24 +78,49 @@ class BaseController extends Controller
         return $this->response->setStatusCode($code)->setJSON($response);
     }
 
-    protected function lock() {
-        $board = $this->request->board;
+    protected function lock($id)
+    {
         $user = $this->request->user;
 
-        $lockedBy = cache($board->id);
+        $lockedBy = cache($id);
 
         if ($lockedBy) {
-            $this->reply($lockedBy, 423, "WRN-BOARD-LOCKED", false)->send();
+            $this->reply($lockedBy, 423, "WRN-RESOURCE-LOCKED", false)->send();
             die();
         }
-
-        cache()->save($board->id, $user, 60);
+        $this->lockId = $id;
+        cache()->save($this->lockId, $user, 30);
     }
 
-    protected function unlock() {
-        $board = $this->request->board;
-        if ($board && $board->id) {
-            cache()->delete($board->id);
+    protected function unlock()
+    {
+        if ($this->lockId) {
+            cache()->delete($this->lockId);
         }
+    }
+
+    protected function addActivity($document = "", $parent = "", $item, $action, $section)
+    {
+        Events::trigger("activities", [
+            [
+                "document" => $document,
+                "parent" => $parent,
+                "item" => $item,
+                "action" => $action,
+                "section" => $section
+            ]
+        ]);
+    }
+
+    protected function addActivities($activities)
+    {
+        Events::trigger('activities', $activities);
+    }
+
+    protected function notify()
+    {
+        $user = $this->request->user;
+
+        Events::trigger("notify", $user);
     }
 }

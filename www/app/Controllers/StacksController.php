@@ -1,59 +1,44 @@
 <?php namespace App\Controllers;
 
-use CodeIgniter\Events\Events;
 use App\Models\StackModel;
-use App\Models\BoardModel;
-use App\Models\StackOrderModel;
 use App\Models\TaskModel;
 use App\Models\StackCollapsedModel;
 
 class StacksController extends BaseController
 {
-    public function all_v1($id)
+    public function add_v1($idProject)
     {
-        $board = $this->request->board;
+        helper("documents");
 
-        $stackModel = new StackModel();
-        $stackBuilder = $stackModel->builder();
-        $stackQuery = $stackBuilder->select("stacks.*, stacks_collapsed.collapsed")
-            ->join('stacks_order', 'stacks_order.stack = stacks.id', 'left')
-            ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id', 'left')
-            ->where('stacks.board', $board->id)
-            ->where('stacks.deleted', NULL)
-            ->orderBy('stacks_order.`order`', 'ASC')
-            ->get();
-        $stacks = $stackQuery->getResult();
-
-        foreach ($stacks as &$stack) {
-            $stack->collapsed = boolval($stack->collapsed);
-        }
-
-        foreach ($stacks as &$stack) {
-            $stack->tag = json_decode($stack->tag);
-        }
-
-        return $this->reply($stacks);
-    }
-
-    public function add_v1($id)
-    {
-        $this->lock();
-
-        $board = $this->request->board;
         $user = $this->request->user;
+        $document = documents_load_document($idProject, $user);
+        
+        if (!$document) {
+            return $this->reply("Project not found", 404, "ERR-STACK-CREATE");
+        }
 
         $stackModel = new StackModel();
         $stackData = $this->request->getJSON();
+        $stackData->project = $document->id;
 
         if (isset($stackData->tag)) {
             $stackData->tag = json_encode($stackData->tag);
         }
+        if (isset($stackData->automation)) {
+            $stackData->automation = json_encode($stackData->automation);
+        }
 
-        helper('uuid');
+        if (!isset($stackData->position)) {
+            $lastPosition = $stackModel
+                ->where("project", $document->id)
+                ->orderBy("position", "desc")
+                ->first();
 
-        $stackData->board = $board->id;
+            $stackData->position = intval($lastPosition->position) + 1;
+        }
 
         if (!isset($stackData->id)) {
+            helper('uuid');
             $stackData->id = uuid();
         }
 
@@ -66,72 +51,99 @@ class StacksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
 
-        // get the max order no. from all the stacks of the same board
-        $stackOrderModel = new StackOrderModel();
-        $builderStackOrderBuilder = $stackOrderModel->builder();
-        $query = $builderStackOrderBuilder
-            ->selectMax("order")
-            ->where("board", $board->id)
-            ->get();
-        $maxStacks = $query->getResult();
-
-        // created a new stack order object
-        $order = new \stdClass();
-        $order->board = $board->id;
-        $order->stack = $stackData->id;
-        $order->order = 1;
-
-        if (count($maxStacks)) {
-            // set the max order no. + 1
-            $order->order = (int)$maxStacks[0]->order + 1; 
-        }
-
-        // insert the new stack order object
-        try {
-            if ($builderStackOrderBuilder->insert($order) === false) {
-                $errors = $stackOrderModel->errors();
-                return $this->reply($errors, 500, "ERR-STACK-ORDER");    
-            }
-        } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-STACK-ORDER");
-        }
-
-        $stack = $stackModel->find($stackData->id);
-
+        $stackCollapsedModel = new StackCollapsedModel();
+        
         // create a default collapsed state
         $collapsed = [
-            "stack" => $stack->id,
+            "stack" => $stackData->id,
             "collapsed" => 0,
             "user" => $user->id
         ];
 
-        $stackCollapsedModel = new StackCollapsedModel();
         try {
             if ($stackCollapsedModel->insert($collapsed) === false) {
-                $errors = $stackOrderModel->errors();
-                return $this->reply($errors, 500, "ERR-STACK-COLLAPSED");    
+                $errors = $stackCollapsedModel->errors();
+                return $this->reply($errors, 500, "ERR-STACK-CREATE");    
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-STACK-COLLAPSED");
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
 
-        return $this->reply($stack, 200, "OK-STACK-CREATE-SUCCESS");
+        $this->addActivity(
+            $document->id,
+            $document->id, 
+            $stackData->id, 
+            $this::ACTION_CREATE, 
+            $this::SECTION_STACK
+        );
+
+        $stack = $stackModel->find($stackData->id);
+        return $this->reply($stack);
+    }
+
+    public function get_v1($idStack)
+    {
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($idStack);
+
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-GET");
+        }
+
+        if (isset($stack->tag)) {
+            $stack->tag = json_decode($stack->tag);
+        }
+        if (isset($stack->automation)) {
+            $stack->automation = json_decode($stack->automation);
+        }
+
+        unset($stack->project);
+        $stack->position = intval($stack->position);
+
+        $stackCollapsedModel = new StackCollapsedModel();
+        $stackCollapsed = $stackCollapsedModel->where("stack", $idStack)->first();
+        $stack->collapsed = (bool)$stackCollapsed->collapsed;
+
+        return $this->reply($stack);
     }
 
     public function update_v1($idStack)
     {
-        $this->lock();
+        $this->lock($idStack);
 
-        $board = $this->request->board;
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($idStack);
+
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-UPDATE");
+        }
+
+        helper("documents");
+
         $user = $this->request->user;
+        $document = documents_load_document($stack->project, $user);
 
         $stackData = $this->request->getJSON();
+        if (!isset($stackData->maxTasks)) {
+            $stackData->maxTasks = NULL;
+        }
+        unset($stackData->created);
+
+        // forcing the stack project id
+        $stackData->project = $document->id;
 
         // saving stack tag/tint color
         if (isset($stackData->tag)) {
             $stackData->tag = json_encode($stackData->tag);
         } else {
             $stackData->tag = "";
+        }
+
+        // saving stack automation
+        if (isset($stackData->automation)) {
+            $stackData->automation = json_encode($stackData->automation);
+        } else {
+            $stackData->automation = "";
         }
 
         // saving collapsed state of the stack for the current user
@@ -144,8 +156,8 @@ class StacksController extends BaseController
                         ->where("stack", $stackData->id)
                         ->delete() === false
                 ) {
-                    $errors = $stackOrderModel->errors();
-                    return $this->reply($errors, 500, "ERR-STACK-COLLAPSED");
+                    $errors = $stackCollapsedModel->errors();
+                    return $this->reply($errors, 500, "ERR-STACK-UPDATE");
                 }
                     
                 if ($stackCollapsedModel->insert([
@@ -153,221 +165,216 @@ class StacksController extends BaseController
                     "collapsed" => intval($stackData->collapsed),
                     "user" => $user->id
                 ]) === false) {
-                    $errors = $stackOrderModel->errors();
-                    return $this->reply($errors, 500, "ERR-STACK-COLLAPSED");
+                    $errors = $stackCollapsedModel->errors();
+                    return $this->reply($errors, 500, "ERR-STACK-UPDATE");
                 }
             } catch (\Exception $e) {
-                return $this->reply($e->getMessage(), 500, "ERR-STACK-COLLAPSED");
+                return $this->reply($e->getMessage(), 500, "ERR-STACK-UPDATE");
             }
         }
 
         // update the stack data
-        $stackModel = new StackModel();
-        if ($stackModel->update($board->stack, $stackData) === false) {
+        if ($stackModel->update($stack->id, $stackData) === false) {
             return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
         }
 
-        Events::trigger("AFTER_stack_UPDATE", $board->stack, $board->id);
+        $this->addActivity(
+            $document->id,
+            $stack->project, 
+            $stack->id, 
+            $this::ACTION_UPDATE, 
+            $this::SECTION_STACK
+        );
 
-        return $this->reply(null, 200, "OK-STACK-UPDATE-SUCCESS");
+        return $this->reply(true);
     }
 
     public function done_v1($idStack)
     {
-        $this->lock();
+        $this->lock($idStack);
 
-        $board = $this->request->board;
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($idStack);
+
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-DONE");
+        }
+
+        helper("documents");
+        $user = $this->request->user;
+        $document = documents_load_document($stack->project, $user);
+
+        if (!$document) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-DONE");
+        }
 
         $taskModel = new TaskModel();
-        $taskBuild = $taskModel->builder();
-        $taskQuery = $taskBuild->select("*")
-            ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
-            ->where('tasks_order.stack', $board->stack)
-            ->where('tasks.deleted', null)
-            ->where('tasks.archived', null)
-            ->get();
 
-        $tasks = $taskQuery->getResult();
-
-        $tasksIDs = array();
-        foreach ($tasks as $task) {
-            $tasksIDs[] = $task->id;
-        }
-
-        if (count($tasksIDs)) {
-            $taskBuild = $taskModel->builder();
-            $taskQuery = $taskBuild->set('done', 1)
-                ->set('progress', 100)
-                ->whereIn('id', $tasksIDs)
-                ->update();
-
-            if ($taskQuery === false) {
-                return $this->reply($taskModel->errors(), 500, "ERR-STACK-DONE-ERROR");
+        try {
+            if (
+                $taskModel->where("stack", $stack->id)
+                    ->set([
+                        "done" => 1,
+                        "progress" => 100
+                    ])
+                    ->update() === false
+            ) {
+                return $this->reply($taskModel->errors(), 500, "ERR-STACK-DONE");
             }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-DONE");
         }
 
-        return $this->reply(null, 200, "OK-STACK-DONE-SUCCESS");
+        return $this->reply(true);
     }
 
     public function todo_v1($idStack)
     {
-        $this->lock();
+        $this->lock($idStack);
 
-        $board = $this->request->board;
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($idStack);
+
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-TODO");
+        }
+
+        helper("documents");
+        $user = $this->request->user;
+        $document = documents_load_document($stack->project, $user);
+
+        if (!$document) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-TODO");
+        }
 
         $taskModel = new TaskModel();
-        $taskBuild = $taskModel->builder();
-        $taskQuery = $taskBuild->select("*")
-            ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
-            ->where('tasks_order.stack', $board->stack)
-            ->where('tasks.deleted', null)
-            ->where('tasks.archived', null)
-            ->get();
 
-        $tasks = $taskQuery->getResult();
-
-        $tasksIDs = array();
-        foreach ($tasks as $task) {
-            $tasksIDs[] = $task->id;
-        }
-
-        if (count($tasksIDs)) {
-            $taskBuild = $taskModel->builder();
-            $taskQuery = $taskBuild->set('done', 0)
-                ->set('progress', 0)
-                ->whereIn('id', $tasksIDs)
-                ->update();
-
-            if ($taskQuery === false) {
-                return $this->reply($taskModel->errors(), 500, "ERR-STACK-TODO-ERROR");
+        try {
+            if (
+                $taskModel->where("stack", $stack->id)
+                    ->set([
+                        "done" => 0,
+                        "progress" => 0
+                    ])
+                    ->update() === false
+            ) {
+                return $this->reply($taskModel->errors(), 500, "ERR-STACK-TODO");
             }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-TODO");
         }
 
-        return $this->reply(null, 200, "OK-STACK-TODO-SUCCESS");
+        return $this->reply(true);
     }
 
     public function archive_all_v1($idStack)
     {
-        $this->lock();
+        $this->lock($idStack);
 
-        $board = $this->request->board;
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($idStack);
 
-        // get all tasks connected to this stack
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-ALL");
+        }
+
+        helper("documents");
+        $user = $this->request->user;
+        $document = documents_load_document($stack->project, $user);
+
+        if (!$document) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-ALL");
+        }
+
         $taskModel = new TaskModel();
-        $taskBuild = $taskModel->builder();
-        $taskQuery = $taskBuild->select("*")
-            ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
-            ->where('tasks_order.stack', $board->stack)
-            ->where('tasks.deleted', null)
-            ->get();
 
-        $tasks = $taskQuery->getResult();
-
-        $tasksIDs = array();
-        foreach ($tasks as $task) {
-            $tasksIDs[] = $task->id;
-        }
-
-        if (count($tasksIDs)) {
-            // update the archived date for the found tasks
-            $taskBuild = $taskModel->builder();
-            $taskQuery = $taskBuild->set('archived',  date('Y-m-d H:i:s'))
-                ->whereIn('id', $tasksIDs)
-                ->update();
-
-            if ($taskQuery === false) {
-                return $this->reply($taskModel->errors(), 500, "ERR-STACK-ARCHIVE-ALL-ERROR");
+        try {
+            if (
+                $taskModel->where("stack", $stack->id)
+                    ->set(["archived" => date("Y-m-d H:i:s")])
+                    ->update() === false
+            ) {
+                return $this->reply($taskModel->errors(), 500, "ERR-STACK-ARCHIVE-ALL");
             }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-ARCHIVE-ALL");
         }
 
-        return $this->reply(null, 200, "OK-STACK-ARCHIVE-ALL-SUCCESS");
+        return $this->reply(true);
     }
 
     public function archive_done_v1($idStack)
     {
-        $this->lock();
+        $this->lock($idStack);
 
-        $board = $this->request->board;
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($idStack);
 
-        // get all completed tasks connected to this stack
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-DONE");
+        }
+
+        helper("documents");
+        $user = $this->request->user;
+        $document = documents_load_document($stack->project, $user);
+
+        if (!$document) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-DONE");
+        }
+
         $taskModel = new TaskModel();
-        $taskBuild = $taskModel->builder();
-        $taskQuery = $taskBuild->select("*")
-            ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
-            ->where('tasks_order.stack', $board->stack)
-            ->where('tasks.done', 1)
-            ->where('tasks.deleted', null)
-            ->get();
 
-        $tasks = $taskQuery->getResult();
-
-        $tasksIDs = array();
-        foreach ($tasks as $task) {
-            $tasksIDs[] = $task->id;
-        }
-
-        if (count($tasksIDs)) {
-            // update the archived date for the found tasks
-            $taskBuild = $taskModel->builder();
-            $taskQuery = $taskBuild->set('archived',  date('Y-m-d H:i:s'))
-                ->whereIn('id', $tasksIDs)
-                ->update();
-
-            if ($taskQuery === false) {
-                return $this->reply($taskModel->errors(), 500, "ERR-STACK-ARCHIVE-DONE-ERROR");
+        try {
+            if (
+                $taskModel->where("stack", $stack->id)
+                    ->where("done", 1)
+                    ->set(["archived" => date("Y-m-d H:i:s")])
+                    ->update() === false
+            ) {
+                return $this->reply($taskModel->errors(), 500, "ERR-STACK-ARCHIVE-DONE");
             }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-ARCHIVE-DONE");
         }
 
-        return $this->reply(null, 200, "OK-STACK-ARCHIVE-DONE-SUCCESS");
+        return $this->reply(true);
     }
 
     public function delete_v1($idStack)
     {
-        $this->lock();
+        $this->lock($idStack);
 
-        $board = $this->request->board;
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($idStack);
 
-        // get all tasks connected to this stack
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-DELETE");
+        }
+
+        // delete all connected tasks
         $taskModel = new TaskModel();
-        $taskBuild = $taskModel->builder();
-        $taskQuery = $taskBuild->select("*")
-            ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
-            ->where('tasks_order.stack', $board->stack)
-            ->where('tasks.deleted', null)
-            ->get();
-
-        $tasks = $taskQuery->getResult();
-
-        $tasksIDs = array();
-        foreach ($tasks as $task) {
-            $tasksIDs[] = $task->id;
-        }
-
-        if (count($tasksIDs)) {
-            try {
-                if ($taskModel->delete($tasksIDs) === false) {
-                    return $this->reply($taskModel->errors(), 500, "ERR-STACK-DELETE-TASKS-ERROR");
-                }
-            } catch (\Exception $e) {
-                return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE-TASKS-ERROR");
-            }
-        }
-
-        // we don't need to remove the tasks and stacks order 
-        // since we're not actually removing the items from the db
-        // only marking them as deleted
+        $taskBuilder = $taskModel->builder();
+        $taskBuilder->set("deleted", "NOW()", false)
+            ->where("stack", $stack->id)
+            ->update();
 
         // delete selected stack
-        $stackModel = new StackModel();
         try {
-            if ($stackModel->delete([$board->stack]) === false) {
-                return $this->reply($stackModel->errors(), 500, "ERR-STACK-DELETE-ERROR");
+            if ($stackModel->delete([$stack->id]) === false) {
+                return $this->reply($stackModel->errors(), 500, "ERR-STACK-DELETE");
             }    
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE-ERROR");
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-DELETE");
         }
-        
 
-        return $this->reply(null, 200, "OK-STACK-DELETE-SUCCESS");
+        $this->addActivity(
+            $stack->project, 
+            $stack->project, 
+            $stack->id, 
+            $this::ACTION_DELETE, 
+            $this::SECTION_DOCUMENT
+        );
+
+        return $this->reply(true);
     }
 }

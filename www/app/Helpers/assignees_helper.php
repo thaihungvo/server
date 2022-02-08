@@ -1,6 +1,7 @@
 <?php
 
-use App\Models\UserModel;
+use App\Models\TaskAssigneeModel;
+use App\Models\PersonModel;
 
 if (!function_exists('tasks_assignees'))
 {
@@ -10,13 +11,13 @@ if (!function_exists('tasks_assignees'))
             return array();
         }
 
-		$userModel = new UserModel();
-        $userBuilder = $userModel->builder();
-        $usersQuery = $userBuilder->select("users.id, users.email, users.nickname, users.firstName, users.lastName, tasks_assignees.task")
-            ->join('tasks_assignees', 'tasks_assignees.user = users.id', 'left')
+		$taskAssigneeModel = new TaskAssigneeModel();
+        $taskAssigneeBuilder = $taskAssigneeModel->builder();
+        $taskAssigneeQuery = $taskAssigneeBuilder->select("people.id, people.firstName, people.lastName, tasks_assignees.task")
+            ->join('people', 'people.id = tasks_assignees.person', 'left')
             ->whereIn('tasks_assignees.task', $tasksIDs)
-            ->orderBy('users.firstName', 'ASC')
             ->get();
-        return $usersQuery->getResult();
+        $assignees = $taskAssigneeQuery->getResult();
+        return $assignees;
     }
 }

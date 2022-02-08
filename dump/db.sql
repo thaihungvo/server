@@ -5,9 +5,9 @@
 # http://www.sequelpro.com/
 # https://github.com/sequelpro/sequelpro
 #
-# Host: 127.0.0.1 (MySQL 5.7.26)
+# Host: 127.0.0.1 (MySQL 5.7.26-log)
 # Database: stacks
-# Generation Time: 2020-11-02 17:33:35 +0000
+# Generation Time: 2021-11-26 09:09:34 +0000
 # ************************************************************
 
 
@@ -28,13 +28,16 @@ DROP TABLE IF EXISTS `stk_activities`;
 CREATE TABLE `stk_activities` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user` int(10) unsigned NOT NULL,
-  `instance` varchar(37) NOT NULL,
-  `board` varchar(37) NOT NULL,
-  `item` varchar(37) DEFAULT NULL,
+  `instance` char(36) NOT NULL DEFAULT '',
+  `document` char(36) NOT NULL,
+  `parent` char(36) NOT NULL DEFAULT '',
+  `item` char(36) DEFAULT NULL,
   `action` enum('CREATE','UPDATE','DELETE','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
-  `section` enum('BOARDS','BOARD','TASK','STACK','WATCHER','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
+  `section` varchar(10) NOT NULL DEFAULT 'UNKNOWN',
   `created` datetime NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `instance` (`instance`),
+  KEY `created` (`created`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -47,12 +50,12 @@ DROP TABLE IF EXISTS `stk_attachments`;
 CREATE TABLE `stk_attachments` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `owner` int(11) NOT NULL,
-  `task` varchar(37) NOT NULL DEFAULT '',
+  `resource` char(36) NOT NULL DEFAULT '',
   `title` text,
   `extension` varchar(10) NOT NULL DEFAULT '',
   `size` int(11) DEFAULT NULL,
   `content` text,
-  `hash` varchar(20) DEFAULT '',
+  `hash` varchar(100) DEFAULT '',
   `type` enum('file','link') NOT NULL DEFAULT 'file',
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
@@ -62,19 +65,20 @@ CREATE TABLE `stk_attachments` (
 
 
 
-# Dump of table stk_boards
+# Dump of table stk_documents
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `stk_boards`;
+DROP TABLE IF EXISTS `stk_documents`;
 
-CREATE TABLE `stk_boards` (
-  `id` varchar(37) NOT NULL DEFAULT '',
-  `everyone` tinyint(1) NOT NULL DEFAULT '1',
+CREATE TABLE `stk_documents` (
+  `id` char(36) NOT NULL DEFAULT '',
+  `text` varchar(100) NOT NULL DEFAULT '',
+  `type` enum('folder','project','notepad','people','file') NOT NULL DEFAULT 'project',
   `owner` int(11) NOT NULL,
-  `title` varchar(100) NOT NULL DEFAULT '',
-  `hourlyFee` float DEFAULT NULL,
-  `feeCurrency` varchar(10) DEFAULT NULL,
-  `archived_order` enum('title-asc','title-desc','created-asc','created-desc','updated-asc','updated-desc','archived-asc','archived-desc') NOT NULL DEFAULT 'title-asc',
+  `everyone` tinyint(1) NOT NULL DEFAULT '1',
+  `parent` char(36) NOT NULL DEFAULT '',
+  `position` smallint(6) NOT NULL,
+  `options` text,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
@@ -83,34 +87,17 @@ CREATE TABLE `stk_boards` (
 
 
 
-# Dump of table stk_boards_members
+# Dump of table stk_documents_members
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `stk_boards_members`;
+DROP TABLE IF EXISTS `stk_documents_members`;
 
-CREATE TABLE `stk_boards_members` (
-  `board` varchar(37) NOT NULL DEFAULT '',
-  `user` varchar(37) NOT NULL DEFAULT '',
+CREATE TABLE `stk_documents_members` (
+  `document` char(36) NOT NULL DEFAULT '',
+  `user` char(36) NOT NULL DEFAULT '',
   `created` datetime DEFAULT NULL,
-  PRIMARY KEY (`board`,`user`),
-  UNIQUE KEY `board` (`board`,`user`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-
-# Dump of table stk_boards_tags
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `stk_boards_tags`;
-
-CREATE TABLE `stk_boards_tags` (
-  `id` varchar(37) NOT NULL DEFAULT '',
-  `title` varchar(100) NOT NULL DEFAULT '',
-  `color` varchar(7) NOT NULL DEFAULT '',
-  `board` varchar(37) NOT NULL DEFAULT '',
-  `created` datetime DEFAULT NULL,
-  `updated` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`user`),
+  UNIQUE KEY `record` (`document`,`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -127,16 +114,80 @@ CREATE TABLE `stk_files` (
 
 
 
+# Dump of table stk_notepads
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `stk_notepads`;
+
+CREATE TABLE `stk_notepads` (
+  `notepad` char(36) NOT NULL DEFAULT '',
+  `content` longtext,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  `deleted` datetime DEFAULT NULL,
+  PRIMARY KEY (`notepad`),
+  UNIQUE KEY `notepad` (`notepad`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+# Dump of table stk_people
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `stk_people`;
+
+CREATE TABLE `stk_people` (
+  `people` char(36) NOT NULL DEFAULT '',
+  `id` char(36) NOT NULL DEFAULT '',
+  `firstName` varchar(100) DEFAULT NULL,
+  `lastName` varchar(100) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `gender` enum('male','female','other') NOT NULL DEFAULT 'other',
+  `nickname` varchar(100) DEFAULT NULL,
+  `birthday` varchar(10) DEFAULT NULL,
+  `age` varchar(10) DEFAULT NULL,
+  `jobTitle` varchar(100) DEFAULT NULL,
+  `company` varchar(100) DEFAULT NULL,
+  `officePhone` varchar(100) DEFAULT NULL,
+  `cellPhone` varchar(100) DEFAULT NULL,
+  `homePhone` varchar(100) DEFAULT NULL,
+  `fax` varchar(100) DEFAULT NULL,
+  `address` varchar(100) DEFAULT NULL,
+  `county` varchar(100) DEFAULT NULL,
+  `zip` varchar(100) DEFAULT NULL,
+  `city` varchar(100) DEFAULT NULL,
+  `country` varchar(100) DEFAULT NULL,
+  `address2` varchar(100) DEFAULT NULL,
+  `website` text,
+  `notes` text,
+  `socialTwitter` text,
+  `socialFacebook` text,
+  `socialLinkedin` text,
+  `socialInstagram` text,
+  `socialOther` text,
+  `type` enum('standard','user','client','prospectiveClient','collaborator','friend','contractor','freelancer','unknown','other') DEFAULT 'other',
+  `avatar` tinyint(1) NOT NULL DEFAULT '0',
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  `deleted` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
 # Dump of table stk_stacks
 # ------------------------------------------------------------
 
 DROP TABLE IF EXISTS `stk_stacks`;
 
 CREATE TABLE `stk_stacks` (
-  `id` varchar(37) NOT NULL DEFAULT '',
+  `id` char(36) NOT NULL DEFAULT '',
   `title` varchar(100) NOT NULL DEFAULT '',
-  `board` varchar(37) NOT NULL,
+  `project` char(36) NOT NULL DEFAULT '',
   `tag` text NOT NULL,
+  `maxTasks` int(6) DEFAULT NULL,
+  `automation` text,
+  `position` smallint(6) NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
@@ -152,7 +203,7 @@ DROP TABLE IF EXISTS `stk_stacks_collapsed`;
 
 CREATE TABLE `stk_stacks_collapsed` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `stack` varchar(37) NOT NULL DEFAULT '',
+  `stack` char(36) NOT NULL DEFAULT '',
   `collapsed` tinyint(1) NOT NULL,
   `user` int(11) NOT NULL,
   `created` datetime NOT NULL,
@@ -161,18 +212,20 @@ CREATE TABLE `stk_stacks_collapsed` (
 
 
 
-# Dump of table stk_stacks_order
+# Dump of table stk_tags
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `stk_stacks_order`;
+DROP TABLE IF EXISTS `stk_tags`;
 
-CREATE TABLE `stk_stacks_order` (
-  `board` varchar(37) NOT NULL,
-  `stack` varchar(37) NOT NULL DEFAULT '',
-  `order` smallint(6) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`stack`,`order`),
-  UNIQUE KEY `order` (`order`,`stack`),
-  KEY `id` (`stack`,`order`)
+CREATE TABLE `stk_tags` (
+  `id` char(36) NOT NULL DEFAULT '',
+  `title` varchar(100) NOT NULL DEFAULT '',
+  `color` varchar(7) NOT NULL DEFAULT '',
+  `project` char(36) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  `deleted` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -183,10 +236,12 @@ CREATE TABLE `stk_stacks_order` (
 DROP TABLE IF EXISTS `stk_tasks`;
 
 CREATE TABLE `stk_tasks` (
-  `id` varchar(37) NOT NULL DEFAULT '',
+  `id` char(36) NOT NULL DEFAULT '',
   `title` text NOT NULL,
-  `content` text NOT NULL,
+  `description` text NOT NULL,
+  `showDescription` tinyint(1) NOT NULL DEFAULT '0',
   `tags` text,
+  `status` varchar(36) DEFAULT NULL,
   `startdate` datetime DEFAULT NULL,
   `duedate` datetime DEFAULT NULL,
   `cover` tinyint(1) DEFAULT NULL,
@@ -196,9 +251,14 @@ CREATE TABLE `stk_tasks` (
   `spent` varchar(100) DEFAULT NULL,
   `progress` tinyint(4) DEFAULT NULL,
   `hourlyFee` float DEFAULT NULL,
-  `owner` int(11) DEFAULT NULL,
-  `board` varchar(37) DEFAULT NULL,
   `archived` datetime DEFAULT NULL,
+  `completed` datetime DEFAULT NULL,
+  `priority` enum('low','medium','high') DEFAULT NULL,
+  `repeats` text,
+  `project` char(36) NOT NULL DEFAULT '',
+  `stack` char(36) NOT NULL,
+  `position` smallint(6) NOT NULL,
+  `owner` int(11) NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
@@ -213,10 +273,10 @@ CREATE TABLE `stk_tasks` (
 DROP TABLE IF EXISTS `stk_tasks_assignees`;
 
 CREATE TABLE `stk_tasks_assignees` (
-  `task` varchar(37) NOT NULL DEFAULT '',
-  `user` int(11) NOT NULL,
-  PRIMARY KEY (`task`,`user`),
-  UNIQUE KEY `task` (`task`,`user`)
+  `task` char(36) NOT NULL DEFAULT '',
+  `person` char(36) NOT NULL DEFAULT '',
+  PRIMARY KEY (`task`,`person`),
+  UNIQUE KEY `task` (`task`,`person`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -227,29 +287,15 @@ CREATE TABLE `stk_tasks_assignees` (
 DROP TABLE IF EXISTS `stk_tasks_extensions`;
 
 CREATE TABLE `stk_tasks_extensions` (
-  `id` varchar(37) NOT NULL DEFAULT '',
-  `task` varchar(37) NOT NULL,
+  `id` char(36) NOT NULL DEFAULT '',
+  `task` char(36) NOT NULL DEFAULT '',
   `type` enum('attachments','location','checklist','description') DEFAULT NULL,
   `title` varchar(255) DEFAULT '',
   `content` text,
   `options` text,
+  `position` int(11) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-
-# Dump of table stk_tasks_order
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `stk_tasks_order`;
-
-CREATE TABLE `stk_tasks_order` (
-  `board` varchar(37) NOT NULL,
-  `stack` varchar(37) NOT NULL,
-  `task` varchar(37) NOT NULL DEFAULT '',
-  `order` smallint(6) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`task`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -260,7 +306,7 @@ CREATE TABLE `stk_tasks_order` (
 DROP TABLE IF EXISTS `stk_tasks_watchers`;
 
 CREATE TABLE `stk_tasks_watchers` (
-  `task` varchar(37) NOT NULL DEFAULT '',
+  `task` char(36) NOT NULL DEFAULT '',
   `user` int(11) NOT NULL,
   `created` datetime NOT NULL,
   PRIMARY KEY (`task`,`user`),
@@ -291,9 +337,9 @@ LOCK TABLES `stk_users` WRITE;
 
 INSERT INTO `stk_users` (`id`, `email`, `password`, `nickname`, `firstName`, `lastName`, `created`, `updated`)
 VALUES
-	(1,'admin@stacks.server','$2y$12$264650655ea6f3258cc5bukTLXMfwH3TxLERG5JtSHF0CkD7q9m2S','admin','Admin','Stacks','2020-04-24 09:10:18','2020-04-24 09:10:18'),
-	(2,'l.skywalker@resistance.com','$2y$12$264650655ea6f3258cc5bukTLXMfwH3TxLERG5JtSHF0CkD7q9m2S','skywalker','Luke','Skywalker','2020-09-18 08:20:13','2020-09-18 08:20:13'),
-	(3,'d.vader@theempire.com','$2y$12$264650655ea6f3258cc5bukTLXMfwH3TxLERG5JtSHF0CkD7q9m2S','vader','Darth','Vader','2020-09-22 08:13:51','2020-09-22 08:13:51');
+	(1,'admin@stacks.rocks','$2y$12$125312471860a23d8a7f9euPiIN.dMgREE4ftjp2tTKn2HzVFpjs2','','Stacks','Admin','2021-05-17 11:55:23','2021-05-17 11:55:23'),
+	(2,'l.skywalker@resistance.com','$2y$12$50898043960a789ef3f43OcnEnMxmQVTV3UtdpA1pROpsAWOLKHiy','','Luke','Skywalker','2021-05-21 12:22:40','2021-05-21 12:22:40'),
+	(3,'d.vader@theempire.com','$2y$12$193758945060a78a02d2auQF/MqoEAYheAEURx4IKRXHYAA0oDFXK','','Darth','Vader','2021-05-21 12:23:00','2021-05-21 12:23:00');
 
 /*!40000 ALTER TABLE `stk_users` ENABLE KEYS */;
 UNLOCK TABLES;

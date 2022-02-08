@@ -2,7 +2,6 @@
 
 use CodeIgniter\Events\Events;
 use App\Models\TaskModel;
-use App\Models\TaskOrderModel;
 use App\Models\StackModel;
 use App\Models\TaskAssigneeModel;
 use App\Models\TaskWatcherModel;
@@ -10,127 +9,102 @@ use App\Models\TaskExtensionModel;
 
 class TasksController extends BaseController
 {
-    public function all_board_v1($id)
-    {
-        $board = $this->request->board;
-
-        $taskModel = new TaskModel();
-        $taskBuilder = $taskModel->builder();
-        $taskQuery = $taskBuilder->select('tasks.*')
-            ->join('tasks_order', 'tasks_order.task = tasks.id')
-            ->where('tasks.deleted', NULL)
-            ->where('tasks_order.board', $board->id)
-            ->get();
-        $tasks = $taskQuery->getResult();
-
-        foreach ($tasks as &$task) {
-            $task->cover = (bool)$task->cover;
-            $task->done = (bool)$task->done;
-            $task->altTags = (bool)$task->altTags;
-            $task->progress = (int)$task->progress;
-            if (is_string($task->tags)) {
-                $task->tags = json_decode($task->tags);
-            }
-            if (is_string($task->info)) {
-                $task->info = json_decode($task->info);
-            }
-        }
-
-        return $this->reply($tasks);
-    }
-
-    public function all_stack_v1($stackID)
-    {
-        $board = $this->request->board;   
-
-        $taskModel = new TaskModel();
-
-        $builder = $taskModel->builder();
-        $query = $builder->select('tasks.*')
-            ->join('tasks_order', 'tasks_order.task = tasks.id')
-            ->where('tasks.deleted', NULL)
-            ->where('tasks_order.stack', $stackID)
-            ->where('tasks_order.board', $board->id)
-            ->orderBy('tasks_order.`order`', 'ASC')
-            ->get();
-
-        $tasks = $query->getResult();
-
-        foreach ($tasks as &$task) {
-            $task->cover = (bool)$task->cover;
-            $task->done = (bool)$task->done;
-            $task->altTags = (bool)$task->altTags;
-            $task->progress = (int)$task->progress;
-            if (is_string($task->tags)) {
-                $task->tags = json_decode($task->tags);
-            }
-            if (is_string($task->info)) {
-                $task->info = json_decode($task->info);
-            }
-        }
-
-        return $this->reply($tasks);
-    }
-
     public function one_v1($taskID)
     {
-        $board = $this->request->board;   
+        $user = $this->request->user;
 
-        $taskModel = new TaskModel();
-        $taskBuilder = $taskModel->builder();
-        $taskQuery = $taskBuilder->select('tasks.*')
-            ->join('tasks_order', 'tasks_order.task = tasks.id')
-            ->where('tasks.deleted', NULL)
-            ->where('tasks.id', $taskID)
-            ->where('tasks_order.board', $board->id)
-            ->limit(1)
-            ->get();
+        helper("tasks");
+        $task = task_load($taskID);
 
-        $tasks = $taskQuery->getResult();
-
-        if (!count($tasks)) {
-            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND-MSG");
+        if (!$task) {
+            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
         }
 
-        $task = $tasks[0];
-        
-        helper('tasks');
-        $task = task_format($task);
+        helper("documents");
+        $document = documents_load_document($task->project, $user);
+        if (!$document) {
+            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
+        }
 
-        return $this->reply($task);
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($task->stack);
+
+        if (!$stack) {
+            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
+        }
+
+        return $this->reply(task_format($task));
     }
 
-    public function add_v1($id, $position)
+    public function add_v1($stackId)
     {
         $user = $this->request->user;
-        $board = $this->request->board;
-
-        $taskModel = new TaskModel();
         $taskData = $this->request->getJSON();
+        $position = $this->request->getGet("position");
 
-        helper('uuid');
+        if (!$position) {
+            $position = "bottom";
+        }
+
+        if (!in_array($position, ["top", "bottom"])) {
+            return $this->reply("Invalid task position", 500, "ERR-TASK-CREATE");
+        }
         
-        // enforce an id in case there's none
+        $stackModal = new StackModel();
+        $stack = $stackModal->find($stackId);
+
+        if (!$stack) {
+            return $this->reply("Stack not found", 404, "ERR-TASK-CREATE");
+        }
+
+        helper("documents");
+        $document = documents_load_document($stack->project, $user);
+
+        if (!$document) {
+            return $this->reply("Project not found", 404, "ERR-TASK-CREATE");
+        }
+
+        // enforce an id in case there"s none
         if (!isset($taskData->id)) {
+            helper("uuid");
             $taskData->id = uuid();
         }
 
+        $taskModel = new TaskModel();
+
         $taskData->updated = null;
         $taskData->archived = null;
+        $taskData->completed = null;
         $taskData->owner = $user->id;
-        $taskData->board = $board->id;
+        $taskData->project = $document->id;
+        $taskData->stack = $stack->id;
+        $taskData->position = 1;
 
-        // TODO: check if the stack connected to this task is one of the users
-        // check if the stack exists
-        $stackModel = new StackModel();
-        $stacks = $stackModel->where('board', $board->id)
-            ->where('id', $taskData->stack)
-            ->findAll();
-
-        if (!count($stacks)) {
-            return $this->reply($e->getMessage(), 500, "ERR-TASK-CREATE");
+        if (isset($taskData->repeats)) {
+            $taskData->repeats = \json_encode($taskData->repeats);
         }
 
+        // get the last order number in from that project and stack
+        if ($position === "bottom") {
+            $lastPosition = $taskModel->where("project", $document->id)
+                ->where("stack", $stack->id)
+                ->orderBy("position", "desc")
+                ->first();
+            
+            if ($lastPosition) {
+                $taskData->position = intval($lastPosition->position) + 1;
+            }
+
+        // move all tasks order up by 1
+        } else {
+            $taskBuilder = $taskModel->builder();
+            $taskBuilder->where("deleted", NULL)
+                ->where("project", $document->id)
+                ->where("stack", $stack->id)
+                ->set("position", "`position` + 1", false)
+                ->update();
+        }
+        
         try {
             if ($taskModel->insert($taskData) === false) {
                 $errors = $taskModel->errors();
@@ -140,123 +114,68 @@ class TasksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-TASK-CREATE");
         }
 
-        $taskOrderModel = new TaskOrderModel();
-        $builderTaskOrderBuilder = $taskOrderModel->builder();
-        
-        $order = new \stdClass();
-        $order->board = $board->id;
-        $order->stack = $taskData->stack;
-        $order->task = $taskData->id;
-        $order->order = 1;
-
-        // get the max order no. from all the stacks of the same board
-        if ($position === "bottom") {
-            $query = $builderTaskOrderBuilder
-                ->selectMax("order")
-                ->where("board", $board->id)
-                ->where("stack", $taskData->stack)
-                ->get();
-            $maxTasks = $query->getResult();
-
-            if (count($maxStacks)) {
-                // set the max order no. + 1
-                $order->order = (int)$maxStacks[0]->order + 1; 
-            }
-
-            try {
-                if ($builderTaskOrderBuilder->insert($order) === false) {
-                    $errors = $taskOrderModel->errors();
-                    return $this->reply($errors, 500, "ERR-TASK-ORDER");    
-                }
-            } catch (\Exception $e) {
-                return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER");
-            }
-        } else {
-            $taskOrderQuery = $builderTaskOrderBuilder->select('task')
-                ->where('stack', $taskData->stack)
-                ->orderBy('`order`', 'ASC')
-                ->get();
-            $currentOrder = $taskOrderQuery->getResult();
-
-            $orders = [$order];
-
-            foreach ($currentOrder as $i => $task) {
-                $order = new \stdClass();
-                $order->board = $board->id;
-                $order->stack = $taskData->stack;
-                $order->task = $task->task;
-                $order->order = $i + 2;
-                $orders[] = $order;
-            }
-
-            try {
-                $taskOrderModel->where('stack', $taskData->stack)
-                    ->delete();
-            } catch (\Exception $e) {
-                return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER");
-            }
-
-            try {
-                if ($builderTaskOrderBuilder->insertBatch($orders) === false) {
-                    return $this->reply($builderTaskOrderBuilder->errors(), 500, "ERR-TASK-ORDER");    
-                }
-            } catch (\Exception $e) {
-                return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER");
-            }
-        }
-
         $task = $taskModel->find($taskData->id);
 
-        helper('tasks');
+        helper("tasks");
         $task = task_format($task);
 
-        Events::trigger("AFTER_task_ADD", $taskData->id);
-        Events::trigger("update_board", $board->id);
+        $this->addActivity(
+            $document->id,
+            $stack->id, 
+            $task->id, 
+            $this::ACTION_CREATE, 
+            $this::SECTION_TASK
+        );
 
-        return $this->reply($task, 200, "OK-TASK-CREATE-SUCCESS");
+        return $this->reply($task);
     }
 
     public function update_v1($taskID)
     {
-        $this->lock();
-
-        $board = $this->request->board;
-        // TODO get task from board instead of a new query
+        $this->lock($taskID);
+        
+        $user = $this->request->user;
         $taskModel = new TaskModel();
+        $task = $taskModel->find($taskID);
 
-        $builder = $taskModel->builder();
-        $query = $builder->select('tasks.*')
-            ->join('tasks_order', 'tasks_order.task = tasks.id')
-            ->where('tasks.deleted', NULL)
-            ->where('tasks.id', $taskID)
-            ->where('tasks_order.board', $board->id)
-            ->limit(1)
-            ->get();
+        if (!$task) {
+            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
+        }
 
-        $tasks = $query->getResult();
+        helper("documents");
+        $document = documents_load_document($task->project, $user);
 
-        if (!count($tasks)) {
-            return $this->reply(null, 404, "ERR-TASK-NOT-FOUND-MSG");
+        if (!$document) {
+            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
+        }
+
+        $stackModel = new StackModel();
+        $stack = $stackModel->find($task->stack);
+
+        if (!$stack) {
+            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
         }
 
         $taskData = $this->request->getJSON();
+        helper("uuid");
 
-        helper('uuid');
-        
-        // Managing extensions
-        // delete the current task extensions
-        $taskExtensionModel = new TaskExtensionModel();
-        try {
-            if ($taskExtensionModel->where('task', $taskData->id)->delete() === false) {
-                return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-DELETE-EXTENSIONS-ERROR");
-            }
-        } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-EXTENSIONS-ERROR");
-        }
+        $db = db_connect();
+        $db->transStart();
 
         // generate list of new extensions
-        $extensions = array();
         if (isset($taskData->extensions)) {
+            // Managing extensions
+            // delete the current task extensions
+            $taskExtensionModel = new TaskExtensionModel();
+            try {
+                if ($taskExtensionModel->where("task", $task->id)->delete() === false) {
+                    return $this->reply($taskExtensionModel->errors(), 500, "ERR-TASK-UPDATE");
+                }
+            } catch (\Exception $e) {
+                return $this->reply($e->getMessage(), 500, "ERR-TASK-UPDATE");
+            }
+
+            $extensions = array();
             foreach ($taskData->extensions as $ext) {
                 $extension = new \stdClass();
                 $extension->task = $taskID;
@@ -282,124 +201,132 @@ class TasksController extends BaseController
             if (count($extensions)) {    
                 try {
                     if ($taskExtensionModel->insertBatch($extensions) === false) {
-                        return $this->reply($taskExtensionModel->errors(), 500, "ERR-TASK-CREATE-EXTENSIONS-ERROR");    
+                        return $this->reply($taskExtensionModel->errors(), 500, "ERR-TASK-UPDATE");    
                     }
                 } catch (\Exception $e) {
-                    return $this->reply($e->getMessage(), 500, "ERR-TASK-CREATE-EXTENSIONS-ERROR");
+                    return $this->reply($e->getMessage(), 500, "ERR-TASK-UPDATE");
                 }
             }
-        }
-
-        // TODO: deprecated - remove in future versions
-        if (isset($taskData->info)) {
-            unset($taskData->info);
-        }
-
-        // delete all assigned task users
-        $taskAssigneeModel = new TaskAssigneeModel();
-        try {
-            if ($taskAssigneeModel->where('task', $taskData->id)->delete() === false) {
-                return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-DELETE-ASSIGNEES-ERROR");
-            }
-        } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-ASSIGNEES-ERROR");
         }
 
         // generate a list of new assignees
-        $assignees = array();
         if (isset($taskData->assignees)) {
-            foreach ($taskData->assignees as $userID) {
+            // delete all assigned task users
+            $taskAssigneeModel = new TaskAssigneeModel();
+            try {
+                if ($taskAssigneeModel->where("task", $task->id)->delete() === false) {
+                    return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-UPDATE");
+                }
+            } catch (\Exception $e) {
+                return $this->reply($e->getMessage(), 500, "ERR-TASK-UPDATE");
+            }
+
+            $assignees = array();
+            foreach ($taskData->assignees as $person) {
                 $assignee = new \stdClass();
-                $assignee->task = $taskData->id;
-                $assignee->user = $userID;
+                $assignee->task = $task->id;
+                $assignee->person = $person;
                 $assignees[] = $assignee;
+            }
+
+            // insert the assignees if any
+            if (count($assignees)) {
+                try {
+                    if ($taskAssigneeModel->insertBatch($assignees) === false) {
+                        return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-ASSIGNEES");    
+                    }
+                } catch (\Exception $e) {
+                    return $this->reply($e->getMessage(), 500, "ERR-TASK-ASSIGNEES");
+                }
             }
         }
         
-        // insert the assignees if any
-        if (count($assignees)) {
-            try {
-                if ($taskAssigneeModel->insertBatch($assignees) === false) {
-                    return $this->reply($taskOrderModel->errors(), 500, "ERR-TASK-ASSIGNEES");    
-                }
-            } catch (\Exception $e) {
-                return $this->reply($e->getMessage(), 500, "ERR-TASK-ASSIGNEES");
-            }
+        // convert tags to string
+        if (isset($taskData->tags)) {
+            $taskData->tags = json_encode($taskData->tags);
+        }
+
+        // convert repeats to string
+        if (isset($taskData->repeats)) {
+            $taskData->repeats = json_encode($taskData->repeats);
         }
 
         unset($taskData->id);
-        unset($taskData->order);
+        unset($taskData->position);
+        unset($taskData->project);
         unset($taskData->stack);
         unset($taskData->assignees);
         unset($taskData->info);
         $taskData->archived = null;
 
-        if ($taskModel->update($taskID, $taskData) === false) {
-            return $this->reply(null, 404, "ERR-TASK-UPDATE");
+        if (isset($taskData->startdate)) {
+            $taskData->startdate = substr(str_replace("T", " ", $taskData->startdate), 0, 19);
         }
 
-        Events::trigger("AFTER_task_UPDATE", $taskID);
-        Events::trigger("update_board", $board->id);
+        if (isset($taskData->duedate)) {
+            $taskData->duedate = substr(str_replace("T", " ", $taskData->duedate), 0, 19);
+        }
 
-        return $this->reply(null, 200, "OK-TASK-UPDATE-SUCCESS");
+        if (isset($taskData->completed)) {
+            $taskData->completed = substr(str_replace("T", " ", $taskData->completed), 0, 19);
+        }
+
+        if ($taskModel->update($taskID, $taskData) === false) {
+            return $this->reply(null, 500, "ERR-TASK-UPDATE");
+        }
+
+        $db->transComplete();
+
+        $this->addActivity(
+            $document->id,
+            $stack->id, 
+            $task->id, 
+            $this::ACTION_UPDATE, 
+            $this::SECTION_TASK
+        );
+
+        return $this->reply(true);
     }
 
     public function delete_v1($taskID)
     {
-        $this->lock();
-        
-        $board = $this->request->board;   
+        $this->lock($taskID);
 
         $taskModel = new TaskModel();
-        
-        $builder = $taskModel->builder();
-        $query = $builder->select('tasks.*')
-            ->join('tasks_order', 'tasks_order.task = tasks.id')
-            ->where('tasks.deleted', NULL)
-            ->where('tasks.id', $taskID)
-            ->where('tasks_order.board', $board->id)
-            ->limit(1)
-            ->get();
+        $task = $taskModel->find($taskID);
 
-        $tasks = $query->getResult();
-
-        if (!count($tasks)) {
-            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND-MSG");
+        if (!$task) {
+            return $this->reply(null, 404, "ERR-TASKS-DELETE");
         }
-
-        $task = $tasks[0];
 
         // delete selected task
         try {
             if ($taskModel->delete([$task->id]) === false) {
-                return $this->reply($taskModel->errors(), 500, "ERR-TASK-DELETE-ERROR");
+                return $this->reply($taskModel->errors(), 500, "ERR-TASKS-DELETE");
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-ERROR");
+            return $this->reply($e->getMessage(), 500, "ERR-TASKS-DELETE");
         }
 
-        // // delete task order
-        // $taskOrderModel = new TaskOrderModel();
-        // try {
-        //     $taskOrderModel->where('task', $task->id)->delete();
-        // } catch (\Exception $e) {
-        //     return $this->reply($e->getMessage(), 500, "ERR-TASK-ORDER-DELETE-ERROR");
-        // }
+        $this->addActivity(
+            $task->project, 
+            $task->stack, 
+            $task->id, 
+            $this::ACTION_DELETE, 
+            $this::SECTION_TASK
+        );
 
-        Events::trigger("AFTER_task_DELETE", $task->id);
-
-        return $this->reply(null, 200, "OK-TASK-DELETE-SUCCESS");
+        return $this->reply(true);
     }
 
     public function get_watchers_v1($taskID)
     {
         $user = $this->request->user;
-        $board = $this->request->board;
 
-        helper('watchers');
-        $watchers = tasks_watchers($board->task, $user);
+        helper("watchers");
+        $watchers = watchers_load($taskID, $user);
 
-        return $this->reply($watchers, 200, "OK-TASK-WATCHERS-SUCCESS");
+        return $this->reply($watchers);
     }
 
     public function add_watcher_v1($taskID)
@@ -408,37 +335,43 @@ class TasksController extends BaseController
 
         $taskWatcherModel = new TaskWatcherModel();
 
-        $watchers = $taskWatcherModel->where('task', $taskID)
-            ->where('user', $user->id)
+        $watchers = $taskWatcherModel->where("task", $taskID)
+            ->where("user", $user->id)
             ->findAll();
 
         $watcher = array(
-            'task' => $taskID,
-            'user' => $user->id
+            "task" => $taskID,
+            "user" => $user->id
         );
 
         if (!count($watchers)) {
             try {
                 if ($taskWatcherModel->insert($watcher) === false) {
-                    return $this->reply($taskWatcherModel->errors(), 500, "ERR-TASK-ADD-WATCHER-ERROR");
+                    return $this->reply($taskWatcherModel->errors(), 500, "ERR-TASK-ADD-WATCHER");
                 }
             } catch (\Exception $e) {
-                return $this->reply($e->getMessage(), 500, "ERR-TASK-ADD-WATCHER-ERROR");
+                return $this->reply($e->getMessage(), 500, "ERR-TASK-ADD-WATCHER");
             }
         }
 
         // remove all stuck watchers        
         try {
-            if ($taskWatcherModel->where('created <= DATE_SUB(NOW(), INTERVAL 2 HOUR)', NULL, false)->delete() === false) {
-                return $this->reply($taskModel->errors(), 500, "ERR-TASK-CLEAR-WATCHERS-ERROR");
+            if ($taskWatcherModel->where("created <= DATE_SUB(NOW(), INTERVAL 2 HOUR)", NULL, false)->delete() === false) {
+                return $this->reply($taskModel->errors(), 500, "ERR-TASK-ADD-WATCHER");
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-TASK-CLEAR-WATCHERS-ERROR");
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-ADD-WATCHER");
         }
 
-        Events::trigger("AFTER_task_watcher_ADD", $taskID);
+        $this->addActivity(
+            "",
+            "", 
+            $taskID, 
+            $this::ACTION_CREATE, 
+            $this::SECTION_WATCHER
+        );
 
-        return $this->reply(null, 200, "OK-TASK-ADD-WATCHERS-SUCCESS");
+        return $this->reply(true);
     }
 
     public function remove_watcher_v1($taskID)
@@ -448,15 +381,24 @@ class TasksController extends BaseController
         $taskWatcherModel = new TaskWatcherModel();
 
         try {
-            if ($taskWatcherModel->where('user', $user->id)->delete() === false) {
-                return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-DELETE-WATCHER-ERROR");
+            if ($taskWatcherModel
+                ->where("user", $user->id)
+                ->where("task", $taskID)->delete() === false
+            ) {
+                return $this->reply($taskAssigneeModel->errors(), 500, "ERR-TASK-DELETE-WATCHER");
             }
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-WATCHER-ERROR");
+            return $this->reply($e->getMessage(), 500, "ERR-TASK-DELETE-WATCHER");
         }
 
-        Events::trigger("AFTER_task_watcher_REMOVE", $taskID);
+        $this->addActivity(
+            "",
+            "", 
+            $taskID, 
+            $this::ACTION_DELETE, 
+            $this::SECTION_WATCHER
+        );
 
-        return $this->reply(null, 200, "OK-TASK-DELETE-WATCHERS-SUCCESS");
+        return $this->reply(true);
     }
 }

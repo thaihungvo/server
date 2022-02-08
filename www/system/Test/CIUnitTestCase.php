@@ -1,55 +1,32 @@
 <?php
 
 /**
- * CodeIgniter
+ * This file is part of the CodeIgniter 4 framework.
  *
- * An open source application development framework for PHP
+ * (c) CodeIgniter Foundation <admin@codeigniter.com>
  *
- * This content is released under the MIT License (MIT)
- *
- * Copyright (c) 2014-2019 British Columbia Institute of Technology
- * Copyright (c) 2019-2020 CodeIgniter Foundation
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * @package    CodeIgniter
- * @author     CodeIgniter Dev Team
- * @copyright  2019-2020 CodeIgniter Foundation
- * @license    https://opensource.org/licenses/MIT	MIT License
- * @link       https://codeigniter.com
- * @since      Version 4.0.0
- * @filesource
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace CodeIgniter\Test;
 
-use Config\Paths;
+use CodeIgniter\CodeIgniter;
+use CodeIgniter\Config\Factories;
 use CodeIgniter\Events\Events;
+use CodeIgniter\Session\Handlers\ArrayHandler;
+use CodeIgniter\Test\Mock\MockCache;
+use CodeIgniter\Test\Mock\MockEmail;
+use CodeIgniter\Test\Mock\MockSession;
+use Config\Services;
+use Exception;
 use PHPUnit\Framework\TestCase;
-use CodeIgniter\Test\TestLogger;
 
 /**
  * PHPunit test case.
  */
-class CIUnitTestCase extends TestCase
+abstract class CIUnitTestCase extends TestCase
 {
-
 	use ReflectionHelper;
 
 	/**
@@ -57,27 +34,126 @@ class CIUnitTestCase extends TestCase
 	 */
 	protected $app;
 
+	/**
+	 * Methods to run during setUp.
+	 *
+	 * @var array of methods
+	 */
+	protected $setUpMethods = [
+		'resetFactories',
+		'mockCache',
+		'mockEmail',
+		'mockSession',
+	];
+
+	/**
+	 * Methods to run during tearDown.
+	 *
+	 * @var array of methods
+	 */
+	protected $tearDownMethods = [];
+
+	//--------------------------------------------------------------------
+	// Staging
+	//--------------------------------------------------------------------
+
+	/**
+	 * Load the helpers.
+	 */
+	public static function setUpBeforeClass(): void
+	{
+		parent::setUpBeforeClass();
+
+		helper(['url', 'test']);
+	}
+
 	protected function setUp(): void
 	{
 		parent::setUp();
 
-		if (! $this->app)
+		if (! $this->app) // @phpstan-ignore-line
 		{
 			$this->app = $this->createApplication();
 		}
 
-		helper('url');
+		foreach ($this->setUpMethods as $method)
+		{
+			$this->$method();
+		}
 	}
+
+	protected function tearDown(): void
+	{
+		parent::tearDown();
+
+		foreach ($this->tearDownMethods as $method)
+		{
+			$this->$method();
+		}
+	}
+
+	//--------------------------------------------------------------------
+	// Mocking
+	//--------------------------------------------------------------------
+
+	/**
+	 * Resets shared instanced for all Factories components
+	 */
+	protected function resetFactories()
+	{
+		Factories::reset();
+	}
+
+	/**
+	 * Resets shared instanced for all Services
+	 */
+	protected function resetServices()
+	{
+		Services::reset();
+	}
+
+	/**
+	 * Injects the mock Cache driver to prevent filesystem collisions
+	 */
+	protected function mockCache()
+	{
+		Services::injectMock('cache', new MockCache());
+	}
+
+	/**
+	 * Injects the mock email driver so no emails really send
+	 */
+	protected function mockEmail()
+	{
+		Services::injectMock('email', new MockEmail(config('Email')));
+	}
+
+	/**
+	 * Injects the mock session driver into Services
+	 */
+	protected function mockSession()
+	{
+		$_SESSION = [];
+
+		$config  = config('App');
+		$session = new MockSession(new ArrayHandler($config, '0.0.0.0'), $config);
+
+		Services::injectMock('session', $session);
+	}
+
+	//--------------------------------------------------------------------
+	// Assertions
+	//--------------------------------------------------------------------
 
 	/**
 	 * Custom function to hook into CodeIgniter's Logging mechanism
 	 * to check if certain messages were logged during code execution.
 	 *
-	 * @param string $level
-	 * @param null   $expectedMessage
+	 * @param string      $level
+	 * @param string|null $expectedMessage
 	 *
 	 * @return boolean
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function assertLogged(string $level, $expectedMessage = null)
 	{
@@ -94,7 +170,7 @@ class CIUnitTestCase extends TestCase
 	 * @param string $eventName
 	 *
 	 * @return boolean
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function assertEventTriggered(string $eventName): bool
 	{
@@ -123,7 +199,7 @@ class CIUnitTestCase extends TestCase
 	 * @param string  $header     The leading portion of the header we are looking for
 	 * @param boolean $ignoreCase
 	 *
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function assertHeaderEmitted(string $header, bool $ignoreCase = false): void
 	{
@@ -155,7 +231,7 @@ class CIUnitTestCase extends TestCase
 	 * @param string  $header     The leading portion of the header we don't want to find
 	 * @param boolean $ignoreCase
 	 *
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function assertHeaderNotEmitted(string $header, bool $ignoreCase = false): void
 	{
@@ -192,7 +268,7 @@ class CIUnitTestCase extends TestCase
 	 * @param string  $message
 	 * @param integer $tolerance
 	 *
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function assertCloseEnough(int $expected, $actual, string $message = '', int $tolerance = 1)
 	{
@@ -212,8 +288,8 @@ class CIUnitTestCase extends TestCase
 	 * @param string  $message
 	 * @param integer $tolerance
 	 *
-	 * @return boolean
-	 * @throws \Exception
+	 * @return void|boolean
+	 * @throws Exception
 	 */
 	public function assertCloseEnoughString($expected, $actual, string $message = '', int $tolerance = 1)
 	{
@@ -232,35 +308,37 @@ class CIUnitTestCase extends TestCase
 
 			$this->assertLessThanOrEqual($tolerance, $difference, $message);
 		}
-		catch (\Exception $e)
+		catch (Exception $e)
 		{
 			return false;
 		}
 	}
 
+	//--------------------------------------------------------------------
+	// Utility
+	//--------------------------------------------------------------------
+
 	/**
 	 * Loads up an instance of CodeIgniter
 	 * and gets the environment setup.
 	 *
-	 * @return \CodeIgniter\CodeIgniter
+	 * @return CodeIgniter
 	 */
 	protected function createApplication()
 	{
-		$paths = new Paths();
-
-		return require realpath(__DIR__ . '/../') . '/bootstrap.php';
+		$path = __DIR__ . '/../bootstrap.php';
+		$path = realpath($path) ?: $path;
+		return require $path;
 	}
 
-	//--------------------------------------------------------------------
 	/**
 	 * Return first matching emitted header.
 	 *
-	 * @param string $header Identifier of the header of interest
-	 * @param bool $ignoreCase
+	 * @param string  $header     Identifier of the header of interest
+	 * @param boolean $ignoreCase
 	 *
 	 * @return string|null The value of the header found, null if not found
 	 */
-		//
 	protected function getHeaderEmitted(string $header, bool $ignoreCase = false): ?string
 	{
 		$found = false;
@@ -283,5 +361,4 @@ class CIUnitTestCase extends TestCase
 
 		return null;
 	}
-
 }

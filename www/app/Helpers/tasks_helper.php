@@ -10,12 +10,11 @@ if (!function_exists('tasks_load'))
     {
         $taskModel = new TaskModel();
         $taskBuilder = $taskModel->builder();
-        $taskQuery = $taskBuilder->select("tasks.*, tasks_order.stack, tasks_order.order")
-            ->join('tasks_order', 'tasks_order.task = tasks.id', 'left')
-            ->whereIn('tasks_order.stack', $stacksIDs)
-            ->where('tasks.deleted', NULL)
-            ->where('tasks.archived', NULL)
-            ->orderBy('tasks_order.`order`', 'ASC')
+        $taskQuery = $taskBuilder->select("*")
+            ->whereIn('stack', $stacksIDs)
+            ->where('deleted', NULL)
+            ->where('archived', NULL)
+            ->orderBy('position', 'ASC')
             ->get();
         $tasks = $taskQuery->getResult();
 
@@ -37,7 +36,10 @@ if (!function_exists('tasks_load'))
 
                 if ($assignee->task === $task->id) {
                     unset($assignee->task);
-                    $task->assignees[] = $assignee;
+                    $task->assignees[] = [
+                        "id" => $assignee->id,
+                        "name" => $assignee->firstName ." ". $assignee->lastName
+                    ];
                 }
             }
         }
@@ -47,8 +49,6 @@ if (!function_exists('tasks_load'))
             $taskExtensionModel = new TaskExtensionModel();
             $extensions = $taskExtensionModel->whereIn("task", $tasksIDs)->findAll();
         }
-
-        $attachmentsIDs = array();
 
         // unwrap the extensions
         foreach ($extensions as &$extension) {
@@ -60,7 +60,7 @@ if (!function_exists('tasks_load'))
         $attachments = array();
         if (count($tasksIDs)) {        
             $attachmentModel = new AttachmentModel();
-            $attachments = $attachmentModel->whereIn("task", $tasksIDs)->findAll();
+            $attachments = $attachmentModel->whereIn("resource", $tasksIDs)->findAll();
         }
 
         // attach the extensions to every task
@@ -75,8 +75,8 @@ if (!function_exists('tasks_load'))
 
             // insert the attachments in the task extension
             foreach ($attachments as $attachment) {
-                if ($attachment->task == $task->id && isset($task->extensions)) {
-                    unset($attachment->task);
+                if ($attachment->resource == $task->id && isset($task->extensions)) {
+                    unset($attachment->resource);
 
                     foreach ($task->extensions as &$extension) {
                         if ($extension->type == "attachments") {
@@ -99,6 +99,84 @@ if (!function_exists('tasks_load'))
     }
 }
 
+if (!function_exists('task_load'))
+{
+    function task_load($taskId)
+    {
+        $taskModel = new TaskModel();
+        $task = $taskModel->find($taskId);
+
+        if (!$task) {
+            return null;
+        }
+
+        // connect assignees to task
+        helper('assignees');
+        $assignees = tasks_assignees([$taskId]);
+
+        foreach ($assignees as &$assignee) {
+            if (!isset($task->assignees)) {
+                $task->assignees = array();
+            }
+
+            if ($assignee->task === $task->id) {
+                unset($assignee->task);
+                $task->assignees[] = [
+                    "id" => $assignee->id,
+                    "name" => $assignee->firstName ." ". $assignee->lastName
+                ];
+            }
+        }
+
+        // load extensions
+        $extensions = array();
+        $taskExtensionModel = new TaskExtensionModel();
+        $extensions = $taskExtensionModel->where("task", $taskId)->findAll();
+
+        // unwrap the extensions
+        foreach ($extensions as &$extension) {
+            $extension->options = json_decode($extension->options);
+            $extension->content = json_decode($extension->content);
+        }
+
+        // load task attachments
+        $attachments = array();
+        $attachmentModel = new AttachmentModel();
+        $attachments = $attachmentModel->where("resource", $taskId)->findAll();
+
+        $task->extensions = array();
+        foreach ($extensions as &$extension) {
+            if ($extension->task == $task->id) {
+                unset($extension->task);
+                $task->extensions[] = $extension;
+            }
+        }
+
+        // insert the attachments in the task extension
+        foreach ($attachments as $attachment) {
+            if ($attachment->resource == $task->id && isset($task->extensions)) {
+                unset($attachment->resource);
+
+                foreach ($task->extensions as &$extension) {
+                    if ($extension->type == "attachments") {
+                        if (!is_array($extension->content)) {
+                            $extension->content = array();
+                        }
+
+                        $extension->content[] = $attachment;
+                    }
+                }
+            }
+        }
+
+        if (!count($task->extensions)) {
+            unset($task->extensions);
+        }
+
+        return $task;
+    }
+}
+
 if (!function_exists('task_format'))
 {
     function task_format($task) 
@@ -106,13 +184,22 @@ if (!function_exists('task_format'))
 		$task->cover = (bool)$task->cover;
         $task->done = (bool)$task->done;
         $task->altTags = (bool)$task->altTags;
+        $task->showDescription = (bool)$task->showDescription;
         $task->progress = (int)$task->progress;
         if (is_string($task->tags)) {
             $task->tags = json_decode($task->tags);
         }
-        // if (is_string($task->info)) {
-        //     $task->info = json_decode($task->info);
-        // }
+
+        if (is_string($task->repeats)) {
+            $task->repeats = json_decode($task->repeats);
+        }
+
+        $task->position = (int)$task->position;
+
+        unset($task->order);
+        unset($task->stack);
+        unset($task->project);
+        unset($task->deleted);
 
         return $task;
     }

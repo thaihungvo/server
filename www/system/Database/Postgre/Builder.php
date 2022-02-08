@@ -1,53 +1,24 @@
 <?php
+
 /**
- * CodeIgniter
+ * This file is part of the CodeIgniter 4 framework.
  *
- * An open source application development framework for PHP
+ * (c) CodeIgniter Foundation <admin@codeigniter.com>
  *
- * This content is released under the MIT License (MIT)
- *
- * Copyright (c) 2014-2019 British Columbia Institute of Technology
- * Copyright (c) 2019-2020 CodeIgniter Foundation
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * @package    CodeIgniter
- * @author     CodeIgniter Dev Team
- * @copyright  2019-2020 CodeIgniter Foundation
- * @license    https://opensource.org/licenses/MIT	MIT License
- * @link       https://codeigniter.com
- * @since      Version 4.0.0
- * @filesource
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace CodeIgniter\Database\Postgre;
 
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Database\Exceptions\DatabaseException;
-use http\Encoding\Stream\Inflate;
 
 /**
  * Builder for Postgre
  */
 class Builder extends BaseBuilder
 {
-
 	/**
 	 * ORDER BY random keyword
 	 *
@@ -107,7 +78,7 @@ class Builder extends BaseBuilder
 		$direction = strtoupper(trim($direction));
 		if ($direction === 'RANDOM')
 		{
-			if (! is_float($orderBy) && ctype_digit((string) $orderBy))
+			if (ctype_digit($orderBy))
 			{
 				$orderBy = (float) ($orderBy > 1 ? "0.{$orderBy}" : $orderBy);
 			}
@@ -196,7 +167,9 @@ class Builder extends BaseBuilder
 			{
 				throw new DatabaseException('You must use the "set" method to update an entry.');
 			}
+			// @codeCoverageIgnoreStart
 			return false;
+			// @codeCoverageIgnoreEnd
 		}
 
 		$table = $this->QBFrom[0];
@@ -240,7 +213,7 @@ class Builder extends BaseBuilder
 	 *
 	 * @param mixed   $where
 	 * @param integer $limit
-	 * @param boolean $reset_data
+	 * @param boolean $resetData
 	 *
 	 * @return   mixed
 	 * @throws   DatabaseException
@@ -248,14 +221,14 @@ class Builder extends BaseBuilder
 	 * @internal param the $mixed limit clause
 	 * @internal param $bool
 	 */
-	public function delete($where = '', int $limit = null, bool $reset_data = true)
+	public function delete($where = '', int $limit = null, bool $resetData = true)
 	{
 		if (! empty($limit) || ! empty($this->QBLimit))
 		{
 			throw new DatabaseException('PostgreSQL does not allow LIMITs on DELETE queries.');
 		}
 
-		return parent::delete($where, $limit, $reset_data);
+		return parent::delete($where, $limit, $resetData);
 	}
 
 	//--------------------------------------------------------------------
@@ -269,7 +242,7 @@ class Builder extends BaseBuilder
 	 *
 	 * @return string
 	 */
-	protected function _limit(string $sql): string
+	protected function _limit(string $sql, bool $offsetIgnore = false): string
 	{
 		return $sql . ' LIMIT ' . $this->QBLimit . ($this->QBOffset ? " OFFSET {$this->QBOffset}" : '');
 	}
@@ -316,7 +289,7 @@ class Builder extends BaseBuilder
 	protected function _updateBatch(string $table, array $values, string $index): string
 	{
 		$ids = [];
-		foreach ($values as $key => $val)
+		foreach ($values as $val)
 		{
 			$ids[] = $val[$index];
 
@@ -330,7 +303,7 @@ class Builder extends BaseBuilder
 		}
 
 		$cases = '';
-		foreach ($final as $k => $v)
+		foreach ($final as $k => $v) // @phpstan-ignore-line
 		{
 			$cases .= "{$k} = (CASE {$index}\n"
 					. implode("\n", $v)
@@ -388,15 +361,15 @@ class Builder extends BaseBuilder
 	 *
 	 * @see https://www.postgresql.org/docs/9.2/static/functions-matching.html
 	 *
-	 * @param string  $prefix
-	 * @param string  $column
-	 * @param string  $not
-	 * @param string  $bind
-	 * @param boolean $insensitiveSearch
+	 * @param string|null  $prefix
+	 * @param string       $column
+	 * @param string|null  $not
+	 * @param string       $bind
+	 * @param boolean      $insensitiveSearch
 	 *
 	 * @return string     $like_statement
 	 */
-	public function _like_statement(string $prefix = null, string $column, string $not = null, string $bind, bool $insensitiveSearch = false): string
+	public function _like_statement(?string $prefix, string $column, ?string $not, string $bind, bool $insensitiveSearch = false): string
 	{
 		$op = $insensitiveSearch === true ? 'ILIKE' : 'LIKE';
 
@@ -404,4 +377,29 @@ class Builder extends BaseBuilder
 	}
 
 	//--------------------------------------------------------------------
+
+	/**
+	 * JOIN
+	 *
+	 * Generates the JOIN portion of the query
+	 *
+	 * @param string  $table
+	 * @param string  $cond   The join condition
+	 * @param string  $type   The type of join
+	 * @param boolean $escape Whether not to try to escape identifiers
+	 *
+	 * @return BaseBuilder
+	 */
+	public function join(string $table, string $cond, string $type = '', bool $escape = null)
+	{
+		if (! in_array('FULL OUTER', $this->joinTypes, true))
+		{
+			$this->joinTypes = array_merge($this->joinTypes, ['FULL OUTER']);
+		}
+
+		return parent::join($table, $cond, $type, $escape);
+	}
+
+	//--------------------------------------------------------------------
+
 }

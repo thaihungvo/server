@@ -9,21 +9,21 @@ use App\Models\UserModel;
 
 class APIAuth implements FilterInterface
 {
-    public function before(RequestInterface $request)
+    public function before(RequestInterface $request, $arguments = null)
     {
         $response = new \stdClass();
         $response->code = 401;
         $response->data = null;
 
-        $tokenRaw = $request->getHeaderLine('Authorization');
-        $token = str_replace('Bearer ', '', $tokenRaw);
+        $tokenRaw = $request->getHeaderLine("Authorization");
+        $token = str_replace("Bearer ", "", $tokenRaw);
 
         if (!strlen($token) && $request->getGet("auth")) {
             $token = $request->getGet("auth");
         }
 
         if (!strlen($token)) {
-            $response->message = 'ERR-AUTH-TOKEN-MISSING';
+            $response->message = "ERR-AUTH-TOKEN-MISSING";
             return Services::response()
                 ->setStatusCode(401)
                 ->setJSON($response);
@@ -32,16 +32,16 @@ class APIAuth implements FilterInterface
         $profile = null;
         try {
             $key = JWT_KEY;
-            $profile = JWT::decode($token, $key, array('HS256'));
+            $profile = JWT::decode($token, $key, array("HS256"));
         } catch (\Exception $e) {
-            $response->message = 'ERR-AUTH-SESSION-EXPIRED';
+            $response->message = "ERR-AUTH-SESSION-EXPIRED";
             return Services::response()
                 ->setStatusCode(401)    
                 ->setJSON($response);
         }
 
         if (!$profile) {
-            $response->message = 'ERR-AUTH-PROFILE-NULL';
+            $response->message = "ERR-AUTH-PROFILE-NULL";
             return Services::response()
                 ->setStatusCode(401)
                 ->setJSON($response);
@@ -49,24 +49,24 @@ class APIAuth implements FilterInterface
 
         $userModel = new UserModel();
         $user = $userModel->find($profile->id);
-
-        // the instance UUID is generated on login
-        // used when polling for updates for the same user logged in on different platforms/clients
-        $user->instance = $profile->instance;
-        unset($user->password);
         
         if (!$user) {
-            $response->message = 'ERR-AUTH-USER-NOT-FOUND';
+            $response->message = "ERR-AUTH-USER-NOT-FOUND";
             return Services::response()
                 ->setStatusCode(401)
                 ->setJSON($response);
         }
 
+        // the instance UUID is generated on login
+        // used when polling for updates for the same user logged in on different platforms/clients
+        $user->instance = $profile->instance;
+        unset($user->password);
+
         $request->user = $user;
         return $request;
     }
 
-    public function after(RequestInterface $request, ResponseInterface $response)
+    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
         // Do something here
     }

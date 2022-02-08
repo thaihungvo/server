@@ -31,6 +31,7 @@ class UserController extends BaseController
         );
 
         unset($user->password);
+        $user->instance = $payload["instance"];
         
         $user->token = JWT::encode($payload, JWT_KEY);
 
