@@ -64,6 +64,11 @@ class TasksController extends BaseController
             return $this->reply("Project not found", 404, "ERR-TASK-CREATE");
         }
 
+        helper("permissions");
+        if (!permissions_task($document, $user, $this::PERMISSIONS_FULL)) {
+            return $this->reply(null, 403);   
+        }
+
         // enforce an id in case there"s none
         if (!isset($taskData->id)) {
             helper("uuid");
@@ -75,10 +80,12 @@ class TasksController extends BaseController
         $taskData->updated = null;
         $taskData->archived = null;
         $taskData->completed = null;
-        $taskData->owner = $user->id;
         $taskData->project = $document->id;
         $taskData->stack = $stack->id;
         $taskData->position = 1;
+        // by default the owner is the user creating the task
+        $taskData->owner = $user->id;
+        $taskData->public = 1;
 
         if (isset($taskData->repeats)) {
             $taskData->repeats = \json_encode($taskData->repeats);
@@ -259,14 +266,27 @@ class TasksController extends BaseController
         unset($taskData->info);
         $taskData->archived = null;
 
+        // if somebody tries changing the owner and it's not the current owner then remove it
+        if ($taskData->owner && $taskData->owner != $user->id) {
+            return $this->reply(null, 403);
+        }
+
+        // if somebody tries changing the visibility (private, public) and it's not the owner then remove it
+        if ($taskData->public && $task->owner != $user->id) {
+            return $this->reply(null, 403);
+        }
+
+        // fix start date formatting
         if (isset($taskData->startdate)) {
             $taskData->startdate = substr(str_replace("T", " ", $taskData->startdate), 0, 19);
         }
 
+        // fix due date formatting
         if (isset($taskData->duedate)) {
             $taskData->duedate = substr(str_replace("T", " ", $taskData->duedate), 0, 19);
         }
 
+        // fix completed date formatting
         if (isset($taskData->completed)) {
             $taskData->completed = substr(str_replace("T", " ", $taskData->completed), 0, 19);
         }

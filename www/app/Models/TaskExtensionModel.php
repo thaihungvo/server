@@ -18,8 +18,8 @@ class TaskExtensionModel extends Model
     protected $deletedField  = '';
 
     protected $validationRules = [
-        'id' => 'required|min_length[35]',
-        'task' => 'required|min_length[35]',
+        'id' => 'required|min_length[20]',
+        'task' => 'required|min_length[20]',
         'type' => 'required|string'
     ];
 

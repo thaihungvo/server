@@ -3,6 +3,8 @@
 use App\Models\DocumentModel;
 use App\Models\AttachmentModel;
 use App\Models\TagModel;
+use App\Models\StatusModel;
+use App\Models\PermissionModel;
 
 class DocumentsController extends BaseController
 {
@@ -20,6 +22,12 @@ class DocumentsController extends BaseController
         $response->tags = $tagModel->where("project", NULL)->findAll();
         foreach ($response->tags as &$tag) {
             unset($tag->project);
+        }
+
+        $statusModel = new StatusModel();
+        $response->statuses = $statusModel->where("project", NULL)->findAll();
+        foreach ($response->statuses as &$status) {
+            unset($status->project);
         }
 
         return $this->reply($response);
@@ -41,6 +49,8 @@ class DocumentsController extends BaseController
     public function add_v1()
     {
         $documentModel = new DocumentModel();
+        $permissionModel = new PermissionModel();
+
         $user = $this->request->user;
         $documentData = $documentModel->toDB($this->request->getJSON());
         $documentData->owner = $user->id;
@@ -49,6 +59,19 @@ class DocumentsController extends BaseController
         try {
             if ($documentModel->insert($documentData) === false) {
                 return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-CREATE");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-CREATE");
+        }
+
+        // inserting the default document permission
+        $permission = [
+            "resource" => $documentData->id,
+            "permission" => "FULL"
+        ];
+        try {
+            if ($permissionModel->insert($permission) === false) {
+                return $this->reply($permissionModel->errors(), 500, "ERR-DOCUMENTS-CREATE");
             }
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-CREATE");
@@ -106,8 +129,8 @@ class DocumentsController extends BaseController
         unset($documentData->created);
 
         // checking if someone without privilages changes the visibility
-        if ($documentData->everyone != $document->everyone && $documentData->owner != $document->owner) {
-            $documentData->everyone = $document->everyone;
+        if ($documentData->public != $document->public && $documentData->owner != $document->owner) {
+            $documentData->public = $document->public;
         }
         // checking that the owner stays the same
         $documentData->owner = $document->owner;

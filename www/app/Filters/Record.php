@@ -25,7 +25,7 @@ class Record implements FilterInterface
             ->groupStart()
                 ->where("records.owner", $user->id)
                 ->orWhere("records_members.user", $user->id)
-                ->orWhere("records.everyone", 1)
+                ->orWhere("records.public", 1)
             ->groupEnd()
             ->limit(1)
             ->get();

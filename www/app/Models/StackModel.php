@@ -18,9 +18,9 @@ class StackModel extends Model
     protected $deletedField  = "deleted";
 
     protected $validationRules = [
-        "id" => "required|min_length[35]",
+        "id" => "required|min_length[20]",
         "title" => "required|alpha_numeric_punct",
-        "project" => "required|min_length[35]",
+        "project" => "required|min_length[20]",
         "position" => "required"
     ];
 }

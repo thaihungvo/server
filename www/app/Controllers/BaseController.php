@@ -49,6 +49,11 @@ class BaseController extends Controller
     const SECTION_ORDER = "order";
     const SECTION_WATCHER = "watcher";
 
+    const PERMISSION_FULL = "FULL";
+    const PERMISSION_EDIT = "EDIT";
+    const PERMISSION_LIMITED = "LIMITED";
+    const PERMISSION_READONLY = "READONLY";
+
 	/**
 	 * Constructor.
 	 */

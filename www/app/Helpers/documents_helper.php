@@ -1,6 +1,7 @@
 <?php 
 
 use App\Models\DocumentModel;
+use App\Models\PermissionModel;
 
 if (!function_exists('documents_load_documents'))
 {
@@ -9,13 +10,13 @@ if (!function_exists('documents_load_documents'))
         // get all the documents
         $documentModel = new DocumentModel();
         $documentBuilder = $documentModel->builder();
-        $documentQuery = $documentBuilder->select("documents.id, documents.text, documents.type, documents.updated, documents.created, documents.parent")
+        $documentQuery = $documentBuilder->select("documents.id, documents.text, documents.type, documents.updated, documents.created, documents.parent, documents.public, documents.owner")
             ->join("documents_members", "documents_members.document = documents.id", "left")
             ->where("documents.deleted", NULL)
             ->groupStart()
                 ->where("documents.owner", $user->id)
                 ->orWhere("documents_members.user", $user->id)
-                ->orWhere("documents.everyone", 1)
+                ->orWhere("documents.public", 1)
             ->groupEnd()
             ->groupBy("documents.id")
             ->orderBy("documents.position", "ASC")
@@ -28,6 +29,8 @@ if (!function_exists('documents_load_documents'))
         foreach ($documents as &$document) {
             if ($document->parent === "0") {
                 $document->parent = 0;
+            } else {
+                $document->parent = null;
             }
 
             if ($document->type === "folder") {
@@ -45,11 +48,19 @@ if (!function_exists('documents_load_documents'))
             unset($document->created);
             $document->data->updated = $document->updated;
             unset($document->updated);
+            $document->data->public = boolval($document->public);
+            unset($document->public);
+            $document->data->owner = $document->owner;
+            unset($document->owner);
         }
 
+        // loads the documents counters: eg: overdue tasks
         if ($loadCounters) {
-            $counters = documents_load_counters($documents);
+            documents_load_counters($documents);
         }
+
+        // loads the documents permission for the current user
+        documents_load_permissions($documents, $user);
 
         return $documents;
     }
@@ -95,6 +106,45 @@ if (!function_exists('documents_load_counters'))
     }
 }
 
+if (!function_exists('documents_load_permissions'))
+{
+    function documents_load_permissions(&$documents, $user)
+    {
+        $db = db_connect();
+        $documentIds = array();
+        foreach ($documents as $document) {
+            $documentIds[] = $document->id;
+        }
+
+        $permissionModel = new PermissionModel();
+        $permissionBuilder = $permissionModel->builder();
+        $permissionQuery = $permissionBuilder->select("permissions.*, userPermissions.permission AS userPermission")
+            ->from("permissions AS permissions", true)
+            ->join("permissions AS userPermissions", "permissions.resource = userPermissions.resource AND userPermissions.user = ".$db->escape($user->id), "left")
+            ->whereIn("permissions.resource", $documentIds)
+            ->where("permissions.user", NULL)
+            ->get();
+        $permissions = $permissionQuery->getResult();
+
+        foreach ($documents as &$document) {
+            $document->data->permission = "FULL";
+            
+            // if the user is not the owner that we need to apply any available permissions
+            if ($document->owner != $user->id) {
+                foreach ($permissions as $permission) {
+                    // if the document is the same as the permission's resource
+                    if (
+                        $document->id === $permission->resource && 
+                        ($permission->userPermission || $permission->permission)
+                    ) {
+                        $document->data->permission = isset($permission->userPermission) ? $permission->userPermission : $permission->permission;
+                    }
+                }
+            }
+        }
+    }
+}
+
 if (!function_exists('documents_get_default_options'))
 {
     function documents_get_default_options($type)
@@ -125,7 +175,7 @@ if (!function_exists('documents_load_document'))
             ->groupStart()
                 ->where("documents.owner", $user->id)
                 ->orWhere("documents_members.user", $user->id)
-                ->orWhere("documents.everyone", 1)
+                ->orWhere("documents.public", 1)
             ->groupEnd()
             ->limit(1)
             ->get();
@@ -137,6 +187,7 @@ if (!function_exists('documents_load_document'))
         $document = $documents[0];
         if ($document->options) {
             $document->options = json_decode($document->options);
+            $document->public = boolval($document->public);
         }
 
         documents_expand_document($document, $user);

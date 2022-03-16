@@ -18,7 +18,7 @@ class RecordMemberModel extends Model
     protected $deletedField  = "";
 
     protected $validationRules = [
-        "record" => "required|min_length[35]",
+        "record" => "required|min_length[20]",
         "user" => "required"
     ];
 

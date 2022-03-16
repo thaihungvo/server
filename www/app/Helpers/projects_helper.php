@@ -2,6 +2,7 @@
 
 use App\Models\StackModel;
 use App\Models\TagModel;
+use App\Models\StatusModel;
 use App\Models\TaskModel;
 
 if (!function_exists("projects_expand")) {
@@ -13,6 +14,14 @@ if (!function_exists("projects_expand")) {
             unset($tag->project);
         }
         $document->tags = $tags;
+
+        // load project statuses
+        $statusModel = new StatusModel();
+        $statuses = $statusModel->where("project", $document->id)->findAll();
+        foreach ($statuses as &$status) {
+            unset($status->project);
+        }
+        $document->statuses = $statuses;
 
         // load project stacks
         $document->stacks = projects_load_stacks($document->id, $user);

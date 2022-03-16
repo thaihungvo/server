@@ -18,7 +18,7 @@ class TaskModel extends Model
     protected $deletedField  = "deleted";
 
     protected $validationRules = [
-        "id" => "required|min_length[35]",
+        "id" => "required|min_length[20]",
         "title" => "required",
         "position" => "required"
     ];

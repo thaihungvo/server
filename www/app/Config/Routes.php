@@ -80,6 +80,18 @@ $routes->get("/ping", "PingController::index");
     // delete a tag
     $routes->delete("/api/v1/tags/(:any)", "TagsController::delete_v1/$1");
 
+// STATUSES
+    // get all statuses
+    $routes->get("/api/v1/statuses", "StatusesController::all_v1");
+    // add a new status
+    $routes->post("/api/v1/statuses", "StatusesController::add_v1");
+    // add a new status
+    $routes->post("/api/v1/statuses", "StatusesController::add_v1");
+    // update a status
+    $routes->put("/api/v1/statuses/(:any)", "StatusesController::update_v1/$1");
+    // delete a status
+    $routes->delete("/api/v1/statuses/(:any)", "StatusesController::delete_v1/$1");
+
 // STACKS
     // create a stack
     $routes->post("/api/v1/projects/(:any)/stacks", "StacksController::add_v1/$1");

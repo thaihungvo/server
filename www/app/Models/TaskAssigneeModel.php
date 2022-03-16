@@ -18,7 +18,7 @@ class TaskAssigneeModel extends Model
     protected $deletedField  = "";
 
     protected $validationRules = [
-        "task" => "required|min_length[35]",
-        "person" => "required|min_length[35]",
+        "task" => "required|min_length[20]",
+        "person" => "required|min_length[20]",
     ];
 }

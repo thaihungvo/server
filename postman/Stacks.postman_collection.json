@@ -50,32 +50,6 @@
 			"name": "1. User",
 			"item": [
 				{
-					"name": "User registration",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"email\": \"admin@stacks.rocks\",\n\t\"password\": \"123456\",\n    \"firstName\": \"Admin\",\n    \"lastName\": \"Stacks\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/register",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Login",
 					"event": [
 						{
@@ -91,7 +65,7 @@
 									"",
 									"pm.test(\"Login user test\", function () {",
 									"    const responseJson = pm.response.json();",
-									"    pm.expect(responseJson.data.id).to.equal(\"1\");",
+									"    pm.expect(responseJson.data.id).to.equal(\"2\");",
 									"});"
 								],
 								"type": "text/javascript"
@@ -117,6 +91,45 @@
 							],
 							"path": [
 								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User registration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Registration status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"test@stacks.rocks\",\n\t\"password\": \"123456\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"Smith\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/register",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"register"
 							]
 						}
 					},
@@ -506,7 +519,20 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									""
+									"pm.test(\"Get Single Document status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const currentDocumentId = pm.environment.get(\"document\");",
+									"pm.test(\"Get Single Document response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});",
+									"",
+									"pm.test(\"Get Single Document response ID\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data.id).to.equal(currentDocumentId);",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -538,6 +564,19 @@
 				},
 				{
 					"name": "Update Document",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Document status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -603,7 +642,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    // parentId: [documentId, documentId, ...]\n  \"c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\": [\n    \"d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\",\n    \"w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\"\n  ]\n}",
+							"raw": "{\n  \"c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\": [\n    \"d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\",\n    \"w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\"\n  ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -668,6 +707,19 @@
 				},
 				{
 					"name": "Update Options",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Document Options status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -704,6 +756,19 @@
 				},
 				{
 					"name": "Get Document attachments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Document Attachments status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1476,6 +1541,25 @@
 			"item": [
 				{
 					"name": "Get All Tags",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get All Tags status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get All Tags response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"array\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1651,7 +1735,201 @@
 			]
 		},
 		{
-			"name": "7. Members",
+			"name": "7. Statuses",
+			"item": [
+				{
+					"name": "Get All Statuses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get All Statuses status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get All Statuses response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"array\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/statuses",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"statuses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"status\", jsonData.data.id);",
+									"",
+									"pm.test(\"Add Status status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add Status response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"New Status\",\n\t\"color\": \"#000000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/statuses",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"statuses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Status status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Update New Status\",\n\t\"color\": \"#ffffff\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/statuses/{{status}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"statuses",
+								"{{status}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Delete Status status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/statuses/{{status}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"statuses",
+								"{{status}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "8. Members",
 			"item": [
 				{
 					"name": "Add Project member/s",
@@ -1677,7 +1955,7 @@
 			]
 		},
 		{
-			"name": "8. People",
+			"name": "9. People",
 			"item": [
 				{
 					"name": "Add person",
@@ -1760,7 +2038,7 @@
 			]
 		},
 		{
-			"name": "9. Notepad",
+			"name": "10. Notepad",
 			"item": [
 				{
 					"name": "Update Notepad",
@@ -1800,10 +2078,10 @@
 			]
 		},
 		{
-			"name": "10. Search",
+			"name": "11. Search",
 			"item": [
 				{
-					"name": "New Request",
+					"name": "Search",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1836,7 +2114,7 @@
 			]
 		},
 		{
-			"name": "11. Updates",
+			"name": "12. Updates",
 			"item": [
 				{
 					"name": "Get latest updates",
