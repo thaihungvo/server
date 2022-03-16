@@ -82,6 +82,36 @@ if (!function_exists('documents_load_permissions'))
     }
 }
 
+if (!function_exists('documents_load_permission'))
+{
+    function documents_load_permission(&$document, $user)
+    {
+        $db = db_connect();
+
+        $permissionModel = new PermissionModel();
+        $permissionBuilder = $permissionModel->builder();
+        $permissionQuery = $permissionBuilder->select("permissions.*, userPermissions.permission AS userPermission")
+            ->from("permissions AS permissions", true)
+            ->join("permissions AS userPermissions", "permissions.resource = userPermissions.resource AND userPermissions.user = ".$db->escape($user->id), "left")
+            ->where("permissions.resource", $document->id)
+            ->where("permissions.user", NULL)
+            ->get();
+        $permissions = $permissionQuery->getResult();
+
+        $document->permission = "FULL";
+        if (count($permissions)) {
+            $permission = $permissions[0];
+            // if the document is the same as the permission's resource
+            if (
+                $document->id === $permission->resource && 
+                ($permission->userPermission || $permission->permission)
+            ) {
+                $document->permission = isset($permission->userPermission) ? $permission->userPermission : $permission->permission;
+            }
+        }
+    }
+}
+
 if (!function_exists('documents_get_default_options'))
 {
     function documents_get_default_options($type)

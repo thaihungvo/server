@@ -32,7 +32,7 @@ class DocumentModel extends Model
         helper("documents");
         $user = $this->user;
 
-        // single document
+        // format single document
         if ($data["method"] === "find") {
             $data["data"]->public = boolval($data["data"]->public);
 
@@ -45,9 +45,10 @@ class DocumentModel extends Model
             unset($data["data"]->position);
 
             documents_expand_document($data["data"], $user);
+            documents_load_permission($data["data"], $user);
         }
 
-        // all documents
+        // format list of documents
         if ($data["method"] === "findAll") {
             $projects = array();
             $people = array();

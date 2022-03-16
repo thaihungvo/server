@@ -92,7 +92,7 @@ class DocumentsController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-CREATE");
         }
 
-        // inserting the default document permission
+        // inserting the default document permission 
         $permissionModel = new PermissionModel();
         $permission = [
             "resource" => $data->id,
