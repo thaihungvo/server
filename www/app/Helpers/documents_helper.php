@@ -3,69 +3,6 @@
 use App\Models\DocumentModel;
 use App\Models\PermissionModel;
 
-if (!function_exists('documents_load_documents'))
-{
-    function documents_load_documents($user, $loadCounters = false)
-    {
-        // get all the documents
-        $documentModel = new DocumentModel();
-        $documentBuilder = $documentModel->builder();
-        $documentQuery = $documentBuilder->select("documents.id, documents.text, documents.type, documents.updated, documents.created, documents.parent, documents.public, documents.owner")
-            ->join("documents_members", "documents_members.document = documents.id", "left")
-            ->where("documents.deleted", NULL)
-            ->groupStart()
-                ->where("documents.owner", $user->id)
-                ->orWhere("documents_members.user", $user->id)
-                ->orWhere("documents.public", 1)
-            ->groupEnd()
-            ->groupBy("documents.id")
-            ->orderBy("documents.position", "ASC")
-            ->get();
-        $documents = $documentQuery->getResult();
-
-        $projects = array();
-        $people = array();
-
-        foreach ($documents as &$document) {
-            if ($document->parent === "0") {
-                $document->parent = 0;
-            } else {
-                $document->parent = null;
-            }
-
-            if ($document->type === "folder") {
-                $document->droppable = true;
-            } else if ($document->type === "project") {
-                $projects[] = $document->id;
-            } else if ($document->type === "people") {
-                $people[] = $document->id;
-            }
-
-            $document->data = new \stdClass();
-            $document->data->type = $document->type;
-            unset($document->type);
-            $document->data->created = $document->created;
-            unset($document->created);
-            $document->data->updated = $document->updated;
-            unset($document->updated);
-            $document->data->public = boolval($document->public);
-            unset($document->public);
-            $document->data->owner = $document->owner;
-            unset($document->owner);
-        }
-
-        // loads the documents counters: eg: overdue tasks
-        if ($loadCounters) {
-            documents_load_counters($documents);
-        }
-
-        // loads the documents permission for the current user
-        documents_load_permissions($documents, $user);
-
-        return $documents;
-    }
-}
-
 if (!function_exists('documents_load_counters'))
 {
     function documents_load_counters(&$documents)
@@ -161,9 +98,9 @@ if (!function_exists('documents_get_default_options'))
     }
 }
 
-if (!function_exists('documents_load_document'))
+if (!function_exists('documents_load_document2'))
 {
-    function documents_load_document($documentID, $user)
+    function documents_load_document2($documentID, $user)
     {
         $documentModel = new DocumentModel();
 

@@ -10,20 +10,19 @@ class DocumentsController extends BaseController
 {
     public function all_v1()
 	{
-        $user = $this->request->user;
-
-        helper("documents");
-        $documents = documents_load_documents($user, true);
-
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
         $response = new \stdClass();
-        $response->documents = $documents;
+        $response->documents = $documentModel->findAll();
 
+        // load the global tags
         $tagModel = new TagModel();
         $response->tags = $tagModel->where("project", NULL)->findAll();
         foreach ($response->tags as &$tag) {
             unset($tag->project);
         }
 
+        // load the global statuses
         $statusModel = new StatusModel();
         $response->statuses = $statusModel->where("project", NULL)->findAll();
         foreach ($response->statuses as &$status) {
@@ -35,29 +34,58 @@ class DocumentsController extends BaseController
 
 	public function one_v1($documentId)
 	{
-        $user = $this->request->user;
-        helper("documents");
-
         if (!isset($documentId)) {
             return $this->reply(null, 500, "ERR-DOCUMENTS-GET");
         }
 
-        $document = documents_load_document($documentId, $user);
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        $document = $documentModel->find($documentId);
+
         return $this->reply($document);
     }
 
     public function add_v1()
     {
-        $documentModel = new DocumentModel();
-        $permissionModel = new PermissionModel();
-
         $user = $this->request->user;
-        $documentData = $documentModel->toDB($this->request->getJSON());
-        $documentData->owner = $user->id;
+        $documentModel = new DocumentModel();
+        $documentModel->user = $user;
+
+        $data = $this->request->getJSON();
+
+        // adding UUID in case it is missing
+        if (!isset($data->id)) {
+            helper('uuid');
+            $data->id = uuid();
+        }
+
+        // moving extra data info
+        if (isset($data->data->type)) {
+            $data->type = $data->data->type;
+        }
+
+        // setting owner to the current user
+        $data->owner = $user->id;
+
+        // Fixing position
+        if (!isset($data->position) && isset($data->type)) {
+            $data->position = 1;
+
+            $documentModel = new DocumentModel();
+            $documentModel
+                ->where("parent", $data->parent)
+                ->orderBy("position", "desc");
+    
+            $lastPosition = $documentModel->first();
+    
+            if ($lastPosition) {
+                $data->position = intval($lastPosition->position) + 1;
+            }
+        }
 
         // inserting the new document
         try {
-            if ($documentModel->insert($documentData) === false) {
+            if ($documentModel->insert($data) === false) {
                 return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-CREATE");
             }
         } catch (\Exception $e) {
@@ -65,8 +93,9 @@ class DocumentsController extends BaseController
         }
 
         // inserting the default document permission
+        $permissionModel = new PermissionModel();
         $permission = [
-            "resource" => $documentData->id,
+            "resource" => $data->id,
             "permission" => "FULL"
         ];
         try {
@@ -79,14 +108,14 @@ class DocumentsController extends BaseController
 
         // inserting activity
         $this->addActivity(
-            $documentData->id,
-            $documentData->parent,
-            $documentData->id,
+            $data->id,
+            $data->parent,
+            $data->id,
             $this::ACTION_CREATE,
             $this::SECTION_DOCUMENTS
         );
         
-        $document = documents_load_document($documentData->id, $user);
+        $document = $documentModel->find($data->id);
 
         return $this->reply($document);
     }
