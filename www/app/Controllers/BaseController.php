@@ -104,10 +104,10 @@ class BaseController extends Controller
             ->find($documentId);
     }
 
-    protected function can($permission, $action)
+    protected function can($action, $permission)
     {
         helper("permissions");
-        return permissions_can($permission, $action, $this->permissionSection);
+        return permissions_can($action, $permission, $this->permissionSection);
     }
 
     protected function lock($id)

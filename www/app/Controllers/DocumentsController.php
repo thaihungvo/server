@@ -120,7 +120,7 @@ class DocumentsController extends BaseController
         }
 
         // checking user permissions to update this document
-        if (!$this->can($document->permission, "update")) {
+        if (!$this->can("update", $document->permission)) {
             return $this->reply("You don't have permissions to update this document", 403, "ERR-DOCUMENTS-UPDATE");
         }
 
@@ -237,6 +237,11 @@ class DocumentsController extends BaseController
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-DELETE");
         }
 
+        // checking user permissions to change this documents options
+        if (!$this->can("delete", $document->permission)) {
+            return $this->reply("You don't have permissions to delete this document", 403, "ERR-DOCUMENTS-DELETE");
+        }
+
         // documents that require other to be deleted
         $documentsToCleanUp = array();
         if ($document->type !== "folder") {
@@ -303,6 +308,11 @@ class DocumentsController extends BaseController
 
         if (!isset($document->id)) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-OPTIONS");
+        }
+
+        // checking user permissions to change this documents options
+        if (!$this->can("update", $document->permission)) {
+            return $this->reply("You don't have permissions to update this documents options", 403, "ERR-DOCUMENTS-OPTIONS");
         }
 
         $documentModel = new DocumentModel();
