@@ -8,12 +8,26 @@ use App\Models\PermissionModel;
 
 class DocumentsController extends BaseController
 {
+    protected $permissionSection = "documents";
+
     public function all_v1()
 	{
+        $db = db_connect();
         $documentModel = new DocumentModel();
         $documentModel->user = $this->request->user;
         $response = new \stdClass();
-        $response->documents = $documentModel->findAll();
+        $response->documents = $documentModel
+            ->select("documents.*")
+            ->join("permissions", "permissions.resource = documents.id AND permissions.user = ".$db->escape($this->request->user->id), 'left')
+            ->groupStart()
+                ->where("public", 1)
+                ->orGroupStart()
+                    ->where("public", 0)
+                    ->where("owner", $this->request->user->id)
+                ->groupEnd()
+                ->orWhere("permissions.permission", !NULL)
+            ->groupEnd()
+            ->findAll();
 
         // load the global tags
         $tagModel = new TagModel();
@@ -38,10 +52,7 @@ class DocumentsController extends BaseController
             return $this->reply(null, 500, "ERR-DOCUMENTS-GET");
         }
 
-        $documentModel = new DocumentModel();
-        $documentModel->user = $this->request->user;
-        $document = $documentModel->find($documentId);
-
+        $document = $this->getDocument($documentId);
         return $this->reply($document);
     }
 
@@ -52,36 +63,7 @@ class DocumentsController extends BaseController
         $documentModel->user = $user;
 
         $data = $this->request->getJSON();
-
-        // adding UUID in case it is missing
-        if (!isset($data->id)) {
-            helper('uuid');
-            $data->id = uuid();
-        }
-
-        // moving extra data info
-        if (isset($data->data->type)) {
-            $data->type = $data->data->type;
-        }
-
-        // setting owner to the current user
-        $data->owner = $user->id;
-
-        // Fixing position
-        if (!isset($data->position) && isset($data->type)) {
-            $data->position = 1;
-
-            $documentModel = new DocumentModel();
-            $documentModel
-                ->where("parent", $data->parent)
-                ->orderBy("position", "desc");
-    
-            $lastPosition = $documentModel->first();
-    
-            if ($lastPosition) {
-                $data->position = intval($lastPosition->position) + 1;
-            }
-        }
+        $documentModel->formatData($data);
 
         // inserting the new document
         try {
@@ -115,58 +97,61 @@ class DocumentsController extends BaseController
             $this::SECTION_DOCUMENTS
         );
         
-        $document = $documentModel->find($data->id);
+        $document = $this->getDocument($data->id);
 
         return $this->reply($document);
     }
 
     public function update_v1($documentId)
     {
-        $documentModel = new DocumentModel();
-        $user = $this->request->user;
-        $documentData = $documentModel->toDB($this->request->getJSON());
-
         // check for unknown record types
         if (!isset($documentId)) {
             return $this->reply("Document `id` missing or not valid", 500, "ERR-DOCUMENTS-UPDATE");
         }
 
-        $this->lock($documentId);
-
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        
         // checking if the requested document exists
-        helper("documents");
-        $document = documents_load_document($documentId, $user);
+        $document = $this->getDocument($documentId);
+        
         if (!$document) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-UPDATE");
         }
 
-        // fixing data id prop
-        $documentData->id = $document->id;
+        // checking user permissions to update this document
+        if (!$this->can($document->permission, "update")) {
+            return $this->reply("You don't have permissions to update this document", 403, "ERR-DOCUMENTS-UPDATE");
+        }
+
+        $data = $this->request->getJSON();
+        $data->id = $documentId;
+        $documentModel->formatData($data);
+
+        $this->lock($data->id);
 
         // reverting back to the old parent in case it's missing
-        if (!isset($documentData->parent)) {
-            $documentData->parent = $document->parent;
+        if (!isset($data->parent)) {
+            $data->parent = $document->parent;
         }
 
         // adding updated date in case it's missing
-        if (!isset($documentData->updated)) {
-            $documentData->updated = date("Y-m-d H:i:s");
+        if (!isset($data->updated)) {
+            $data->updated = date("Y-m-d H:i:s");
         }
 
-        // just in case someone tries to change types
-        unset($documentData->type);
-        unset($documentData->created);
+        unset($data->type); // just in case someone tries to change types
+        unset($data->created);
+        unset($data->owner); // we don't want to change the owner
 
         // checking if someone without privilages changes the visibility
-        if ($documentData->public != $document->public && $documentData->owner != $document->owner) {
-            $documentData->public = $document->public;
+        if ($data->public != $document->public && $data->owner != $document->owner) {
+            $data->public = $document->public;
         }
-        // checking that the owner stays the same
-        $documentData->owner = $document->owner;
 
         // updating the document
         try {
-            if ($documentModel->update($document->id, $documentData) === false) {
+            if ($documentModel->update($document->id, $data) === false) {
                 return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-UPDATE");
             }
         } catch (\Exception $e) {
@@ -178,7 +163,7 @@ class DocumentsController extends BaseController
         if ($document->type === "file") {
             $attachmentModel = new AttachmentModel();
             try {
-                if ($attachmentModel->wherein("resource", [$document->id])->set("content", $documentData->text)->update() === false) {
+                if ($attachmentModel->wherein("resource", [$document->id])->set("content", $data->text)->update() === false) {
                     return $this->reply($attachmentModel->errors(), 500, "ERR-DOCUMENTS-UPDATE");
                 }
             } catch (\Exception $e) {
@@ -189,9 +174,9 @@ class DocumentsController extends BaseController
 
         // inserting activity
         $this->addActivity(
-            $documentData->id,
-            $documentData->parent,
-            $documentData->id,
+            $data->id,
+            $data->parent,
+            $data->id,
             $this::ACTION_UPDATE,
             $this::SECTION_DOCUMENTS
         );
@@ -244,12 +229,9 @@ class DocumentsController extends BaseController
         return $this->reply(true);
     }
 
-    public function delete_v1($id)
-    {
-        $user = $this->request->user;
-        helper("documents");
-
-        $document = documents_load_document($id, $user);
+    public function delete_v1($documentId)
+    {        
+        $document = $this->getDocument($documentId);
 
         if (!isset($document->id)) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-DELETE");
@@ -264,11 +246,13 @@ class DocumentsController extends BaseController
         $documentModel = new DocumentModel();
         try {
             if ($documentModel->delete([$document->id]) === false) {
-                return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE");
+                return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE1");
             }    
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-DELETE");
+            return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-DELETE2");
         }
+
+        helper("documents");
 
         // in case the user deleted a folder
         // then also delete all sub documents
@@ -287,10 +271,10 @@ class DocumentsController extends BaseController
             if (count($idsToDelete)) {
                 try {
                     if ($documentModel->delete($idsToDelete) === false) {
-                        return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE");
+                        return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE3");
                     }    
                 } catch (\Exception $e) {
-                    return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-DELETE");
+                    return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-DELETE4");
                 }
             }
         }
@@ -298,7 +282,7 @@ class DocumentsController extends BaseController
         // cleaning up
         if (count($documentsToCleanUp)) {
             if (!documents_clean_up($documentsToCleanUp)) {
-                return $this->reply("Unable to delete document", 500, "ERR-DOCUMENTS-DELETE");
+                return $this->reply("Unable to delete document", 500, "ERR-DOCUMENTS-DELETE5");
             }
         }
 
@@ -315,10 +299,7 @@ class DocumentsController extends BaseController
     public function update_options_v1($documentId)
     {
         $options = $this->request->getJSON();
-        $user = $this->request->user;
-        helper("documents");
-
-        $document = documents_load_document($documentId, $user);
+        $document = $this->getDocument($documentId);
 
         if (!isset($document->id)) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-OPTIONS");
@@ -337,11 +318,8 @@ class DocumentsController extends BaseController
     }
 
     public function attachments_v1($documentId)
-    {
-        $user = $this->request->user;
-        helper("documents");
-
-        $document = documents_load_document($documentId, $user);
+    {        
+        $document = $this->getDocument($documentId);
 
         if (!isset($document->id)) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-ATTACHMENTS");
@@ -349,6 +327,7 @@ class DocumentsController extends BaseController
 
         $attachmentModel = new AttachmentModel();
         $attachments = $attachmentModel->where("resource", $documentId)->find();
+
         return $this->reply($attachments);
     }
 }

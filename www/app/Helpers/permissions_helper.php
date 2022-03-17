@@ -2,11 +2,21 @@
 
 use App\Models\DocumentModel;
 
-if (!function_exists('permissions_task'))
+if (!function_exists('permissions_can'))
 {
-    function permissions_task($project, $user, $permission)
+    function permissions_can($permission, $action, $section)
     {
-        // if the project is not public and the current user is not the owner
-        if (!$project->public && $project->owner != $user->id) return false;
+        // Documents
+        if ($section === "documents") {
+            if ($action === "delete") {
+                return $permission === "FULL" ? true : false;
+            }
+
+            if ($action === "update") {
+                return $permission === "FULL" || $permission === "EDIT" ? true : false;
+            }
+        }
+
+        return false;
     }
 }

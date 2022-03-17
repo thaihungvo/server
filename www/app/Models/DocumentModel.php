@@ -17,7 +17,6 @@ class DocumentModel extends Model
     protected $deletedField  = "deleted";
 
     protected $afterFind = ["formatDocuments"];
-    protected $beforeInsert = ["setDocument"];
 
     protected $validationRules = [
         "text" => "required|alpha_numeric_punct",
@@ -32,8 +31,9 @@ class DocumentModel extends Model
         helper("documents");
         $user = $this->user;
 
+
         // format single document
-        if ($data["method"] === "find") {
+        if ($data["singleton"] && $data["data"]) {
             $data["data"]->public = boolval($data["data"]->public);
 
             if ($data["data"]->options) {
@@ -49,7 +49,7 @@ class DocumentModel extends Model
         }
 
         // format list of documents
-        if ($data["method"] === "findAll") {
+        if (!$data["singleton"] && $data["data"]) {
             $projects = array();
             $people = array();
 
@@ -94,27 +94,55 @@ class DocumentModel extends Model
         return $data;
     }
 
-    protected function setDocument(array $data)
+    public function formatData(&$data)
     {
         helper("documents");
 
+        // adding UUID in case it is missing
+        if (!isset($data->id)) {
+            helper('uuid');
+            $data->id = uuid();
+        }
+
         // checking for parent
-        if (!isset($data["data"]["parent"])) {
-            $data["data"]["parent"] = 0;
+        if (!isset($data->parent)) {
+            $data->parent = 0;
         }
 
         // fixing options
-        if (isset($data["data"]["options"])) {
-            $data["data"]["options"] = json_encode($data["data"]["options"]);
+        if (isset($data->options)) {
+            $data->options = json_encode($data->options);
         } else {
-            $data["data"]["options"] = json_encode(documents_get_default_options($data["data"]["type"]));
+            $data->options = json_encode(documents_get_default_options($data->type));
         }
 
         // fixing visibility
-        if (!isset($data["data"]["public"])) {
-            $data["data"]["public"] = 1;
+        if (!isset($data->public)) {
+            $data->public = 1;
         }
 
-        return $data;
-    } 
+        // moving extra data info
+        if (isset($data->data->type)) {
+            $data->type = $data->data->type;
+        }
+
+        // setting owner to the current user
+        $data->owner = $this->user->id;
+
+        // Fixing position
+        if (!isset($data->position) && isset($data->type)) {
+            $data->position = 1;
+
+            $documentModel = new DocumentModel();
+            $documentModel
+                ->where("parent", $data->parent)
+                ->orderBy("position", "desc");
+    
+            $lastPosition = $documentModel->first();
+    
+            if ($lastPosition) {
+                $data->position = intval($lastPosition->position) + 1;
+            }
+        }
+    }
 }

@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use CodeIgniter\Events\Events;
+use App\Models\DocumentModel;
 
 /**
  * Class BaseController
@@ -30,6 +31,7 @@ class BaseController extends Controller
 	 */
     protected $helpers = [];
     protected $lockId = null;
+    protected $permissionSection = null;
 
     const TYPE_FOLDER = "folder";
     const TYPE_PROJECT = "project";
@@ -81,6 +83,31 @@ class BaseController extends Controller
         }
 
         return $this->response->setStatusCode($code)->setJSON($response);
+    }
+
+    protected function getDocument($documentId)
+    {
+        $db = db_connect();
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        return $documentModel
+            ->select("documents.*")
+            ->join("permissions", "permissions.resource = documents.id AND permissions.user = ".$db->escape($this->request->user->id), 'left')
+            ->groupStart()
+                ->where("public", 1)
+                ->orGroupStart()
+                    ->where("public", 0)
+                    ->where("owner", $this->request->user->id)
+                ->groupEnd()
+                ->orWhere("permissions.permission IS NOT NULL", null)
+            ->groupEnd()
+            ->find($documentId);
+    }
+
+    protected function can($permission, $action)
+    {
+        helper("permissions");
+        return permissions_can($permission, $action, $this->permissionSection);
     }
 
     protected function lock($id)

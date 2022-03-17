@@ -6,10 +6,7 @@ class PeopleController extends BaseController
 {
     public function add_v1($peopleId)
     {
-        helper("documents");
-
-        $user = $this->request->user;
-        $document = documents_load_document($peopleId, $user);
+        $document = $this->getDocument($peopleId);
 
         if (!$document) {
             return $this->reply("People list not found", 404, "ERR-PEOPLE-ADD");

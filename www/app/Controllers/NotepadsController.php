@@ -6,10 +6,7 @@ class NotepadsController extends BaseController
 {
     public function update_v1($notepadId)
     {
-        helper("documents");
-
-        $user = $this->request->user;
-        $document = documents_load_document($notepadId, $user);
+        $document = $this->getDocument($notepadId);
 
         if (!$document) {
             return $this->reply("Notepad not found", 404, "ERR-NOTEPADS-UPDATE");
