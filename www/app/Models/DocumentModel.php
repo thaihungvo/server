@@ -35,6 +35,7 @@ class DocumentModel extends Model
         // format single document
         if ($data["singleton"] && $data["data"]) {
             $data["data"]->public = boolval($data["data"]->public);
+            $data["data"]->owner = intval($data["data"]->owner);
 
             if ($data["data"]->options) {
                 $data["data"]->options = json_decode($data["data"]->options);
@@ -79,7 +80,7 @@ class DocumentModel extends Model
                 unset($document->updated);
                 $document->data->public = boolval($document->public);
                 unset($document->public);
-                $document->data->owner = $document->owner;
+                $document->data->owner = intval($document->owner);
                 unset($document->owner);
                 unset($document->options);
                 unset($document->deleted);
