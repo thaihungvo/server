@@ -95,10 +95,6 @@ $routes->get("/ping", "PingController::index");
 // STACKS
     // create a stack
     $routes->post("/api/v1/projects/(:any)/stacks", "StacksController::add_v1/$1");
-    // get a stack
-    $routes->get("/api/v1/stacks/(:any)", "StacksController::get_v1/$1");
-    // update a stack
-    $routes->put("/api/v1/stacks/(:any)", "StacksController::update_v1/$1");
     // mark all tasks as complete
     $routes->get("/api/v1/stacks/(:any)/done", "StacksController::done_v1/$1");
     // mark all tasks as to do
@@ -107,6 +103,10 @@ $routes->get("/ping", "PingController::index");
     $routes->get("/api/v1/stacks/(:any)/archive-done", "StacksController::archive_done_v1/$1");
     // archive all tasks
     $routes->get("/api/v1/stacks/(:any)/archive-all", "StacksController::archive_all_v1/$1");
+    // get a stack
+    $routes->get("/api/v1/stacks/(:any)", "StacksController::get_v1/$1");
+    // update a stack
+    $routes->put("/api/v1/stacks/(:any)", "StacksController::update_v1/$1");
     // delete a stack
     $routes->delete("/api/v1/stacks/(:any)", "StacksController::delete_v1/$1");
 
