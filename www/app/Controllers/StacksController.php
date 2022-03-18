@@ -1,20 +1,27 @@
 <?php namespace App\Controllers;
 
+use App\Models\DocumentModel;
 use App\Models\StackModel;
 use App\Models\TaskModel;
 use App\Models\StackCollapsedModel;
 
 class StacksController extends BaseController
 {
+    protected $permissionSection = "stacks";
+
     public function add_v1($idProject)
     {
-        helper("documents");
-
-        $user = $this->request->user;
-        $document = documents_load_document($idProject, $user);
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        $document = $documentModel->find($idProject);
         
         if (!$document) {
             return $this->reply("Project not found", 404, "ERR-STACK-CREATE");
+        }
+        
+        // check if the current user has the permission to add a new stack
+        if (!$this->can("add", $document)) {
+            return $this->reply("Permission denied while adding a Stack", 403, "ERR-STACK-CREATE");
         }
 
         $stackModel = new StackModel();
@@ -57,7 +64,7 @@ class StacksController extends BaseController
         $collapsed = [
             "stack" => $stackData->id,
             "collapsed" => 0,
-            "user" => $user->id
+            "user" => $this->request->user->id
         ];
 
         try {
@@ -90,6 +97,15 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-GET");
         }
 
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        $document = $documentModel->find($stack->project);
+
+        // checking if the current user has the permission to get the stack
+        if (!$this->can("read", $document)) {
+            return $this->reply("Permission denied while getting a Stack", 403, "ERR-STACK-GET");
+        }
+
         if (isset($stack->tag)) {
             $stack->tag = json_decode($stack->tag);
         }
@@ -109,8 +125,6 @@ class StacksController extends BaseController
 
     public function update_v1($idStack)
     {
-        $this->lock($idStack);
-
         $stackModel = new StackModel();
         $stack = $stackModel->find($idStack);
 
@@ -118,10 +132,17 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-UPDATE");
         }
 
-        helper("documents");
+        $this->lock($idStack);
 
         $user = $this->request->user;
-        $document = documents_load_document($stack->project, $user);
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        $document = $documentModel->find($stack->project);
+
+        // checking if the current user has the permission to update the stack
+        if (!$this->can("update", $document)) {
+            return $this->reply("Permission denied for updating Stack", 403, "ERR-STACK-UPDATE");
+        }
 
         $stackData = $this->request->getJSON();
         if (!isset($stackData->maxTasks)) {
@@ -200,12 +221,18 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-DONE");
         }
 
-        helper("documents");
         $user = $this->request->user;
-        $document = documents_load_document($stack->project, $user);
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        $document = $documentModel->find($stack->project);
 
         if (!$document) {
             return $this->reply("Stack not found", 404, "ERR-STACK-DONE");
+        }
+
+        // checking if the current user has the permission to update the stack
+        if (!$this->can("update", $document)) {
+            return $this->reply("Permission denied for updating Stack", 403, "ERR-STACK-DONE");
         }
 
         $taskModel = new TaskModel();
@@ -239,12 +266,18 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-TODO");
         }
 
-        helper("documents");
         $user = $this->request->user;
-        $document = documents_load_document($stack->project, $user);
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        $document = $documentModel->find($stack->project);
 
         if (!$document) {
             return $this->reply("Stack not found", 404, "ERR-STACK-TODO");
+        }
+
+        // checking if the current user has the permission to update the stack
+        if (!$this->can("update", $document)) {
+            return $this->reply("Permission denied for updating Stack", 403, "ERR-STACK-TODO");
         }
 
         $taskModel = new TaskModel();
@@ -278,12 +311,18 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-ALL");
         }
 
-        helper("documents");
         $user = $this->request->user;
-        $document = documents_load_document($stack->project, $user);
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        $document = $documentModel->find($stack->project);
 
         if (!$document) {
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-ALL");
+        }
+
+        // checking if the current user has the permission to update the stack
+        if (!$this->can("update", $document)) {
+            return $this->reply("Permission denied for updating Stack", 403, "ERR-STACK-UPDATE");
         }
 
         $taskModel = new TaskModel();
@@ -314,12 +353,18 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-DONE");
         }
 
-        helper("documents");
         $user = $this->request->user;
-        $document = documents_load_document($stack->project, $user);
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        $document = $documentModel->find($stack->project);
 
         if (!$document) {
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-DONE");
+        }
+
+        // checking if the current user has the permission to update the stack
+        if (!$this->can("update", $document)) {
+            return $this->reply("Permission denied for updating Stack", 403, "ERR-STACK-ARCHIVE-DONE");
         }
 
         $taskModel = new TaskModel();
@@ -349,6 +394,15 @@ class StacksController extends BaseController
 
         if (!$stack) {
             return $this->reply("Stack not found", 404, "ERR-STACK-DELETE");
+        }
+
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        $document = $documentModel->find($stack->project);
+
+        // checking if the current user has the permission to delete the stack
+        if (!$this->can("delete", $document)) {
+            return $this->reply("Permission denied for deleting the Stack", 403, "ERR-STACK-DELETE");
         }
 
         // delete all connected tasks

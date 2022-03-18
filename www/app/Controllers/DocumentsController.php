@@ -120,7 +120,7 @@ class DocumentsController extends BaseController
         }
 
         // checking user permissions to update this document
-        if (!$this->can("update", $document->permission)) {
+        if (!$this->can("update", $document)) {
             return $this->reply("You don't have permissions to update this document", 403, "ERR-DOCUMENTS-UPDATE");
         }
 
@@ -238,7 +238,7 @@ class DocumentsController extends BaseController
         }
 
         // checking user permissions to change this documents options
-        if (!$this->can("delete", $document->permission)) {
+        if (!$this->can("delete", $document)) {
             return $this->reply("You don't have permissions to delete this document", 403, "ERR-DOCUMENTS-DELETE");
         }
 
@@ -311,7 +311,7 @@ class DocumentsController extends BaseController
         }
 
         // checking user permissions to change this documents options
-        if (!$this->can("update", $document->permission)) {
+        if (!$this->can("update", $document)) {
             return $this->reply("You don't have permissions to update this documents options", 403, "ERR-DOCUMENTS-OPTIONS");
         }
 

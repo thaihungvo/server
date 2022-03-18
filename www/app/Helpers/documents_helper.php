@@ -98,8 +98,8 @@ if (!function_exists('documents_load_permission'))
             ->get();
         $permissions = $permissionQuery->getResult();
 
-        $document->permission = "FULL";
-        if (count($permissions)) {
+        $document->permission = $document->owner == $user->id ? "FULL" : "NONE";
+        if (count($permissions) && $document->owner != $user->id) {
             $permission = $permissions[0];
             // if the document is the same as the permission's resource
             if (

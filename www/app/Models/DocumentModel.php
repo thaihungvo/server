@@ -36,6 +36,7 @@ class DocumentModel extends Model
         if ($data["singleton"] && $data["data"]) {
             $data["data"]->public = boolval($data["data"]->public);
             $data["data"]->owner = intval($data["data"]->owner);
+            $data["data"]->isOwner = $data["data"]->owner == $user->id;
 
             if ($data["data"]->options) {
                 $data["data"]->options = json_decode($data["data"]->options);
@@ -81,6 +82,7 @@ class DocumentModel extends Model
                 $document->data->public = boolval($document->public);
                 unset($document->public);
                 $document->data->owner = intval($document->owner);
+                $document->data->isOwner = $document->owner == $user->id;
                 unset($document->owner);
                 unset($document->options);
                 unset($document->deleted);

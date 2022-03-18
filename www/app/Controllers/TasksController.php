@@ -1,6 +1,7 @@
 <?php namespace App\Controllers;
 
 use CodeIgniter\Events\Events;
+use App\Models\DocumentModel;
 use App\Models\TaskModel;
 use App\Models\StackModel;
 use App\Models\TaskAssigneeModel;
