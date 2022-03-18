@@ -251,10 +251,10 @@ class DocumentsController extends BaseController
         $documentModel = new DocumentModel();
         try {
             if ($documentModel->delete([$document->id]) === false) {
-                return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE1");
+                return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE");
             }    
         } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-DELETE2");
+            return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-DELETE");
         }
 
         helper("documents");
@@ -276,7 +276,7 @@ class DocumentsController extends BaseController
             if (count($idsToDelete)) {
                 try {
                     if ($documentModel->delete($idsToDelete) === false) {
-                        return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE3");
+                        return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE");
                     }    
                 } catch (\Exception $e) {
                     return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-DELETE4");
@@ -287,7 +287,7 @@ class DocumentsController extends BaseController
         // cleaning up
         if (count($documentsToCleanUp)) {
             if (!documents_clean_up($documentsToCleanUp)) {
-                return $this->reply("Unable to delete document", 500, "ERR-DOCUMENTS-DELETE5");
+                return $this->reply("Unable to delete document", 500, "ERR-DOCUMENTS-DELETE");
             }
         }
 

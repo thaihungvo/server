@@ -147,5 +147,7 @@ if (!function_exists("projects_clean_up"))
         } catch (\Exception $e) {
             return false;
         }
+
+        return true;
     }
 }
