@@ -68,7 +68,7 @@ $routes->get("/ping", "PingController::index");
 
 // MEMBERS
     // get all members
-    $routes->get("/api/v1/members", "MembersController::all_v1/$1");
+    $routes->get("/api/v1/members", "MembersController::all_v1");
 
 // TAGS
     // get all tags
@@ -165,6 +165,18 @@ $routes->get("/ping", "PingController::index");
 // SEARCH
     // get all query results
     $routes->get("/api/v1/search", "SearchController::query_v1");
+
+// PERMISSIONS
+    // get resource permissions for all users connected to that resource
+    $routes->get("/api/v1/permissions/(:any)/users/", "PermissionsController::get_users_v1/$1");
+    // get resource global permission
+    $routes->get("/api/v1/permissions/(:any)", "PermissionsController::get_v1/$1");
+    // delete a permission for a specific user
+    $routes->delete("/api/v1/permissions/(:any)/users/(:any)", "PermissionsController::delete_user_v1/$1/$2");
+    // update a permission for a specific user
+    $routes->put("/api/v1/permissions/(:any)", "PermissionsController::update_user_v1/$1");
+    // add a permission
+    $routes->post("/api/v1/permissions", "PermissionsController::add_v1");
 
 /**
  * --------------------------------------------------------------------

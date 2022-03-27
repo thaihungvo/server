@@ -14,6 +14,7 @@ class MembersController extends BaseController
             unset($user->password);
             unset($user->created);
             unset($user->updated);
+            $user->id = intval($user->id);
         }
 
         return $this->reply($users);

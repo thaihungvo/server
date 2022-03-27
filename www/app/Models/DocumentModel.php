@@ -34,20 +34,37 @@ class DocumentModel extends Model
 
         // format single document
         if ($data["singleton"] && $data["data"]) {
-            $data["data"]->public = boolval($data["data"]->public);
-            $data["data"]->owner = intval($data["data"]->owner);
-            $data["data"]->isOwner = $data["data"]->owner == $user->id;
-
             if ($data["data"]->options) {
                 $data["data"]->options = json_decode($data["data"]->options);
             }
 
+            $data["data"]->parent = intval($data["data"]->parent);
+            $data["data"]->data = new \stdClass();
+            $data["data"]->data->isOwner = $data["data"]->owner == $user->id;
+            $data["data"]->data->owner = intval($data["data"]->owner);
+            $data["data"]->data->public = boolval($data["data"]->public);
+            $data["data"]->data->type = $data["data"]->type;
+            $data["data"]->data->created = $data["data"]->created;
+            $data["data"]->data->updated = $data["data"]->updated;
+            $data["data"]->data->public = boolval($data["data"]->public);
+            $data["data"]->data->counter = new \stdClass();
+            $data["data"]->data->counter->total = 0;
+
             // removing unncessary prop
             unset($data["data"]->deleted);
             unset($data["data"]->position);
-
+            unset($data["data"]->type);
+            unset($data["data"]->owner);
+            unset($data["data"]->public);
+            unset($data["data"]->options);
+            unset($data["data"]->created);
+            unset($data["data"]->updated);
+            
             documents_expand_document($data["data"], $user);
             documents_load_permission($data["data"], $user);
+
+            $data["data"]->data->permission = $data["data"]->permission;
+            unset($data["data"]->permission);
         }
 
         // format list of documents
@@ -108,6 +125,7 @@ class DocumentModel extends Model
         }
 
         // checking for parent
+        $data->parent = intval($data->parent);
         if (!isset($data->parent)) {
             $data->parent = 0;
         }
@@ -122,6 +140,8 @@ class DocumentModel extends Model
         // fixing visibility
         if (!isset($data->public)) {
             $data->public = 1;
+        } else {
+            $data->public = intval($data->public);
         }
 
         // moving extra data info
@@ -130,7 +150,9 @@ class DocumentModel extends Model
         }
 
         // setting owner to the current user
-        $data->owner = $this->user->id;
+        if (!isset($data->owner)) {
+            $data->owner = $this->user->id;
+        }
 
         // Fixing position
         if (!isset($data->position) && isset($data->type)) {

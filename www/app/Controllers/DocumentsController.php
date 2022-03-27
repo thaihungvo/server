@@ -25,7 +25,7 @@ class DocumentsController extends BaseController
                     ->where("public", 0)
                     ->where("owner", $this->request->user->id)
                 ->groupEnd()
-                ->orWhere("permissions.permission", !NULL)
+                ->orWhere($db->protectIdentifiers("permissions.permission") . " IS NOT NULL", NULL, false)
             ->groupEnd()
             ->findAll();
 
@@ -61,7 +61,6 @@ class DocumentsController extends BaseController
         $user = $this->request->user;
         $documentModel = new DocumentModel();
         $documentModel->user = $user;
-
         $data = $this->request->getJSON();
         $documentModel->formatData($data);
 
@@ -78,7 +77,8 @@ class DocumentsController extends BaseController
         $permissionModel = new PermissionModel();
         $permission = [
             "resource" => $data->id,
-            "permission" => "FULL"
+            "permission" => "FULL",
+            "type" => "DOCUMENT",
         ];
         try {
             if ($permissionModel->insert($permission) === false) {
@@ -98,7 +98,6 @@ class DocumentsController extends BaseController
         );
         
         $document = $this->getDocument($data->id);
-
         return $this->reply($document);
     }
 
@@ -120,9 +119,7 @@ class DocumentsController extends BaseController
         }
 
         // checking user permissions to update this document
-        if (!$this->can("update", $document)) {
-            return $this->reply("You don't have permissions to update this document", 403, "ERR-DOCUMENTS-UPDATE");
-        }
+        $this->can("update", $document);
 
         $data = $this->request->getJSON();
         $data->id = $documentId;
@@ -142,11 +139,16 @@ class DocumentsController extends BaseController
 
         unset($data->type); // just in case someone tries to change types
         unset($data->created);
-        unset($data->owner); // we don't want to change the owner
+        // unset($data->owner); // we don't want to change the owner
 
         // checking if someone without privilages changes the visibility
         if ($data->public != $document->public && $data->owner != $document->owner) {
-            $data->public = $document->public;
+            return $this->reply(null, 403, "You do not have permission to perform this action.");
+        }
+
+        // checking if someone without privilages changes the owner
+        if ($data->owner != $document->owner && $data->owner != $document->owner) {
+            return $this->reply(null, 403, "You do not have permission to perform this action.");
         }
 
         // updating the document
@@ -238,16 +240,14 @@ class DocumentsController extends BaseController
         }
 
         // checking user permissions to change this documents options
-        if (!$this->can("delete", $document)) {
-            return $this->reply("You don't have permissions to delete this document", 403, "ERR-DOCUMENTS-DELETE");
-        }
-
+        $this->can("delete", $document);
+        
         // documents that require other to be deleted
         $documentsToCleanUp = array();
         if ($document->type !== "folder") {
             $documentsToCleanUp[] = $document;
         }
-
+        
         $documentModel = new DocumentModel();
         try {
             if ($documentModel->delete([$document->id]) === false) {
@@ -298,6 +298,7 @@ class DocumentsController extends BaseController
             $this::ACTION_DELETE,
             $this::SECTION_DOCUMENTS
         );
+
         return $this->reply(true);
     }
 
@@ -311,9 +312,7 @@ class DocumentsController extends BaseController
         }
 
         // checking user permissions to change this documents options
-        if (!$this->can("update", $document)) {
-            return $this->reply("You don't have permissions to update this documents options", 403, "ERR-DOCUMENTS-OPTIONS");
-        }
+        $this->can("update", $document);
 
         $documentModel = new DocumentModel();
         try {

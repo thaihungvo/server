@@ -60,6 +60,7 @@ class APIAuth implements FilterInterface
         // the instance UUID is generated on login
         // used when polling for updates for the same user logged in on different platforms/clients
         $user->instance = $profile->instance;
+        $user->id = intval($user->id);
         unset($user->password);
 
         $request->user = $user;

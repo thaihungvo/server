@@ -107,7 +107,13 @@ class BaseController extends Controller
     protected function can($action, $document)
     {
         helper("permissions");
-        return permissions_can($action, $document, $this->permissionSection);
+        $can = permissions_can($action, $document, $this->permissionSection);
+
+        if (!$can) {
+            $response = $this->reply(null, 403, "You do not have permission to perform this action.");
+            $response->send();
+            die();
+        }
     }
 
     protected function lock($id)

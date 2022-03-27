@@ -199,7 +199,7 @@ if (!function_exists('documents_clean_up'))
     function documents_clean_up($documents)
     {
         foreach ($documents as $document) {        
-            switch ($document->type) {
+            switch ($document->data->type) {
                 case "project":
                     helper("projects");
                     return projects_clean_up($document);

@@ -20,9 +20,7 @@ class StacksController extends BaseController
         }
         
         // check if the current user has the permission to add a new stack
-        if (!$this->can("add", $document)) {
-            return $this->reply("Permission denied while adding a Stack", 403, "ERR-STACK-CREATE");
-        }
+        $this->can("add", $document);
 
         $stackModel = new StackModel();
         $stackData = $this->request->getJSON();
@@ -102,9 +100,7 @@ class StacksController extends BaseController
         $document = $documentModel->find($stack->project);
 
         // checking if the current user has the permission to get the stack
-        if (!$this->can("read", $document)) {
-            return $this->reply("Permission denied while getting a Stack", 403, "ERR-STACK-GET");
-        }
+        $this->can("read", $document);
 
         if (isset($stack->tag)) {
             $stack->tag = json_decode($stack->tag);
@@ -140,9 +136,7 @@ class StacksController extends BaseController
         $document = $documentModel->find($stack->project);
 
         // checking if the current user has the permission to update the stack
-        if (!$this->can("update", $document)) {
-            return $this->reply("Permission denied for updating Stack", 403, "ERR-STACK-UPDATE");
-        }
+        $this->can("update", $document);
 
         $stackData = $this->request->getJSON();
         if (!isset($stackData->maxTasks)) {
@@ -231,9 +225,7 @@ class StacksController extends BaseController
         }
 
         // checking if the current user has the permission to update the stack
-        if (!$this->can("update", $document)) {
-            return $this->reply("Permission denied for updating Stack", 403, "ERR-STACK-DONE");
-        }
+        $this->can("update", $document);
 
         $taskModel = new TaskModel();
 
@@ -276,9 +268,7 @@ class StacksController extends BaseController
         }
 
         // checking if the current user has the permission to update the stack
-        if (!$this->can("update", $document)) {
-            return $this->reply("Permission denied for updating Stack", 403, "ERR-STACK-TODO");
-        }
+        $this->can("update", $document);
 
         $taskModel = new TaskModel();
 
@@ -321,9 +311,7 @@ class StacksController extends BaseController
         }
 
         // checking if the current user has the permission to update the stack
-        if (!$this->can("update", $document)) {
-            return $this->reply("Permission denied for updating Stack", 403, "ERR-STACK-UPDATE");
-        }
+        $this->can("update", $document);
 
         $taskModel = new TaskModel();
 
@@ -363,9 +351,7 @@ class StacksController extends BaseController
         }
 
         // checking if the current user has the permission to update the stack
-        if (!$this->can("update", $document)) {
-            return $this->reply("Permission denied for updating Stack", 403, "ERR-STACK-ARCHIVE-DONE");
-        }
+        $this->can("update", $document);
 
         $taskModel = new TaskModel();
 
@@ -401,9 +387,7 @@ class StacksController extends BaseController
         $document = $documentModel->find($stack->project);
 
         // checking if the current user has the permission to delete the stack
-        if (!$this->can("delete", $document)) {
-            return $this->reply("Permission denied for deleting the Stack", 403, "ERR-STACK-DELETE");
-        }
+        $this->can("delete", $document);
 
         // delete all connected tasks
         $taskModel = new TaskModel();
