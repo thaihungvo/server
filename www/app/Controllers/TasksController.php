@@ -10,6 +10,8 @@ use App\Models\TaskExtensionModel;
 
 class TasksController extends BaseController
 {
+    protected $permissionSection = "tasks";
+
     public function one_v1($taskID)
     {
         $user = $this->request->user;
@@ -39,7 +41,6 @@ class TasksController extends BaseController
 
     public function add_v1($stackId)
     {
-        $user = $this->request->user;
         $taskData = $this->request->getJSON();
         $position = $this->request->getGet("position");
 
@@ -58,17 +59,16 @@ class TasksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-TASK-CREATE");
         }
 
-        helper("documents");
-        $document = documents_load_document($stack->project, $user);
+        $user = $this->request->user;
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        $document = $documentModel->find($stack->project);
 
         if (!$document) {
             return $this->reply("Project not found", 404, "ERR-TASK-CREATE");
         }
 
-        helper("permissions");
-        if (!permissions_task($document, $user, $this::PERMISSIONS_FULL)) {
-            return $this->reply(null, 403);   
-        }
+        $this->can("add", $document);
 
         // enforce an id in case there"s none
         if (!isset($taskData->id)) {

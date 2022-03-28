@@ -14,7 +14,7 @@ class StacksController extends BaseController
         $documentModel = new DocumentModel();
         $documentModel->user = $this->request->user;
         $document = $documentModel->find($idProject);
-        
+
         if (!$document) {
             return $this->reply("Project not found", 404, "ERR-STACK-CREATE");
         }

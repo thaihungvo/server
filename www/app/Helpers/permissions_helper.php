@@ -37,6 +37,13 @@ if (!function_exists('permissions_can'))
             }
         }
 
+        // Tasks
+        if ($section === "tasks") {
+            if ($action === "add") {
+                $permission = $document->data->permission === "FULL" || $document->data->permission === "EDIT" ? true : false;
+            }
+        }
+
         if ($permission && !$document->data->isOwner && !$document->data->public) {
             $permission = false;
         }
