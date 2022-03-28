@@ -52,7 +52,7 @@ class DocumentsController extends BaseController
             return $this->reply(null, 500, "ERR-DOCUMENTS-GET");
         }
 
-        $document = $this->getDocument($documentId);
+        $document = $this->getExpandedDocument($documentId);
         return $this->reply($document);
     }
 
@@ -117,7 +117,7 @@ class DocumentsController extends BaseController
         if (!$document) {
             return $this->reply("Document not found", 404, "ERR-DOCUMENTS-UPDATE");
         }
-
+        
         // checking user permissions to update this document
         $this->can("update", $document);
 
@@ -142,12 +142,12 @@ class DocumentsController extends BaseController
         // unset($data->owner); // we don't want to change the owner
 
         // checking if someone without privilages changes the visibility
-        if ($data->public != $document->public && $data->owner != $document->owner) {
-            return $this->reply(null, 403, "You do not have permission to perform this action.");
+        if (isset($data->public) && $data->public != $document->data->public && $data->owner != $document->data->owner) {
+            return $this->reply(null, 403, "You do not have permission to perform this action");
         }
 
         // checking if someone without privilages changes the owner
-        if ($data->owner != $document->owner && $data->owner != $document->owner) {
+        if (isset($data->owner) && $data->owner != $document->data->owner && $data->owner != $document->data->owner) {
             return $this->reply(null, 403, "You do not have permission to perform this action.");
         }
 

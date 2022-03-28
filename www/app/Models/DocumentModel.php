@@ -31,7 +31,6 @@ class DocumentModel extends Model
         helper("documents");
         $user = $this->user;
 
-
         // format single document
         if ($data["singleton"] && $data["data"]) {
             if ($data["data"]->options) {
@@ -56,11 +55,9 @@ class DocumentModel extends Model
             unset($data["data"]->type);
             unset($data["data"]->owner);
             unset($data["data"]->public);
-            unset($data["data"]->options);
             unset($data["data"]->created);
             unset($data["data"]->updated);
             
-            documents_expand_document($data["data"], $user);
             documents_load_permission($data["data"], $user);
 
             $data["data"]->data->permission = $data["data"]->permission;
@@ -134,7 +131,7 @@ class DocumentModel extends Model
         if (isset($data->options)) {
             $data->options = json_encode($data->options);
         } else {
-            $data->options = json_encode(documents_get_default_options($data->type));
+            $data->options = json_encode(documents_get_default_options($data->data->type));
         }
 
         // fixing visibility

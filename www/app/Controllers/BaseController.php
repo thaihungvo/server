@@ -104,13 +104,27 @@ class BaseController extends Controller
             ->find($documentId);
     }
 
+    protected function getExpandedDocument($documentId)
+    {
+        helper("documents");
+        $document = $this->getDocument($documentId);
+
+        foreach (get_object_vars($document->data) as $key => $value) {
+            $document->$key = $document->data->$key;
+        }
+        unset($document->data);
+
+        documents_expand_document($document, $this->request->user);
+        return $document;
+    }
+
     protected function can($action, $document)
     {
         helper("permissions");
         $can = permissions_can($action, $document, $this->permissionSection);
 
         if (!$can) {
-            $response = $this->reply(null, 403, "You do not have permission to perform this action.");
+            $response = $this->reply(null, 403, "You do not have permission to perform this action");
             $response->send();
             die();
         }
