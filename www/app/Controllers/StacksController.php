@@ -23,53 +23,20 @@ class StacksController extends BaseController
         $this->can("add", $document);
 
         $stackModel = new StackModel();
-        $stackData = $this->request->getJSON();
-        $stackData->project = $document->id;
-
-        if (isset($stackData->tag)) {
-            $stackData->tag = json_encode($stackData->tag);
-        }
-        if (isset($stackData->automation)) {
-            $stackData->automation = json_encode($stackData->automation);
-        }
-
-        if (!isset($stackData->position)) {
-            $lastPosition = $stackModel
-                ->where("project", $document->id)
-                ->orderBy("position", "desc")
-                ->first();
-
-            $stackData->position = intval($lastPosition->position) + 1;
-        }
-
-        if (!isset($stackData->id)) {
-            helper('uuid');
-            $stackData->id = uuid();
-        }
+        $data = $this->request->getJSON();
+        $data->project = $document->id;
+        $stackModel->formatData($data);
 
         try {
-            if ($stackModel->insert($stackData) === false) {
-                $errors = $stackModel->errors();
-                return $this->reply($errors, 500, "ERR-STACK-CREATE");
+            if ($stackModel->insert($data) === false) {
+                return $this->reply($stackModel->errors(), 500, "ERR-STACK-CREATE");
             }
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
 
-        $stackCollapsedModel = new StackCollapsedModel();
-        
-        // create a default collapsed state
-        $collapsed = [
-            "stack" => $stackData->id,
-            "collapsed" => 0,
-            "user" => $this->request->user->id
-        ];
-
         try {
-            if ($stackCollapsedModel->insert($collapsed) === false) {
-                $errors = $stackCollapsedModel->errors();
-                return $this->reply($errors, 500, "ERR-STACK-CREATE");    
-            }
+            $stackModel->addCollapsedState($data->id, $this->request->user->id);
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
         }
@@ -77,12 +44,12 @@ class StacksController extends BaseController
         $this->addActivity(
             $document->id,
             $document->id, 
-            $stackData->id, 
+            $data->id, 
             $this::ACTION_CREATE, 
             $this::SECTION_STACK
         );
 
-        $stack = $stackModel->find($stackData->id);
+        $stack = $stackModel->find($data->id);
         return $this->reply($stack);
     }
 
@@ -102,20 +69,6 @@ class StacksController extends BaseController
         // checking if the current user has the permission to get the stack
         $this->can("read", $document);
 
-        if (isset($stack->tag)) {
-            $stack->tag = json_decode($stack->tag);
-        }
-        if (isset($stack->automation)) {
-            $stack->automation = json_decode($stack->automation);
-        }
-
-        unset($stack->project);
-        $stack->position = intval($stack->position);
-
-        $stackCollapsedModel = new StackCollapsedModel();
-        $stackCollapsed = $stackCollapsedModel->where("stack", $idStack)->first();
-        $stack->collapsed = (bool)$stackCollapsed->collapsed;
-
         return $this->reply($stack);
     }
 
@@ -130,7 +83,6 @@ class StacksController extends BaseController
 
         $this->lock($idStack);
 
-        $user = $this->request->user;
         $documentModel = new DocumentModel();
         $documentModel->user = $this->request->user;
         $document = $documentModel->find($stack->project);
@@ -138,58 +90,23 @@ class StacksController extends BaseController
         // checking if the current user has the permission to update the stack
         $this->can("update", $document);
 
-        $stackData = $this->request->getJSON();
-        if (!isset($stackData->maxTasks)) {
-            $stackData->maxTasks = NULL;
-        }
-        unset($stackData->created);
+        $data = $this->request->getJSON();
+        $stackModel->formatData($data);
 
         // forcing the stack project id
-        $stackData->project = $document->id;
-
-        // saving stack tag/tint color
-        if (isset($stackData->tag)) {
-            $stackData->tag = json_encode($stackData->tag);
-        } else {
-            $stackData->tag = "";
-        }
-
-        // saving stack automation
-        if (isset($stackData->automation)) {
-            $stackData->automation = json_encode($stackData->automation);
-        } else {
-            $stackData->automation = "";
-        }
+        $data->project = $document->id;
 
         // saving collapsed state of the stack for the current user
-        if (isset($stackData->collapsed)) {
-            $stackCollapsedModel = new StackCollapsedModel();
+        if (isset($data->collapsed)) {
             try {
-                if (
-                    $stackCollapsedModel
-                        ->where("user", $user->id)
-                        ->where("stack", $stackData->id)
-                        ->delete() === false
-                ) {
-                    $errors = $stackCollapsedModel->errors();
-                    return $this->reply($errors, 500, "ERR-STACK-UPDATE");
-                }
-                    
-                if ($stackCollapsedModel->insert([
-                    "stack" => $stackData->id,
-                    "collapsed" => intval($stackData->collapsed),
-                    "user" => $user->id
-                ]) === false) {
-                    $errors = $stackCollapsedModel->errors();
-                    return $this->reply($errors, 500, "ERR-STACK-UPDATE");
-                }
+                $stackModel->addCollapsedState($stack->id, $this->request->user->id, intval($data->collapsed));
             } catch (\Exception $e) {
                 return $this->reply($e->getMessage(), 500, "ERR-STACK-UPDATE");
             }
         }
 
         // update the stack data
-        if ($stackModel->update($stack->id, $stackData) === false) {
+        if ($stackModel->update($stack->id, $data) === false) {
             return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
         }
 
@@ -215,7 +132,6 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-DONE");
         }
 
-        $user = $this->request->user;
         $documentModel = new DocumentModel();
         $documentModel->user = $this->request->user;
         $document = $documentModel->find($stack->project);
@@ -258,7 +174,6 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-TODO");
         }
 
-        $user = $this->request->user;
         $documentModel = new DocumentModel();
         $documentModel->user = $this->request->user;
         $document = $documentModel->find($stack->project);
@@ -301,7 +216,6 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-ALL");
         }
 
-        $user = $this->request->user;
         $documentModel = new DocumentModel();
         $documentModel->user = $this->request->user;
         $document = $documentModel->find($stack->project);
@@ -341,7 +255,6 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-DONE");
         }
 
-        $user = $this->request->user;
         $documentModel = new DocumentModel();
         $documentModel->user = $this->request->user;
         $document = $documentModel->find($stack->project);

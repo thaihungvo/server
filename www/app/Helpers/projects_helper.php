@@ -110,7 +110,8 @@ if (!function_exists('projects_load_stacks'))
                 $stack->tasks = [];
                 foreach ($tasks as $task) {                    
                     if ($task->stack === $stack->id) {
-                        $stack->tasks[] = task_format($task);
+                        // $stack->tasks[] = task_format($task);
+                        $stack->tasks[] = $task;
                     }
                 }
             }

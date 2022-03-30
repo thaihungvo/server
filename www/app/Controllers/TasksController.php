@@ -12,19 +12,21 @@ class TasksController extends BaseController
 {
     protected $permissionSection = "tasks";
 
-    public function one_v1($taskID)
+    public function one_v1($taskId)
     {
-        $user = $this->request->user;
-
-        helper("tasks");
-        $task = task_load($taskID);
+        // helper("tasks");
+        // $task = task_load($taskID);
+        $taskModel = new TaskModel();
+        $task = $taskModel->find($taskId);
 
         if (!$task) {
             return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
         }
 
-        helper("documents");
-        $document = documents_load_document($task->project, $user);
+        $documentModel = new DocumentModel();
+        $documentModel->user = $this->request->user;
+        $document = $documentModel->find($task->project);
+
         if (!$document) {
             return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
         }
@@ -36,7 +38,8 @@ class TasksController extends BaseController
             return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
         }
 
-        return $this->reply(task_format($task));
+        // return $this->reply(task_format($task));
+        return $this->reply($task);
     }
 
     public function add_v1($stackId)
