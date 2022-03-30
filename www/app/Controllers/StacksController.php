@@ -91,10 +91,13 @@ class StacksController extends BaseController
         $this->can("update", $document);
 
         $data = $this->request->getJSON();
-        $stackModel->formatData($data);
-
         // forcing the stack project id
         $data->project = $document->id;
+        // forcing the stack id
+        $data->id = $stack->id;
+        $stackModel->formatData($data);
+
+        
 
         // saving collapsed state of the stack for the current user
         if (isset($data->collapsed)) {
