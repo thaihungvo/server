@@ -494,7 +494,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents/{{document}}",
+							"raw": "{{server}}/api/{{ver}}/documents/{{project}}",
 							"host": [
 								"{{server}}"
 							],
@@ -502,7 +502,7 @@
 								"api",
 								"{{ver}}",
 								"documents",
-								"{{document}}"
+								"{{project}}"
 							]
 						}
 					},
@@ -593,7 +593,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"text\": \"Some new title\"\n}",
+							"raw": "{\n  \"text\": \"New title\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -601,7 +601,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents/{{document}}",
+							"raw": "{{server}}/api/{{ver}}/documents/{{project}}",
 							"host": [
 								"{{server}}"
 							],
@@ -609,7 +609,7 @@
 								"api",
 								"{{ver}}",
 								"documents",
-								"{{document}}"
+								"{{project}}"
 							]
 						}
 					},
@@ -760,6 +760,25 @@
 				},
 				{
 					"name": "Toggle Visibility (Public/Private)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Document Visibility status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Update Document Visibility status response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.equal(true);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -2112,7 +2131,7 @@
 					"response": []
 				},
 				{
-					"name": "Add Tag",
+					"name": "Add Global Tag",
 					"event": [
 						{
 							"listen": "test",
@@ -2121,11 +2140,11 @@
 									"var jsonData = pm.response.json();",
 									"pm.environment.set(\"tag\", jsonData.data.id);",
 									"",
-									"pm.test(\"Add Tag status test\", function () {",
+									"pm.test(\"Add Global Tag status test\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"Add tag response\", function () {",
+									"pm.test(\"Add Global tag response\", function () {",
 									"    const responseJson = pm.response.json();",
 									"    pm.expect(responseJson.data).to.be.an(\"object\");",
 									"});",
@@ -2168,14 +2187,73 @@
 					"response": []
 				},
 				{
-					"name": "Update Tag",
+					"name": "Add Project Tag",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"tag\", jsonData.data.id);",
 									"",
+									"pm.test(\"Add Project Tag status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add Project Tag response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});",
+									"",
+									"pm.test(\"Add Project Tag response 2\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data.project).to.be.not.equal(null);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"New Tag\",\n\t\"color\": \"#000000\",\n    \"project\": \"{{project}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/tags",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"tags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Tag",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
 									"pm.test(\"Update Tag status test\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
@@ -2196,7 +2274,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"title\": \"Update New Tag\",\n\t\"color\": \"#ffffff\"\n}",
+							"raw": "{\n\t\"title\": \"Updated Tag\",\n\t\"color\": \"#ffffff\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2225,8 +2303,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"",
 									"pm.test(\"Delete Tag status test\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
@@ -2310,7 +2386,7 @@
 					"response": []
 				},
 				{
-					"name": "Add Status",
+					"name": "Add Global Status",
 					"event": [
 						{
 							"listen": "test",
@@ -2319,11 +2395,11 @@
 									"var jsonData = pm.response.json();",
 									"pm.environment.set(\"status\", jsonData.data.id);",
 									"",
-									"pm.test(\"Add Status status test\", function () {",
+									"pm.test(\"Add Global Status status test\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"Add Status response\", function () {",
+									"pm.test(\"Add Global Status response\", function () {",
 									"    const responseJson = pm.response.json();",
 									"    pm.expect(responseJson.data).to.be.an(\"object\");",
 									"});",
@@ -2345,6 +2421,66 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\n\t\"title\": \"New Status\",\n\t\"color\": \"#000000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/statuses",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"statuses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Project Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"status\", jsonData.data.id);",
+									"",
+									"pm.test(\"Add Project Status status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add Project Status response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});",
+									"",
+									"pm.test(\"Add Project Status response 2\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data.project).to.be.not.equal(null);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"New Status\",\n\t\"color\": \"#000000\",\n    \"project\": \"{{project}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

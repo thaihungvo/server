@@ -136,10 +136,10 @@ class DocumentModel extends Model
         }
 
         // fixing visibility
-        if (!isset($data->public)) {
+        if (!isset($data->data->public)) {
             $data->public = 1;
         } else {
-            $data->public = intval($data->public);
+            $data->public = intval($data->data->public);
         }
 
         // moving extra data info
@@ -148,8 +148,10 @@ class DocumentModel extends Model
         }
 
         // setting owner to the current user
-        if (!isset($data->owner)) {
+        if (!isset($data->data->owner)) {
             $data->owner = $this->user->id;
+        } else {
+            $data->owner = intval($data->data->owner);
         }
 
         // Fixing position
