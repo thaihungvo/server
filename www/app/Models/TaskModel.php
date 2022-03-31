@@ -3,6 +3,7 @@
 use CodeIgniter\Model;
 use App\Models\TaskExtensionModel;
 use App\Models\AttachmentModel;
+use App\Models\TaskAssigneeModel;
 
 class TaskModel extends Model
 {
@@ -37,9 +38,10 @@ class TaskModel extends Model
             $data["data"]->showDescription = boolval($data["data"]->showDescription);
             $data["data"]->progress = intval($data["data"]->progress);
             $data["data"]->position = intval($data["data"]->position);
+            $data["data"]->public = boolval($data["data"]->public);
+            // $data["data"]->isOwner = $data["data"]->owner;
             unset($data["data"]->order);
             unset($data["data"]->stack);
-            unset($data["data"]->project);
             unset($data["data"]->deleted);
 
             if (is_string($data["data"]->tags)) {
@@ -119,5 +121,126 @@ class TaskModel extends Model
         }
 
         return $data;
+    }
+
+    public function formatData(&$data)
+    {
+        // enforce an id in case there"s none
+        if (!isset($data->id)) {
+            helper("uuid");
+            $data->id = uuid();
+        }
+
+        if (isset($data->repeats)) {
+            $data->repeats = json_encode($data->repeats);
+        }
+
+        // convert tags to string
+        if (isset($data->tags)) {
+            $data->tags = json_encode($data->tags);
+        }
+
+        // convert repeats to string
+        if (isset($data->repeats)) {
+            $data->repeats = json_encode($data->repeats);
+        }
+
+        // fix start date formatting
+        if (isset($data->startdate)) {
+            $data->startdate = substr(str_replace("T", " ", $data->startdate), 0, 19);
+        }
+
+        // fix due date formatting
+        if (isset($data->duedate)) {
+            $data->duedate = substr(str_replace("T", " ", $data->duedate), 0, 19);
+        }
+
+        // fix completed date formatting
+        if (isset($data->completed)) {
+            $data->completed = substr(str_replace("T", " ", $data->completed), 0, 19);
+        }
+    }
+
+    public function addExtensions($taskId, $dataExtensions)
+    {
+        if (!isset($dataExtensions)) return;
+        helper("uuid");
+
+        // delete the current task extensions
+        $taskExtensionModel = new TaskExtensionModel();
+        try {
+            if ($taskExtensionModel->where("task", $task->id)->delete() === false) {
+                throw new ErrorException($taskExtensionModel->errors());
+            }
+        } catch (\Exception $e) {
+            throw new ErrorException($e->getMessage());
+        }
+
+        $extensions = array();
+        foreach ($dataExtensions as $ext) {
+            $extension = new \stdClass();
+            $extension->task = $taskId;
+            $extension->title = $ext->title;
+            $extension->type = $ext->type;
+
+            if ($extension->type == "attachments") {
+                $extension->content = "[]"; // just save a simple JSON array
+            } else {
+                $extension->content = json_encode($ext->content);
+            }
+            $extension->options = json_encode($ext->options);
+
+            if (!isset($ext->id)) {
+                $extension->id = uuid();  
+            } else {
+                $extension->id = $ext->id;
+            }
+
+            $extensions[] = $extension;
+        }
+
+        if (count($extensions)) {    
+            try {
+                if ($taskExtensionModel->insertBatch($extensions) === false) {
+                    throw new ErrorException($taskExtensionModel->errors());
+                }
+            } catch (\Exception $e) {
+                throw new ErrorException($e->getMessage());
+            }
+        }
+    }
+
+    public function addAssignees($taskId, $dataAssignees)
+    {
+        if (!isset($dataAssignees)) return;
+
+        // delete all assigned task users
+        $taskAssigneeModel = new TaskAssigneeModel();
+        try {
+            if ($taskAssigneeModel->where("task", $task->id)->delete() === false) {
+                throw new ErrorException($taskAssigneeModel->errors());
+            }
+        } catch (\Exception $e) {
+            throw new ErrorException($e->getMessage());
+        }
+
+        $assignees = array();
+        foreach ($dataAssignees as $person) {
+            $assignee = new \stdClass();
+            $assignee->task = $task->id;
+            $assignee->person = $person;
+            $assignees[] = $assignee;
+        }
+
+        // insert the assignees if any
+        if (count($assignees)) {
+            try {
+                if ($taskAssigneeModel->insertBatch($assignees) === false) {
+                    throw new ErrorException($taskAssigneeModel->errors());
+                }
+            } catch (\Exception $e) {
+                throw new ErrorException($e->getMessage());
+            }
+        }
     }
 }

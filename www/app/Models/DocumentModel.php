@@ -29,6 +29,7 @@ class DocumentModel extends Model
     protected function formatDocuments(array $data)
     {
         helper("documents");
+        helper("permissions");
         $user = $this->user;
 
         // format single document
@@ -58,7 +59,7 @@ class DocumentModel extends Model
             unset($data["data"]->created);
             unset($data["data"]->updated);
             
-            documents_load_permission($data["data"], $user);
+            permissions_load_permission($data["data"], $user->id);
 
             $data["data"]->data->permission = $data["data"]->permission;
             unset($data["data"]->permission);
@@ -105,7 +106,7 @@ class DocumentModel extends Model
             // load the counters used in the sidebar
             documents_load_counters($data["data"]);
             // load the documents permissions
-            documents_load_permissions($data["data"], $user);
+            permissions_load_permissions($data["data"], $user->id);
         }
 
         return $data;

@@ -1,7 +1,6 @@
 <?php 
 
 use App\Models\DocumentModel;
-use App\Models\PermissionModel;
 
 if (!function_exists('documents_load_counters'))
 {
@@ -38,75 +37,6 @@ if (!function_exists('documents_load_counters'))
                         $document->data->counter->total = (int)$counter->totalPeople;
                     }
                 }
-            }
-        }
-    }
-}
-
-if (!function_exists('documents_load_permissions'))
-{
-    function documents_load_permissions(&$documents, $user)
-    {
-        $db = db_connect();
-        $documentIds = array();
-        foreach ($documents as $document) {
-            $documentIds[] = $document->id;
-        }
-
-        $permissionModel = new PermissionModel();
-        $permissionBuilder = $permissionModel->builder();
-        $permissionQuery = $permissionBuilder->select("permissions.*, userPermissions.permission AS userPermission")
-            ->from("permissions AS permissions", true)
-            ->join("permissions AS userPermissions", "permissions.resource = userPermissions.resource AND userPermissions.user = ".$db->escape($user->id), "left")
-            ->whereIn("permissions.resource", $documentIds)
-            ->where("permissions.user", NULL)
-            ->get();
-        $permissions = $permissionQuery->getResult();
-
-        foreach ($documents as &$document) {
-            $document->data->permission = "FULL";
-            
-            // if the user is not the owner that we need to apply any available permissions
-            if ($document->owner != $user->id) {
-                foreach ($permissions as $permission) {
-                    // if the document is the same as the permission's resource
-                    if (
-                        $document->id === $permission->resource && 
-                        ($permission->userPermission || $permission->permission)
-                    ) {
-                        $document->data->permission = isset($permission->userPermission) ? $permission->userPermission : $permission->permission;
-                    }
-                }
-            }
-        }
-    }
-}
-
-if (!function_exists('documents_load_permission'))
-{
-    function documents_load_permission(&$document, $user)
-    {
-        $db = db_connect();
-
-        $permissionModel = new PermissionModel();
-        $permissionBuilder = $permissionModel->builder();
-        $permissionQuery = $permissionBuilder->select("permissions.*, userPermissions.permission AS userPermission")
-            ->from("permissions AS permissions", true)
-            ->join("permissions AS userPermissions", "permissions.resource = userPermissions.resource AND userPermissions.user = ".$db->escape($user->id), "left")
-            ->where("permissions.resource", $document->id)
-            ->where("permissions.user", NULL)
-            ->get();
-        $permissions = $permissionQuery->getResult();
-
-        $document->permission = $document->owner == $user->id ? "FULL" : "NONE";
-        if (count($permissions) && $document->owner != $user->id) {
-            $permission = $permissions[0];
-            // if the document is the same as the permission's resource
-            if (
-                $document->id === $permission->resource && 
-                ($permission->userPermission || $permission->permission)
-            ) {
-                $document->permission = isset($permission->userPermission) ? $permission->userPermission : $permission->permission;
             }
         }
     }

@@ -15,9 +15,9 @@ class PermissionsController extends BaseController
         if (!$permission) {
             return $this->reply(null, 404, "ERR-PERMISSION-NOT-FOUND");
         }
-
+        
         $resource = $permissionModel->getResource($resourceId, $permission->type);
-        if (!$resource || $user->id !== $resource->owner) {
+        if (!$resource || $user->id !== $resource->data->owner) {
             return $this->reply(null, 403, "You do not have permission to perform this action.");
         }
 
@@ -27,19 +27,18 @@ class PermissionsController extends BaseController
     public function get_users_v1($resourceId)
 	{
         $user = $this->request->user;
-        $db = db_connect();
         $permissionModel = new PermissionModel();
 
         $permissions = $permissionModel
             ->select("permissions.permission, permissions.type, users.id, users.firstName, users.lastName, users.nickname, users.email")
             ->join("users", "users.id = permissions.user", "left")
             ->where("permissions.resource", $resourceId)
-            ->where($db->protectIdentifiers("permissions.user") . " IS NOT NULL", NULL, false)
+            ->where($this->db->protectIdentifiers("permissions.user") . " IS NOT NULL", NULL, false)
             ->findAll();
 
         if (count($permissions)) {
             $resource = $permissionModel->getResource($resourceId, $permissions[0]->type);
-            if (!$resource || $user->id !== $resource->owner) {
+            if (!$resource || $user->id !== $resource->data->owner) {
                 return $this->reply(null, 403, "You do not have permission to perform this action.");
             }
         }
@@ -70,7 +69,7 @@ class PermissionsController extends BaseController
         }
 
         $resource = $permissionModel->getResource($resourceId, $permission->type);
-        if (!$resource || $user->id !== $resource->owner) {
+        if (!$resource || $user->id !== $resource->data->owner) {
             return $this->reply(null, 403, "You do not have permission to perform this action.");
         }
 
@@ -115,7 +114,7 @@ class PermissionsController extends BaseController
         }
 
         $resource = $permissionModel->getResource($resourceId, $permission->type);
-        if (!$resource || $user->id !== $resource->owner) {
+        if (!$resource || $user->id !== $resource->data->owner) {
             return $this->reply(null, 403, "You do not have permission to perform this action.");
         }
         
@@ -156,7 +155,7 @@ class PermissionsController extends BaseController
         }
 
         $resource = $permissionModel->getResource($data->resource, $data->type);
-        if (!$resource || $user->id !== $resource->owner) {
+        if (!$resource || $user->id !== $resource->data->owner) {
             return $this->reply(null, 403, "You do not have permission to perform this action.");
         }
 

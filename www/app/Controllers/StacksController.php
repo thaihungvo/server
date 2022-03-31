@@ -11,9 +11,7 @@ class StacksController extends BaseController
 
     public function add_v1($idProject)
     {
-        $documentModel = new DocumentModel();
-        $documentModel->user = $this->request->user;
-        $document = $documentModel->find($idProject);
+        $document = $this->getDocument($idProject);
 
         if (!$document) {
             return $this->reply("Project not found", 404, "ERR-STACK-CREATE");
@@ -62,9 +60,7 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-GET");
         }
 
-        $documentModel = new DocumentModel();
-        $documentModel->user = $this->request->user;
-        $document = $documentModel->find($stack->project);
+        $document = $this->getDocument($stack->project);
 
         // checking if the current user has the permission to get the stack
         $this->can("read", $document);
@@ -83,9 +79,7 @@ class StacksController extends BaseController
 
         $this->lock($idStack);
 
-        $documentModel = new DocumentModel();
-        $documentModel->user = $this->request->user;
-        $document = $documentModel->find($stack->project);
+        $document = $this->getDocument($stack->project);
 
         // checking if the current user has the permission to update the stack
         $this->can("update", $document);

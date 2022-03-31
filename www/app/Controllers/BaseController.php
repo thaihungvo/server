@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use CodeIgniter\Events\Events;
 use App\Models\DocumentModel;
+use App\Models\PermissionModel;
 
 /**
  * Class BaseController
@@ -56,6 +57,9 @@ class BaseController extends Controller
     const PERMISSION_LIMITED = "LIMITED";
     const PERMISSION_READONLY = "READONLY";
 
+    const PERMISSION_TYPE_DOCUMENT = "DOCUMENT";
+    const PERMISSION_TYPE_TASK = "TASK";
+
 	/**
 	 * Constructor.
 	 */
@@ -63,7 +67,7 @@ class BaseController extends Controller
 	{
 		// Do Not Edit This Line
 		parent::initController($request, $response, $logger);
-
+        $this->db = db_connect();
 		//--------------------------------------------------------------------
 		// Preload any models, libraries, etc, here.
 		//--------------------------------------------------------------------
@@ -87,12 +91,11 @@ class BaseController extends Controller
 
     protected function getDocument($documentId)
     {
-        $db = db_connect();
         $documentModel = new DocumentModel();
         $documentModel->user = $this->request->user;
-        return $documentModel
-            ->select("documents.*")
-            ->join("permissions", "permissions.resource = documents.id AND permissions.user = ".$db->escape($this->request->user->id), 'left')
+        $document = $documentModel
+            ->select("documents.*, permissions.permission")
+            ->join("permissions", "permissions.resource = documents.id AND permissions.user = ".$this->db->escape($this->request->user->id), 'left')
             ->groupStart()
                 ->where("public", 1)
                 ->orGroupStart()
@@ -102,6 +105,10 @@ class BaseController extends Controller
                 ->orWhere("permissions.permission IS NOT NULL", null)
             ->groupEnd()
             ->find($documentId);
+
+        unset($document->options);
+
+        return $document;
     }
 
     protected function getExpandedDocument($documentId)
@@ -118,15 +125,55 @@ class BaseController extends Controller
         return $document;
     }
 
-    protected function can($action, $document)
+    protected function can($action, $resource, $errorMsg = null)
     {
         helper("permissions");
-        $can = permissions_can($action, $document, $this->permissionSection);
+        
+        $permission = null;
+        $isPublic = null;
+        $isOwner = null;
+
+        if (isset($resource->permission)) {
+            $permission = $resource->permission;
+        } else if (isset($resource->data->permission)) {
+            $permission = $resource->data->permission;
+        }
+
+        if (isset($resource->public)) {
+            $isPublic = $resource->public;
+        } else if (isset($resource->data->public)) {
+            $isPublic = $resource->data->public;
+        }
+
+        if (isset($resource->isOwner)) {
+            $isOwner = $resource->isOwner;
+        } else if (isset($resource->data->isOwner)) {
+            $isOwner = $resource->data->isOwner;
+        }
+
+        $can = permissions_can($action, $this->permissionSection, $permission, $isPublic, $isOwner);
 
         if (!$can) {
-            $response = $this->reply(null, 403, "You do not have permission to perform this action");
+            $response = $this->reply(null, 403, $errorMsg ? $errorMsg : "You do not have permission to perform this action");
             $response->send();
             die();
+        }
+    }
+
+    protected function addPermission($resourceId, $type, $permission = "FULL")
+    {
+        $permissionModel = new PermissionModel();
+        $permission = [
+            "resource" => $resourceId,
+            "permission" => $permission,
+            "type" => $type,
+        ];
+        try {
+            if ($permissionModel->insert($permission) === false) {
+                throw new ErrorException($permissionModel->errors());
+            }
+        } catch (\Exception $e) {
+            throw new ErrorException($e->getMessage());
         }
     }
 

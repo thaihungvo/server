@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.34)
 # Database: stacks
-# Generation Time: 2022-03-27 20:34:32 +0000
+# Generation Time: 2022-03-31 15:35:50 +0000
 # ************************************************************
 
 
@@ -191,6 +191,7 @@ CREATE TABLE `stk_stacks` (
   `maxTasks` int(6) DEFAULT NULL,
   `automation` text,
   `position` smallint(6) NOT NULL,
+  `sorting` text,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
@@ -279,8 +280,8 @@ CREATE TABLE `stk_tasks` (
   `project` char(36) NOT NULL DEFAULT '',
   `stack` char(36) NOT NULL,
   `position` smallint(6) NOT NULL,
-  `owner` int(11) NOT NULL,
   `public` tinyint(1) NOT NULL DEFAULT '1',
+  `owner` int(11) NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,

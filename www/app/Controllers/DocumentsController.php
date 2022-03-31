@@ -4,7 +4,6 @@ use App\Models\DocumentModel;
 use App\Models\AttachmentModel;
 use App\Models\TagModel;
 use App\Models\StatusModel;
-use App\Models\PermissionModel;
 
 class DocumentsController extends BaseController
 {
@@ -12,20 +11,19 @@ class DocumentsController extends BaseController
 
     public function all_v1()
 	{
-        $db = db_connect();
         $documentModel = new DocumentModel();
         $documentModel->user = $this->request->user;
         $response = new \stdClass();
         $response->documents = $documentModel
             ->select("documents.*")
-            ->join("permissions", "permissions.resource = documents.id AND permissions.user = ".$db->escape($this->request->user->id), 'left')
+            ->join("permissions", "permissions.resource = documents.id AND permissions.user = ".$this->db->escape($this->request->user->id), 'left')
             ->groupStart()
                 ->where("public", 1)
                 ->orGroupStart()
                     ->where("public", 0)
                     ->where("owner", $this->request->user->id)
                 ->groupEnd()
-                ->orWhere($db->protectIdentifiers("permissions.permission") . " IS NOT NULL", NULL, false)
+                ->orWhere($this->db->protectIdentifiers("permissions.permission") . " IS NOT NULL", NULL, false)
             ->groupEnd()
             ->findAll();
 
@@ -73,17 +71,9 @@ class DocumentsController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-CREATE");
         }
 
-        // inserting the default document permission 
-        $permissionModel = new PermissionModel();
-        $permission = [
-            "resource" => $data->id,
-            "permission" => "FULL",
-            "type" => "DOCUMENT",
-        ];
+        // inserting the default document permission
         try {
-            if ($permissionModel->insert($permission) === false) {
-                return $this->reply($permissionModel->errors(), 500, "ERR-DOCUMENTS-CREATE");
-            }
+            $this->addPermission($data->id, $this::PERMISSION_TYPE_DOCUMENT);
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-CREATE");
         }
@@ -188,7 +178,6 @@ class DocumentsController extends BaseController
     public function order_v1()
     {
         $orderData = $this->request->getJSON();
-        $db = db_connect();
         
         // get all documents
         $documentModel = new DocumentModel();
@@ -209,11 +198,11 @@ class DocumentsController extends BaseController
         // update documents order
         if (count($documentsNeedUpdate)) {
             $documentsOrderQuery = array(
-                "INSERT INTO ".$db->prefixTable("documents")." (`id`, `parent`, `position`) VALUES"
+                "INSERT INTO ".$this->db->prefixTable("documents")." (`id`, `parent`, `position`) VALUES"
             );
 
             foreach ($documentsNeedUpdate as $i => $document) {
-                $value = "(". $db->escape($document->id) .", ". $db->escape($document->parent) .", ". $db->escape($document->order) .")";
+                $value = "(". $this->db->escape($document->id) .", ". $this->db->escape($document->parent) .", ". $this->db->escape($document->order) .")";
                 if ($i < count($documentsNeedUpdate) - 1) {
                     $value .= ",";
                 }
@@ -223,7 +212,7 @@ class DocumentsController extends BaseController
             $documentsOrderQuery[] = "ON DUPLICATE KEY UPDATE id=VALUES(id), `parent`=VALUES(`parent`), `position`=VALUES(`position`);";
             $documentsQuery = implode(" ", $documentsOrderQuery);
 
-            if (!$db->query($documentsQuery)) {
+            if (!$this->db->query($documentsQuery)) {
                 return $this->reply("Unable to update documents order", 500, "ERR-DOCUMENTS-REORDER");
             }
         }

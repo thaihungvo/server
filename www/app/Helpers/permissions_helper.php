@@ -1,53 +1,139 @@
 <?php 
 
 use App\Models\DocumentModel;
+use App\Models\PermissionModel;
+
+/*
+    FULL - edit, create, delete, options
+    EDIT - edit, create, delete
+    LIMIT - edit only owner (or assignee)
+    NONE - read only
+*/
 
 if (!function_exists('permissions_can'))
 {
-    function permissions_can($action, $document, $section)
+    function permissions_can($action, $section, $permission, $isPublic, $isOwner)
     {
-        $permission = false;
+        $can = false;
 
         // Documents
         if ($section === "documents") {
             if ($action === "delete") {
-                $permission = $document->data->permission === "FULL" ? true : false;
+                $can = $permission === "FULL" ? true : false;
             }
             if ($action === "update") {
-                $permission = $document->data->permission === "FULL" || $document->data->permission === "EDIT" ? true : false;
+                $can = $permission === "FULL" || $permission === "EDIT" ? true : false;
             }
             if ($action === "options") {
-                $permission = $document->data->permission === "FULL" ? true : false;
+                $can = $permission === "FULL" ? true : false;
             }
         }
 
         // Stacks
         if ($section === "stacks") {
             if ($action === "add") {
-                $permission = $document->data->permission === "FULL" || $document->data->permission === "EDIT" ? true : false;
+                $can = $permission === "FULL" || $permission === "EDIT" ? true : false;
             }
             if ($action === "read") {
-                $permission = true;
+                $can = true;
             }
             if ($action === "update") {
-                $permission = $document->data->permission === "FULL" || $document->data->permission === "EDIT" ? true : false;
+                $can = $permission === "FULL" || $permission === "EDIT" ? true : false;
             }
             if ($action === "delete") {
-                $permission = $document->data->permission === "FULL" || $document->data->permission === "EDIT" ? true : false;
+                $can = $permission === "FULL" || $permission === "EDIT" ? true : false;
             }
         }
 
         // Tasks
         if ($section === "tasks") {
             if ($action === "add") {
-                $permission = $document->data->permission === "FULL" || $document->data->permission === "EDIT" ? true : false;
+                $can = $permission === "FULL" || $permission === "EDIT" ? true : false;
+            }
+            if ($action === "read") {
+                $can = $permission !== "NONE" ? true : false;
+            }
+            if ($action === "update") {
+                $can = $permission === "FULL" || $permission === "EDIT" || ($permission === "LIMITED" && $isOwner) ? true : false;
+            }
+            if ($action === "delete") {
+                $can = $permission === "FULL" || $permission === "EDIT" ? true : false;
             }
         }
 
-        if ($permission && !$document->data->isOwner && !$document->data->public) {
-            $permission = false;
+        // if ($can && !$resource->data->public && !$resource->data->isOwner) {
+        //     $can = false;
+        // }
+
+        return $can;
+    }
+}
+
+if (!function_exists('permissions_load_permissions'))
+{
+    function permissions_load_permissions(&$resources, $userId)
+    {
+        $db = db_connect();
+        $resourceIds = array();
+        foreach ($resources as $resource) {
+            $resourceIds[] = $resource->id;
         }
 
-        return $permission;
+        $permissionModel = new PermissionModel();
+        $permissionBuilder = $permissionModel->builder();
+        $permissionQuery = $permissionBuilder->select("permissions.*, userPermissions.permission AS userPermission")
+            ->from("permissions AS permissions", true)
+            ->join("permissions AS userPermissions", "permissions.resource = userPermissions.resource AND userPermissions.user = ".$db->escape($userId), "left")
+            ->whereIn("permissions.resource", $resourceIds)
+            ->where("permissions.user", NULL)
+            ->get();
+        $permissions = $permissionQuery->getResult();
+
+        foreach ($resources as &$resource) {
+            $resource->data->permission = "FULL";
+            
+            // if the user is not the owner that we need to apply any available permissions
+            if ($resource->owner != $userId) {
+                foreach ($permissions as $permission) {
+                    // if the document is the same as the permission's resource
+                    if (
+                        $resource->id === $permission->resource && 
+                        ($permission->userPermission || $permission->permission)
+                    ) {
+                        $resource->data->permission = isset($permission->userPermission) ? $permission->userPermission : $permission->permission;
+                    }
+                }
+            }
+        }
+    }
+}
+
+if (!function_exists('permissions_load_permission'))
+{
+    function permissions_load_permission(&$resource, $userId)
+    {
+        $db = db_connect();
+
+        $permissionModel = new PermissionModel();
+        $permissionBuilder = $permissionModel->builder();
+        $permissionQuery = $permissionBuilder->select("permissions.*, userPermissions.permission AS userPermission")
+            ->from("permissions AS permissions", true)
+            ->join("permissions AS userPermissions", "permissions.resource = userPermissions.resource AND userPermissions.user = ".$db->escape($userId), "left")
+            ->where("permissions.resource", $resource->id)
+            ->where("permissions.user", NULL)
+            ->get();
+        $permissions = $permissionQuery->getResult();
+
+        $resource->permission = $resource->owner == $userId ? "FULL" : "NONE";
+        if (count($permissions) && $resource->owner != $userId) {
+            $permission = $permissions[0];
+            // if the document is the same as the permission's resource
+            if (
+                $resource->id === $permission->resource && 
+                ($permission->userPermission || $permission->permission)
+            ) {
+                $resource->permission = isset($permission->userPermission) ? $permission->userPermission : $permission->permission;
+            }
+        }
     }
 }
