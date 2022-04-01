@@ -1,8 +1,10 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use App\Models\BaseModel;
+use App\Models\PermissionModel;
 
-class DocumentModel extends Model
+class DocumentModel extends BaseModel
 {
     protected $table      = "documents";
     protected $primaryKey = "id";
@@ -29,7 +31,6 @@ class DocumentModel extends Model
     protected function formatDocuments(array $data)
     {
         helper("documents");
-        helper("permissions");
         $user = $this->user;
 
         // format single document
@@ -59,10 +60,8 @@ class DocumentModel extends Model
             unset($data["data"]->created);
             unset($data["data"]->updated);
             
-            permissions_load_permission($data["data"], $user->id);
-
-            $data["data"]->data->permission = $data["data"]->permission;
-            unset($data["data"]->permission);
+            $permissionModel = new PermissionModel($user);
+            $data["data"]->data->permission = $permissionModel->getPermission($data["data"]->id, $data["data"]->owner);
         }
 
         // format list of documents
@@ -105,8 +104,10 @@ class DocumentModel extends Model
 
             // load the counters used in the sidebar
             documents_load_counters($data["data"]);
+            
             // load the documents permissions
-            permissions_load_permissions($data["data"], $user->id);
+            $permissionModel = new PermissionModel($user);
+            $permissionModel->getPermissions($data["data"], true);
         }
 
         return $data;

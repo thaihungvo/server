@@ -1,9 +1,10 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use App\Models\BaseModel;
 use App\Models\StackCollapsedModel;
 
-class StackModel extends Model
+class StackModel extends BaseModel
 {
     protected $table      = "stacks";
     protected $primaryKey = "id";
@@ -27,26 +28,61 @@ class StackModel extends Model
         "position" => "required"
     ];
 
+    protected function formatStack(&$stack)
+    {
+        $stack->position = intval($stack->position);
+        $stack->collapsed = boolval($stack->collapsed);
+
+        if (isset($stack->tag) && is_string($stack->tag)) {
+            $stack->tag = json_decode($stack->tag);
+        }
+
+        if (isset($stack->automation) && is_string($stack->automation)) {
+            $stack->automation = json_decode($stack->automation);
+        }
+
+        if ($stack->tag == null) unset($stack->tag);
+        if ($stack->automation == null) unset($stack->automation);
+        if ($stack->maxTasks == null) unset($stack->maxTasks);
+        if ($stack->position == null) unset($stack->position);
+        if ($stack->sorting == null) unset($stack->sorting);
+
+        $stack->tasks = array();
+
+        unset($stack->deleted);
+    }
+
     protected function formatStacks(array $data)
     {
         // format single stack
         if ($data["singleton"] && $data["data"]) {
-            $data["data"]->position = intval($data["data"]->position);
+            $this->formatStack($data["data"]);
+        }
 
-            if (isset($data["data"]->tag) && is_string($data["data"]->tag)) {
-                $data["data"]->tag = json_decode($data["data"]->tag);
+        // format list of stacks
+        if (!$data["singleton"] && $data["data"]) {
+            foreach ($data["data"] as $key => &$stack) {
+                $this->formatStack($stack);
             }
-
-            if (isset($data["data"]->automation) && is_string($data["data"]->automation)) {
-                $data["data"]->automation = json_decode($data["data"]->automation);
-            }
-
-            $stackCollapsedModel = new StackCollapsedModel();
-            $stackCollapsed = $stackCollapsedModel->where("stack", $data["data"]->id)->first();
-            $data["data"]->collapsed = boolval($stackCollapsed->collapsed);
         }
 
         return $data;
+    }
+
+    public function getStack($stackId)
+    {
+        return $this->select("stacks.*, stacks_collapsed.collapsed")
+            ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id AND stacks_collapsed.user = '.$this->user->id, 'left')
+            ->find($stackId);
+    }
+
+    public function getStacks($projectId)
+    {
+        return $this->select("stacks.*, stacks_collapsed.collapsed")
+            ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id AND stacks_collapsed.user = '.$this->user->id, 'left')
+            ->where('stacks.project', $projectId)
+            ->orderBy('position', 'ASC')
+            ->findAll();
     }
 
     public function formatData(&$data)

@@ -1,11 +1,13 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use App\Models\BaseModel;
 use App\Models\TaskExtensionModel;
 use App\Models\AttachmentModel;
 use App\Models\TaskAssigneeModel;
+use App\Models\PermissionModel;
 
-class TaskModel extends Model
+class TaskModel extends BaseModel
 {
     protected $table      = "tasks";
     protected $primaryKey = "id";
@@ -28,71 +30,71 @@ class TaskModel extends Model
         "position" => "required"
     ];
 
+    protected function formatTask(&$task)
+    {
+        $task->cover = boolval($task->cover);
+        $task->done = boolval($task->done);
+        $task->altTags = boolval($task->altTags);
+        $task->showDescription = boolval($task->showDescription);
+        $task->progress = intval($task->progress);
+        $task->position = intval($task->position);
+        $task->public = boolval($task->public);
+        $task->isOwner = $task->owner === $this->user->id;
+        unset($task->order);
+        unset($task->deleted);
+
+        if (is_string($task->tags)) {
+            $task->tags = json_decode($task->tags);
+        } else {
+            unset($task->tags);
+        }
+
+        if (is_string($task->repeats)) {
+            $task->repeats = json_decode($task->repeats);
+        } else {
+            unset($task->repeats);
+        }
+
+        if (!$task->startdate) unset($task->startdate);
+        if (!$task->duedate) unset($task->duedate);
+        if (!$task->completed) unset($task->completed);
+        if (!$task->archived) $task->archived = "";
+        if (!$task->priority) unset($task->priority);
+        if (!$task->estimate) unset($task->estimate);
+        if (!$task->spent) unset($task->spent);
+        if (!$task->hourlyFee) unset($task->hourlyFee);
+        if (!$task->feeCurrency) unset($task->feeCurrency);
+        if (!$task->status) unset($task->status);
+
+        $task->extensions = array();
+        $task->assignees = array();
+    }
+
     protected function formatTasks(array $data)
     {
         // format single task
         if ($data["singleton"] && $data["data"]) {
-            $data["data"]->cover = boolval($data["data"]->cover);
-            $data["data"]->done = boolval($data["data"]->done);
-            $data["data"]->altTags = boolval($data["data"]->altTags);
-            $data["data"]->showDescription = boolval($data["data"]->showDescription);
-            $data["data"]->progress = intval($data["data"]->progress);
-            $data["data"]->position = intval($data["data"]->position);
-            $data["data"]->public = boolval($data["data"]->public);
-            // $data["data"]->isOwner = $data["data"]->owner;
-            unset($data["data"]->order);
-            unset($data["data"]->stack);
-            unset($data["data"]->deleted);
-
-            if (is_string($data["data"]->tags)) {
-                $data["data"]->tags = json_decode($data["data"]->tags);
-            }
-    
-            if (is_string($data["data"]->repeats)) {
-                $data["data"]->repeats = json_decode($data["data"]->repeats);
-            }
+            $this->formatTask($data["data"]);
 
             // connect assignees to task
-            helper('assignees');
-            $assignees = tasks_assignees([$data["data"]->id]);
-
-            foreach ($assignees as &$assignee) {
-                if (!isset($data["data"]->assignees)) {
-                    $data["data"]->assignees = array();
-                }
-
-                if ($assignee->task === $data["data"]->id) {
-                    unset($assignee->task);
-                    $data["data"]->assignees[] = [
-                        "id" => $assignee->id,
-                        "name" => $assignee->firstName ." ". $assignee->lastName
-                    ];
-                }
-            }
+            $taskAssigneesModel = new TaskAssigneeModel();
+            $assignees = $taskAssigneesModel->getTaskAssignees($data["data"]->id);
+            $data["data"]->assignees = array_map(fn($assignee) => [
+                "id" => $assignee->id,
+                "name" => $assignee->firstName ." ". $assignee->lastName
+            ], $assignees);
 
             // load extensions
-            $extensions = array();
             $taskExtensionModel = new TaskExtensionModel();
-            $extensions = $taskExtensionModel->where("task", $data["data"]->id)->findAll();
+            $data["data"]->extensions = $taskExtensionModel->getTaskExtensions($data["data"]->id);
 
-            // unwrap the extensions
-            foreach ($extensions as &$extension) {
-                $extension->options = json_decode($extension->options);
-                $extension->content = json_decode($extension->content);
-            }
 
             // load task attachments
             $attachments = array();
             $attachmentModel = new AttachmentModel();
-            $attachments = $attachmentModel->where("resource", $data["data"]->id)->findAll();
-
-            $data["data"]->extensions = array();
-            foreach ($extensions as &$extension) {
-                if ($extension->task == $data["data"]->id) {
-                    unset($extension->task);
-                    $data["data"]->extensions[] = $extension;
-                }
-            }
+            $attachments = $attachmentModel
+                ->where("resource", $data["data"]->id)
+                ->findAll();
 
             // insert the attachments in the task extension
             foreach ($attachments as $attachment) {
@@ -111,6 +113,9 @@ class TaskModel extends Model
                 }
             }
 
+            if (!count($data["data"]->assignees)) {
+                unset($data["data"]->assignees);
+            }
             if (!count($data["data"]->extensions)) {
                 unset($data["data"]->extensions);
             }
@@ -118,6 +123,9 @@ class TaskModel extends Model
 
         // format list of tasks
         if (!$data["singleton"] && $data["data"]) {
+            foreach ($data["data"] as $key => &$task) {
+                $this->formatTask($task);
+            }
         }
 
         return $data;
@@ -129,10 +137,6 @@ class TaskModel extends Model
         if (!isset($data->id)) {
             helper("uuid");
             $data->id = uuid();
-        }
-
-        if (isset($data->repeats)) {
-            $data->repeats = json_encode($data->repeats);
         }
 
         // convert tags to string
@@ -159,6 +163,54 @@ class TaskModel extends Model
         if (isset($data->completed)) {
             $data->completed = substr(str_replace("T", " ", $data->completed), 0, 19);
         }
+    }
+
+    public function getTask($taskId)
+    {
+        $db = db_connect();
+
+        $task = $this
+            ->select("tasks.*")
+            ->join("permissions", "permissions.resource = tasks.id AND permissions.user = ".$db->escape($this->user->id), 'left')
+            ->groupStart()
+                ->where("public", 1)
+                ->orGroupStart()
+                    ->where("public", 0)
+                    ->where("owner", $this->user->id)
+                ->groupEnd()
+                ->orWhere("permissions.permission IS NOT NULL", null)
+            ->groupEnd()
+            ->find($taskId);
+
+        $permissionModel = new PermissionModel($this->user);
+        $task->permission = $permissionModel->getPermission($task->id, $task->owner);
+
+        return $task;
+    }
+
+    public function getTasksByStacks($stacksIds)
+    {
+        $db = db_connect();
+
+        $tasks = $this
+            ->select("tasks.*")
+            ->join("permissions", "permissions.resource = tasks.id AND permissions.user = ".$db->escape($this->user->id), 'left')
+            ->groupStart()
+                ->where("public", 1)
+                ->whereIn("stack", $stacksIds)
+                ->orGroupStart()
+                    ->where("public", 0)
+                    ->where("owner", $this->user->id)
+                ->groupEnd()
+                ->orWhere("permissions.permission IS NOT NULL", null)
+            ->groupEnd()
+            ->orderBy('position', 'ASC')
+            ->findAll();
+
+        $permissionModel = new PermissionModel($this->user);
+        $permissionModel->getPermissions($tasks);
+
+        return $tasks;
     }
 
     public function addExtensions($taskId, $dataExtensions)

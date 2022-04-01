@@ -58,45 +58,6 @@ if (!function_exists('documents_get_default_options'))
     }
 }
 
-if (!function_exists('documents_load_document2'))
-{
-    function documents_load_document2($documentID, $user)
-    {
-        $documentModel = new DocumentModel();
-
-        $documentBuilder = $documentModel->builder();
-        $documentQuery = $documentBuilder->select("documents.*")
-            ->join("documents_members", "documents_members.document = documents.id", "left")
-            ->where("documents.deleted", NULL)
-            ->where("documents.id", $documentID)
-            ->groupStart()
-                ->where("documents.owner", $user->id)
-                ->orWhere("documents_members.user", $user->id)
-                ->orWhere("documents.public", 1)
-            ->groupEnd()
-            ->limit(1)
-            ->get();
-
-        $documents = $documentQuery->getResult();
-        
-        if (!count($documents)) return null;
-
-        $document = $documents[0];
-        if ($document->options) {
-            $document->options = json_decode($document->options);
-            $document->public = boolval($document->public);
-        }
-
-        documents_expand_document($document, $user);
-
-        // removing unncessary prop
-        unset($document->deleted);
-        unset($document->position);
-
-        return $document;
-    }
-}
-
 if (!function_exists('documents_expand_document'))
 {
     function documents_expand_document(&$document, $user)

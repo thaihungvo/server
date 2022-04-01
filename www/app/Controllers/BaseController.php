@@ -91,8 +91,7 @@ class BaseController extends Controller
 
     protected function getDocument($documentId)
     {
-        $documentModel = new DocumentModel();
-        $documentModel->user = $this->request->user;
+        $documentModel = new DocumentModel($this->request->user);
         $document = $documentModel
             ->select("documents.*, permissions.permission")
             ->join("permissions", "permissions.resource = documents.id AND permissions.user = ".$this->db->escape($this->request->user->id), 'left')

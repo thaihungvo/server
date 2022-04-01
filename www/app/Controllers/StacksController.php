@@ -53,8 +53,8 @@ class StacksController extends BaseController
 
     public function get_v1($idStack)
     {
-        $stackModel = new StackModel();
-        $stack = $stackModel->find($idStack);
+        $stackModel = new StackModel($this->request->user);
+        $stack = $stackModel->getStack($idStack);
 
         if (!$stack) {
             return $this->reply("Stack not found", 404, "ERR-STACK-GET");
@@ -129,8 +129,7 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-DONE");
         }
 
-        $documentModel = new DocumentModel();
-        $documentModel->user = $this->request->user;
+        $documentModel = new DocumentModel($this->request->user);
         $document = $documentModel->find($stack->project);
 
         if (!$document) {
@@ -171,8 +170,7 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-TODO");
         }
 
-        $documentModel = new DocumentModel();
-        $documentModel->user = $this->request->user;
+        $documentModel = new DocumentModel($this->request->user);
         $document = $documentModel->find($stack->project);
 
         if (!$document) {
@@ -213,8 +211,7 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-ALL");
         }
 
-        $documentModel = new DocumentModel();
-        $documentModel->user = $this->request->user;
+        $documentModel = new DocumentModel($this->request->user);
         $document = $documentModel->find($stack->project);
 
         if (!$document) {
@@ -252,8 +249,7 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-DONE");
         }
 
-        $documentModel = new DocumentModel();
-        $documentModel->user = $this->request->user;
+        $documentModel = new DocumentModel($this->request->user);
         $document = $documentModel->find($stack->project);
 
         if (!$document) {
@@ -292,8 +288,7 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-DELETE");
         }
 
-        $documentModel = new DocumentModel();
-        $documentModel->user = $this->request->user;
+        $documentModel = new DocumentModel($this->request->user);
         $document = $documentModel->find($stack->project);
 
         // checking if the current user has the permission to delete the stack

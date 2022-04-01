@@ -11,8 +11,7 @@ class DocumentsController extends BaseController
 
     public function all_v1()
 	{
-        $documentModel = new DocumentModel();
-        $documentModel->user = $this->request->user;
+        $documentModel = new DocumentModel($this->request->user);
         $response = new \stdClass();
         $response->documents = $documentModel
             ->select("documents.*")
@@ -56,9 +55,7 @@ class DocumentsController extends BaseController
 
     public function add_v1()
     {
-        $user = $this->request->user;
-        $documentModel = new DocumentModel();
-        $documentModel->user = $user;
+        $documentModel = new DocumentModel($this->request->user);
         $data = $this->request->getJSON();
         $documentModel->formatData($data);
 
@@ -98,8 +95,7 @@ class DocumentsController extends BaseController
             return $this->reply("Document `id` missing or not valid", 500, "ERR-DOCUMENTS-UPDATE");
         }
 
-        $documentModel = new DocumentModel();
-        $documentModel->user = $this->request->user;
+        $documentModel = new DocumentModel($this->request->user);
         
         // checking if the requested document exists
         $document = $this->getDocument($documentId);

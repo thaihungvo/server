@@ -469,7 +469,7 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"const currentDocumentId = pm.environment.get(\"document\");",
+									"const currentDocumentId = pm.environment.get(\"project\");",
 									"pm.test(\"Get Single Document response\", function () {",
 									"    const responseJson = pm.response.json();",
 									"    pm.expect(responseJson.data).to.be.an(\"object\");",

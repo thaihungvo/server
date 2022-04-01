@@ -10,32 +10,10 @@ class TasksController extends BaseController
 {
     protected $permissionSection = "tasks";
 
-    private function getTask($taskId)
-    {
-        helper("permissions");
-
-        $taskModel = new TaskModel();
-        $task = $taskModel
-            ->select("tasks.*")
-            ->join("permissions", "permissions.resource = tasks.id AND permissions.user = ".$this->db->escape($this->request->user->id), 'left')
-            ->groupStart()
-                ->where("public", 1)
-                ->orGroupStart()
-                    ->where("public", 0)
-                    ->where("owner", $this->request->user->id)
-                ->groupEnd()
-                ->orWhere("permissions.permission IS NOT NULL", null)
-            ->groupEnd()
-            ->find($taskId);
-
-        permissions_load_permission($task, $this->request->user->id);
-
-        return $task;
-    }
-
     public function one_v1($taskId)
     {
-        $task = $this->getTask($taskId);
+        $taskModel = new TaskModel($this->request->user);
+        $task = $taskModel->getTask($taskId);
 
         if (!$task) {
             return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
@@ -155,7 +133,8 @@ class TasksController extends BaseController
     public function update_v1($taskId)
     {
         $this->lock($taskId);
-        $task = $this->getTask($taskId);
+        $taskModel = new TaskModel($this->request->user);
+        $task = $taskModel->getTask($taskId);
 
         $data = $this->request->getJSON();
         
@@ -240,7 +219,8 @@ class TasksController extends BaseController
     public function delete_v1($taskId)
     {
         $this->lock($taskId);
-        $task = $this->getTask($taskId);
+        $taskModel = new TaskModel($this->request->user);
+        $task = $taskModel->getTask($taskId);
 
         if (!$task) {
             return $this->reply(null, 404, "ERR-TASKS-DELETE");

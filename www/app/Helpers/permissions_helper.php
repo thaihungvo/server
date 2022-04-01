@@ -71,7 +71,7 @@ if (!function_exists('permissions_can'))
 
 if (!function_exists('permissions_load_permissions'))
 {
-    function permissions_load_permissions(&$resources, $userId)
+    function permissions_load_permissions(&$resources, $userId, $appendToData = false)
     {
         $db = db_connect();
         $resourceIds = array();
@@ -90,7 +90,11 @@ if (!function_exists('permissions_load_permissions'))
         $permissions = $permissionQuery->getResult();
 
         foreach ($resources as &$resource) {
-            $resource->data->permission = "FULL";
+            if ($appendToData) {
+                $resource->data->permission = "FULL";
+            } else {
+                $resource->permission = "FULL";
+            }
             
             // if the user is not the owner that we need to apply any available permissions
             if ($resource->owner != $userId) {
@@ -103,36 +107,6 @@ if (!function_exists('permissions_load_permissions'))
                         $resource->data->permission = isset($permission->userPermission) ? $permission->userPermission : $permission->permission;
                     }
                 }
-            }
-        }
-    }
-}
-
-if (!function_exists('permissions_load_permission'))
-{
-    function permissions_load_permission(&$resource, $userId)
-    {
-        $db = db_connect();
-
-        $permissionModel = new PermissionModel();
-        $permissionBuilder = $permissionModel->builder();
-        $permissionQuery = $permissionBuilder->select("permissions.*, userPermissions.permission AS userPermission")
-            ->from("permissions AS permissions", true)
-            ->join("permissions AS userPermissions", "permissions.resource = userPermissions.resource AND userPermissions.user = ".$db->escape($userId), "left")
-            ->where("permissions.resource", $resource->id)
-            ->where("permissions.user", NULL)
-            ->get();
-        $permissions = $permissionQuery->getResult();
-
-        $resource->permission = $resource->owner == $userId ? "FULL" : "NONE";
-        if (count($permissions) && $resource->owner != $userId) {
-            $permission = $permissions[0];
-            // if the document is the same as the permission's resource
-            if (
-                $resource->id === $permission->resource && 
-                ($permission->userPermission || $permission->permission)
-            ) {
-                $resource->permission = isset($permission->userPermission) ? $permission->userPermission : $permission->permission;
             }
         }
     }
