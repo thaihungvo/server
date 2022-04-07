@@ -58,6 +58,7 @@ class BaseController extends Controller
     const PERMISSION_READONLY = "READONLY";
 
     const PERMISSION_TYPE_DOCUMENT = "DOCUMENT";
+    const PERMISSION_TYPE_STACK = "STACK";
     const PERMISSION_TYPE_TASK = "TASK";
 
 	/**
@@ -92,22 +93,7 @@ class BaseController extends Controller
     protected function getDocument($documentId)
     {
         $documentModel = new DocumentModel($this->request->user);
-        $document = $documentModel
-            ->select("documents.*, permissions.permission")
-            ->join("permissions", "permissions.resource = documents.id AND permissions.user = ".$this->db->escape($this->request->user->id), 'left')
-            ->groupStart()
-                ->where("public", 1)
-                ->orGroupStart()
-                    ->where("public", 0)
-                    ->where("owner", $this->request->user->id)
-                ->groupEnd()
-                ->orWhere("permissions.permission IS NOT NULL", null)
-            ->groupEnd()
-            ->find($documentId);
-
-        unset($document->options);
-
-        return $document;
+        return $documentModel->getDocument($documentId);
     }
 
     protected function getExpandedDocument($documentId)
@@ -126,31 +112,12 @@ class BaseController extends Controller
 
     protected function can($action, $resource, $errorMsg = null)
     {
-        helper("permissions");
-        
-        $permission = null;
-        $isPublic = null;
-        $isOwner = null;
-
-        if (isset($resource->permission)) {
-            $permission = $resource->permission;
-        } else if (isset($resource->data->permission)) {
-            $permission = $resource->data->permission;
+        $can = false;
+        if (isset($resource->data->userPermissions)) {
+            $can = $resource->data->userPermissions->$action;
+        } else if (isset($resource->userPermissions)) {
+            $can = $resource->userPermissions->$action;
         }
-
-        if (isset($resource->public)) {
-            $isPublic = $resource->public;
-        } else if (isset($resource->data->public)) {
-            $isPublic = $resource->data->public;
-        }
-
-        if (isset($resource->isOwner)) {
-            $isOwner = $resource->isOwner;
-        } else if (isset($resource->data->isOwner)) {
-            $isOwner = $resource->data->isOwner;
-        }
-
-        $can = permissions_can($action, $this->permissionSection, $permission, $isPublic, $isOwner);
 
         if (!$can) {
             $response = $this->reply(null, 403, $errorMsg ? $errorMsg : "You do not have permission to perform this action");
@@ -169,10 +136,10 @@ class BaseController extends Controller
         ];
         try {
             if ($permissionModel->insert($permission) === false) {
-                throw new ErrorException($permissionModel->errors());
+                throw new \Exception(implode(" ", $permissionModel->errors()));
             }
         } catch (\Exception $e) {
-            throw new ErrorException($e->getMessage());
+            throw $e;
         }
     }
 

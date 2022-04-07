@@ -55,13 +55,13 @@ class DocumentModel extends BaseModel
             unset($data["data"]->deleted);
             unset($data["data"]->position);
             unset($data["data"]->type);
-            unset($data["data"]->owner);
             unset($data["data"]->public);
             unset($data["data"]->created);
             unset($data["data"]->updated);
             
             $permissionModel = new PermissionModel($user);
             $data["data"]->data->permission = $permissionModel->getPermission($data["data"]->id, $data["data"]->owner);
+            $data["data"]->data->userPermissions = $this->getUserPermissions($data["data"]->data->permission);
         }
 
         // format list of documents
@@ -108,9 +108,68 @@ class DocumentModel extends BaseModel
             // load the documents permissions
             $permissionModel = new PermissionModel($user);
             $permissionModel->getPermissions($data["data"], true);
+
+            foreach ($data["data"] as $key => &$document) {
+                $document->data->userPermissions = $this->getUserPermissions($document->permission);
+            }
         }
 
         return $data;
+    }
+
+    protected function getUserPermissions($permission)
+    {
+        /*
+        FULL - add children, update, delete, manage options
+        EDIT - add children, update
+        LIMITED - 
+        NONE - read only
+        */
+
+        $can = new \stdClass();
+        $can->update = $permission === "FULL" || $permission === "EDIT" ? true : false;
+        $can->delete = $permission === "FULL" ? true : false;
+        $can->options = $permission === "FULL" ? true : false;
+        $can->add = $permission === "FULL" || $permission === "EDIT" ? true : false;
+
+        return $can;
+    }
+
+    protected function getFindQuery()
+    {
+        /*
+            Retrieving documents that match the following criteria:
+            - document is not deleted
+            - document is public
+            - document is not public and the current user is owner
+            - document is not public and the current user is not owner but it has a permission
+        */
+
+        $db = db_connect();
+        return $this
+            ->select("documents.*, permissions.permission")
+            ->join("permissions", "permissions.resource = documents.id AND permissions.user = ".$db->escape($this->user->id), 'left')
+            ->groupStart()
+                ->where("public", 1)
+                ->orGroupStart()
+                    ->where("public", 0)
+                    ->where("owner", $this->user->id)
+                ->groupEnd()
+                ->orWhere("permissions.permission IS NOT NULL", null)
+            ->groupEnd();
+    }
+
+    public function getDocument($documentId)
+    {
+        $document = $this->getFindQuery()->find($documentId);
+        unset($document->options);
+
+        return $document;
+    }
+
+    public function getDocuments()
+    {
+        return $this->getFindQuery()->findAll();
     }
 
     public function formatData(&$data)

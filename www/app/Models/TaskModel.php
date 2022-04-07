@@ -131,6 +131,39 @@ class TaskModel extends BaseModel
         return $data;
     }
 
+    protected function getUserPermissions($permission, $task)
+    {
+        $can = new \stdClass();
+        $can->add = $permission === "FULL" || $permission === "EDIT" ? true : false;
+        //$can->read = $permission !== "NONE" ? true : false;
+        $can->update = $permission === "FULL" || $permission === "EDIT" || ($permission === "LIMITED" && $task->isOwner) ? true : false;
+        $can->delete = $permission === "FULL" || $permission === "EDIT" ? true : false;
+        return $can;
+    }
+
+    protected function getFindQuery()
+    {
+        /*
+            Retrieving stacks that match the following criteria:
+            - stack is not deleted
+            - stack is public
+            - stack is not public and the current user is owner
+            - stack is not public and the current user is not owner but it has a permission
+        */
+        $db = db_connect();
+        return $this
+            ->select("tasks.*")
+            ->join("permissions", "permissions.resource = tasks.id AND permissions.user = ".$db->escape($this->user->id), 'left')
+            ->groupStart()
+                ->where("public", 1)
+                ->orGroupStart()
+                    ->where("public", 0)
+                    ->where("owner", $this->user->id)
+                ->groupEnd()
+                ->orWhere("permissions.permission IS NOT NULL", null)
+            ->groupEnd();
+    }
+
     public function formatData(&$data)
     {
         // enforce an id in case there"s none
@@ -167,48 +200,32 @@ class TaskModel extends BaseModel
 
     public function getTask($taskId)
     {
-        $db = db_connect();
-
-        $task = $this
-            ->select("tasks.*")
-            ->join("permissions", "permissions.resource = tasks.id AND permissions.user = ".$db->escape($this->user->id), 'left')
-            ->groupStart()
-                ->where("public", 1)
-                ->orGroupStart()
-                    ->where("public", 0)
-                    ->where("owner", $this->user->id)
-                ->groupEnd()
-                ->orWhere("permissions.permission IS NOT NULL", null)
-            ->groupEnd()
-            ->find($taskId);
-
-        $permissionModel = new PermissionModel($this->user);
-        $task->permission = $permissionModel->getPermission($task->id, $task->owner);
+        $task = $this->getFindQuery()->find($taskId);
+        
+        if ($task) {
+            $permissionModel = new PermissionModel($this->user);
+            $task->permission = $permissionModel->getPermission($task->id, $task->owner);
+            $task->userPermissions = $this->getUserPermissions($task->permission, $task);
+        }
 
         return $task;
     }
 
     public function getTasksByStacks($stacksIds)
     {
-        $db = db_connect();
-
         $tasks = $this
-            ->select("tasks.*")
-            ->join("permissions", "permissions.resource = tasks.id AND permissions.user = ".$db->escape($this->user->id), 'left')
-            ->groupStart()
-                ->where("public", 1)
-                ->whereIn("stack", $stacksIds)
-                ->orGroupStart()
-                    ->where("public", 0)
-                    ->where("owner", $this->user->id)
-                ->groupEnd()
-                ->orWhere("permissions.permission IS NOT NULL", null)
-            ->groupEnd()
+            ->getFindQuery()
             ->orderBy('position', 'ASC')
             ->findAll();
 
-        $permissionModel = new PermissionModel($this->user);
-        $permissionModel->getPermissions($tasks);
+        if (count($tasks)) {
+            $permissionModel = new PermissionModel($this->user);
+            $permissionModel->getPermissions($tasks);
+
+            foreach ($tasks as &$task) {
+                $task->userPermissions = $this->getUserPermissions($task->permission, $task);
+            }
+        }
 
         return $tasks;
     }
@@ -222,10 +239,10 @@ class TaskModel extends BaseModel
         $taskExtensionModel = new TaskExtensionModel();
         try {
             if ($taskExtensionModel->where("task", $task->id)->delete() === false) {
-                throw new ErrorException($taskExtensionModel->errors());
+                throw new \Exception($taskExtensionModel->errors());
             }
         } catch (\Exception $e) {
-            throw new ErrorException($e->getMessage());
+            throw new \Exception($e->getMessage());
         }
 
         $extensions = array();
@@ -254,10 +271,10 @@ class TaskModel extends BaseModel
         if (count($extensions)) {    
             try {
                 if ($taskExtensionModel->insertBatch($extensions) === false) {
-                    throw new ErrorException($taskExtensionModel->errors());
+                    throw new \Exception($taskExtensionModel->errors());
                 }
             } catch (\Exception $e) {
-                throw new ErrorException($e->getMessage());
+                throw new \Exception($e->getMessage());
             }
         }
     }
@@ -270,10 +287,10 @@ class TaskModel extends BaseModel
         $taskAssigneeModel = new TaskAssigneeModel();
         try {
             if ($taskAssigneeModel->where("task", $task->id)->delete() === false) {
-                throw new ErrorException($taskAssigneeModel->errors());
+                throw new \Exception($taskAssigneeModel->errors());
             }
         } catch (\Exception $e) {
-            throw new ErrorException($e->getMessage());
+            throw new \Exception($e->getMessage());
         }
 
         $assignees = array();
@@ -288,10 +305,10 @@ class TaskModel extends BaseModel
         if (count($assignees)) {
             try {
                 if ($taskAssigneeModel->insertBatch($assignees) === false) {
-                    throw new ErrorException($taskAssigneeModel->errors());
+                    throw new \Exception($taskAssigneeModel->errors());
                 }
             } catch (\Exception $e) {
-                throw new ErrorException($e->getMessage());
+                throw new \Exception($e->getMessage());
             }
         }
     }

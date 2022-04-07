@@ -22,7 +22,7 @@ class PermissionModel extends BaseModel
 
     protected $validationRules = [
         'resource' => 'required|min_length[20]',
-        'type' => 'required|in_list[DOCUMENT,TASK]',
+        'type' => 'required|in_list[DOCUMENT,STACK,TASK]',
         'permission' => 'required|in_list[FULL,EDIT,LIMITED,NONE]',
     ];
 
@@ -82,11 +82,7 @@ class PermissionModel extends BaseModel
         $permissions = $permissionQuery->getResult();
 
         foreach ($resources as &$resource) {
-            if ($appendToData) {
-                $resource->data->permission = "FULL";
-            } else {
-                $resource->permission = "FULL";
-            }
+            $userPermission = "FULL";
             
             // if the user is not the owner that we need to apply any available permissions
             if ($resource->owner != $this->user->id) {
@@ -96,9 +92,15 @@ class PermissionModel extends BaseModel
                         $resource->id === $permission->resource && 
                         ($permission->userPermission || $permission->permission)
                     ) {
-                        $resource->data->permission = isset($permission->userPermission) ? $permission->userPermission : $permission->permission;
+                        $userPermission = isset($permission->userPermission) ? $permission->userPermission : $permission->permission;
                     }
                 }
+            }
+
+            if ($appendToData) {
+                $resource->data->permissions = $userPermission;
+            } else {
+                $resource->permissions = $userPermission;
             }
         }
     }

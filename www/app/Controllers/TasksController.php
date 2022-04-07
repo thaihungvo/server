@@ -25,11 +25,8 @@ class TasksController extends BaseController
             return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
         }
 
-        $this->can("read", $document);
-        $this->can("read", $task);
-
-        $stackModel = new StackModel();
-        $stack = $stackModel->find($task->stack);
+        $stackModel = new StackModel($this->request->user);
+        $stack = $stackModel->getStack($task->stack);
 
         if (!$stack) {
             return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
@@ -53,7 +50,7 @@ class TasksController extends BaseController
             return $this->reply("Project not found", 404, "ERR-TASK-CREATE");
         }
 
-        $this->can("add", $document);
+        $this->can("add", $stack);
 
         $data = $this->request->getJSON();
         $data->updated = null;

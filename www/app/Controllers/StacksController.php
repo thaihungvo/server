@@ -23,7 +23,11 @@ class StacksController extends BaseController
         $stackModel = new StackModel();
         $data = $this->request->getJSON();
         $data->project = $document->id;
+        $data->owner = $this->request->user->id;
+        $data->public = 1;
         $stackModel->formatData($data);
+
+        $this->db->transStart();
 
         try {
             if ($stackModel->insert($data) === false) {
@@ -37,6 +41,19 @@ class StacksController extends BaseController
             $stackModel->addCollapsedState($data->id, $this->request->user->id);
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
+        }
+
+        // inserting the default document permission
+        try {
+            $this->addPermission($data->id, $this::PERMISSION_TYPE_STACK);
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
+        }
+
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            return $this->reply(null, 500, "ERR-STACK-UPDATE");
         }
 
         $this->addActivity(
@@ -61,9 +78,12 @@ class StacksController extends BaseController
         }
 
         $document = $this->getDocument($stack->project);
+        if (!$document) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-GET");
+        }
 
         // checking if the current user has the permission to get the stack
-        $this->can("read", $document);
+        // $this->can("read", $document);
 
         return $this->reply($stack);
     }
@@ -91,7 +111,7 @@ class StacksController extends BaseController
         $data->id = $stack->id;
         $stackModel->formatData($data);
 
-        
+        $this->db->transStart();
 
         // saving collapsed state of the stack for the current user
         if (isset($data->collapsed)) {
@@ -105,6 +125,12 @@ class StacksController extends BaseController
         // update the stack data
         if ($stackModel->update($stack->id, $data) === false) {
             return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
+        }
+
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            return $this->reply(null, 500, "ERR-STACK-UPDATE");
         }
 
         $this->addActivity(

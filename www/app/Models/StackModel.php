@@ -3,6 +3,7 @@
 use CodeIgniter\Model;
 use App\Models\BaseModel;
 use App\Models\StackCollapsedModel;
+use App\Models\PermissionModel;
 
 class StackModel extends BaseModel
 {
@@ -12,7 +13,7 @@ class StackModel extends BaseModel
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ["id", "title", "project", "tag", "maxTasks", "automation", "position", "sorting", "created", "updated"];
+    protected $allowedFields = ["id", "title", "project", "tag", "maxTasks", "automation", "position", "sorting", "public", "owner", "created", "updated"];
 
     protected $useTimestamps = true;
     protected $createdField  = "created";
@@ -32,6 +33,8 @@ class StackModel extends BaseModel
     {
         $stack->position = intval($stack->position);
         $stack->collapsed = boolval($stack->collapsed);
+        $stack->owner = intval($stack->owner);
+        $stack->isOwner = $stack->owner === $this->user->id;
 
         if (isset($stack->tag) && is_string($stack->tag)) {
             $stack->tag = json_decode($stack->tag);
@@ -69,20 +72,75 @@ class StackModel extends BaseModel
         return $data;
     }
 
+    protected function getUserPermissions($permission)
+    {
+        /*
+            FULL - add tasks, change tasks, delete tasks, change stack, delete stack
+            EDIT - add tasks, change tasks, delete tasks, NO changing stack, NO deleting stack
+            LIMITED - owner can rename the stack
+            NONE - Read only
+        */
+        $can = new \stdClass();
+        $can->add = $permission === "FULL" || $permission === "EDIT" ? true : false;
+        $can->update = $permission === "FULL" || $permission === "EDIT" ? true : false;
+        $can->delete = $permission === "FULL" || $permission === "EDIT" ? true : false;
+        return $can;
+    }
+
+    protected function getFindQuery()
+    {
+        /*
+            Retrieving stacks that match the following criteria:
+            - stack is not deleted
+            - stack is public
+            - stack is not public and the current user is owner
+            - stack is not public and the current user is not owner but it has a permission
+        */
+        $db = db_connect();
+        return $this
+            ->select("stacks.*, stacks_collapsed.collapsed")
+            ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id AND stacks_collapsed.user = '.$db->escape($this->user->id), 'left')
+            ->join("permissions", "permissions.resource = stacks.id AND permissions.user = ".$db->escape($this->user->id), 'left')
+            ->groupStart()
+                ->where("public", 1)
+                ->orGroupStart()
+                    ->where("public", 0)
+                    ->where("owner", $this->user->id)
+                ->groupEnd()
+                ->orWhere("permissions.permission IS NOT NULL", null)
+            ->groupEnd();
+    }
+
     public function getStack($stackId)
     {
-        return $this->select("stacks.*, stacks_collapsed.collapsed")
-            ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id AND stacks_collapsed.user = '.$this->user->id, 'left')
-            ->find($stackId);
+        $stack = $this->getFindQuery()->find($stackId);
+
+        if ($stack) {
+            $permissionModel = new PermissionModel($this->user);
+            $stack->permission = $permissionModel->getPermission($stack->id, $stack->owner);
+            $stack->userPermissions = $this->getUserPermissions($stack->permission);
+        }
+
+        return $stack;
     }
 
     public function getStacks($projectId)
     {
-        return $this->select("stacks.*, stacks_collapsed.collapsed")
-            ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id AND stacks_collapsed.user = '.$this->user->id, 'left')
+        $stacks = $this->getFindQuery()
             ->where('stacks.project', $projectId)
             ->orderBy('position', 'ASC')
             ->findAll();
+
+        if (count($stacks)) {
+            $permissionModel = new PermissionModel($this->user);
+            $permissionModel->getPermissions($stacks);
+
+            foreach ($stacks as &$stack) {
+                $stack->userPermissions = $this->getUserPermissions($stack->permission, $stack->public, $stack->isOwner);
+            }
+        }
+
+        return $stacks;
     }
 
     public function formatData(&$data)
@@ -131,10 +189,10 @@ class StackModel extends BaseModel
                     ->where("stack", $stackId)
                     ->delete() === false
             ) {
-                throw new ErrorException($stackCollapsedModel->errors());
+                throw new \Exception($stackCollapsedModel->errors());
             }
         } catch (\Exception $e) {
-            throw new ErrorException($e->getMessage());
+            throw new \Exception($e->getMessage());
         }
 
         $collapsed = [
@@ -145,10 +203,10 @@ class StackModel extends BaseModel
 
         try {
             if ($stackCollapsedModel->insert($collapsed) === false) {   
-                throw new ErrorException($stackCollapsedModel->errors());
+                throw new \Exception(implode(" ", $stackCollapsedModel->errors()));
             }
         } catch (\Exception $e) {
-            throw new ErrorException($e->getMessage());
+            throw new \Exception($e->getMessage());
         }
     }
 }

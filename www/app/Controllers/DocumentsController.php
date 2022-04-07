@@ -13,18 +13,7 @@ class DocumentsController extends BaseController
 	{
         $documentModel = new DocumentModel($this->request->user);
         $response = new \stdClass();
-        $response->documents = $documentModel
-            ->select("documents.*")
-            ->join("permissions", "permissions.resource = documents.id AND permissions.user = ".$this->db->escape($this->request->user->id), 'left')
-            ->groupStart()
-                ->where("public", 1)
-                ->orGroupStart()
-                    ->where("public", 0)
-                    ->where("owner", $this->request->user->id)
-                ->groupEnd()
-                ->orWhere($this->db->protectIdentifiers("permissions.permission") . " IS NOT NULL", NULL, false)
-            ->groupEnd()
-            ->findAll();
+        $response->documents = $documentModel->getDocuments();
 
         // load the global tags
         $tagModel = new TagModel();
