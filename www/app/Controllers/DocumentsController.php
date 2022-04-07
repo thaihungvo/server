@@ -39,6 +39,8 @@ class DocumentsController extends BaseController
         }
 
         $document = $this->getExpandedDocument($documentId);
+        $this->exists($document);
+
         return $this->reply($document);
     }
 
@@ -47,6 +49,8 @@ class DocumentsController extends BaseController
         $documentModel = new DocumentModel($this->request->user);
         $data = $this->request->getJSON();
         $documentModel->formatData($data);
+
+        $this->db->transStart();
 
         // inserting the new document
         try {
@@ -62,6 +66,11 @@ class DocumentsController extends BaseController
             $this->addPermission($data->id, $this::PERMISSION_TYPE_DOCUMENT);
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-DOCUMENTS-CREATE");
+        }
+
+        $this->db->transComplete();
+        if ($this->db->transStatus() === false) {
+            return $this->reply(null, 500, "ERR-DOCUMENTS-CREATE");
         }
 
         // inserting activity
@@ -88,10 +97,7 @@ class DocumentsController extends BaseController
         
         // checking if the requested document exists
         $document = $this->getDocument($documentId);
-        
-        if (!$document) {
-            return $this->reply("Document not found", 404, "ERR-DOCUMENTS-UPDATE");
-        }
+        $this->exists($document);
         
         // checking user permissions to update this document
         $this->can("update", $document);
@@ -126,6 +132,8 @@ class DocumentsController extends BaseController
             return $this->reply(null, 403, "You do not have permission to perform this action.");
         }
 
+        $this->db->transStart();
+
         // updating the document
         try {
             if ($documentModel->update($document->id, $data) === false) {
@@ -149,6 +157,11 @@ class DocumentsController extends BaseController
             
         }
 
+        $this->db->transComplete();
+        if ($this->db->transStatus() === false) {
+            return $this->reply(null, 500, "ERR-DOCUMENTS-UPDATE");
+        }
+
         // inserting activity
         $this->addActivity(
             $data->id,
@@ -165,7 +178,7 @@ class DocumentsController extends BaseController
         $orderData = $this->request->getJSON();
         
         // get all documents
-        $documentModel = new DocumentModel();
+        $documentModel = new DocumentModel($this->request->user);
         $documents = $documentModel->orderBy("position", "asc")->findAll();
 
         $documentsNeedUpdate = array();
@@ -208,10 +221,7 @@ class DocumentsController extends BaseController
     public function delete_v1($documentId)
     {        
         $document = $this->getDocument($documentId);
-
-        if (!isset($document->id)) {
-            return $this->reply("Document not found", 404, "ERR-DOCUMENTS-DELETE");
-        }
+        $this->exists($document);
 
         // checking user permissions to change this documents options
         $this->can("delete", $document);
@@ -222,7 +232,7 @@ class DocumentsController extends BaseController
             $documentsToCleanUp[] = $document;
         }
         
-        $documentModel = new DocumentModel();
+        $documentModel = new DocumentModel($this->request->user);
         try {
             if ($documentModel->delete([$document->id]) === false) {
                 return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-DELETE");
@@ -280,15 +290,12 @@ class DocumentsController extends BaseController
     {
         $options = $this->request->getJSON();
         $document = $this->getDocument($documentId);
-
-        if (!isset($document->id)) {
-            return $this->reply("Document not found", 404, "ERR-DOCUMENTS-OPTIONS");
-        }
+        $this->exists($document);
 
         // checking user permissions to change this documents options
         $this->can("update", $document);
 
-        $documentModel = new DocumentModel();
+        $documentModel = new DocumentModel($this->request->user);
         try {
             if ($documentModel->update($document->id, ["options" => json_encode($options)]) === false) {
                 return $this->reply($documentModel->errors(), 500, "ERR-DOCUMENTS-OPTIONS");
@@ -303,10 +310,7 @@ class DocumentsController extends BaseController
     public function attachments_v1($documentId)
     {        
         $document = $this->getDocument($documentId);
-
-        if (!isset($document->id)) {
-            return $this->reply("Document not found", 404, "ERR-DOCUMENTS-ATTACHMENTS");
-        }
+        $this->exists($document);
 
         $attachmentModel = new AttachmentModel();
         $attachments = $attachmentModel->where("resource", $documentId)->find();

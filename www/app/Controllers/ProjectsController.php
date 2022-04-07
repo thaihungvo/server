@@ -8,27 +8,19 @@ class ProjectsController extends BaseController
     {
         $this->lock($projectId);
         $document = $this->getDocument($projectId);
-
-        if (!$document) {
-            return $this->reply("Project not found", 404, "ERR-STACK-ORDER");
-        }
+        $this->exists($document);
 
         $data = $this->request->getJSON();
 
-        if (!isset($data->stack)) {
-            return $this->reply("Stack not found", 404, "ERR-STACK-ORDER");
-        }
+        $this->exists($data->stack);
 
         if (!isset($data->position)) {
             $data->position = 0;
         }
 
-        $stackModel = new StackModel();
-        $movedStack = $stackModel->find($data->stack);
-
-        if (!$movedStack) {
-            return $this->reply("Stack not found", 404, "ERR-STACK-ORDER");
-        }
+        $stackModel = new StackModel($this->request->user);
+        $movedStack = $stackModel->getStack($data->stack);
+        $this->exists($movedStack);
         
         $this->db->transBegin();
 
@@ -89,10 +81,7 @@ class ProjectsController extends BaseController
     {
         $this->lock($projectId);
         $document = $this->getDocument($projectId);
-
-        if (!$document) {
-            return $this->reply("Project not found", 404, "ERR-TASKS-ORDER");
-        }
+        $this->exists($document);
         
         $orderData = $this->request->getJSON();
 
@@ -103,12 +92,9 @@ class ProjectsController extends BaseController
             $orderData->position = 0;
         }
 
-        $taskModel = new TaskModel();
-        $movedTask = $taskModel->find($orderData->task);
-
-        if (!$movedTask) {
-            return $this->reply("Task not found", 404, "ERR-TASKS-ORDER");
-        }
+        $taskModel = new TaskModel($this->request->user);
+        $movedTask = $taskModel->getTask($orderData->task);
+        $this->exists($movedTask);
         
         $this->db->transBegin();
 
@@ -169,12 +155,9 @@ class ProjectsController extends BaseController
     {
         $this->lock($projectId);
         $document = $this->getDocument($projectId);
-
-        if (!$document) {
-            return $this->reply("Project not found", 404, "ERR-TASK-ORDER");
-        }
+        $this->exists($document);
         
-        $taskModel = new TaskModel();
+        $taskModel = new TaskModel($this->request->user);
         $tasks = $taskModel->where("project", $document->id)
             ->orderBy("position", "asc")
             ->find();

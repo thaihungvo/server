@@ -126,6 +126,15 @@ class BaseController extends Controller
         }
     }
 
+    protected function exists($resource, $errorMsg = null)
+    {
+        if (!isset($resource)) {
+            $response = $this->reply(null, 404, $errorMsg ? $errorMsg : "The requested resource was not found");
+            $response->send();
+            die();
+        }
+    }
+
     protected function addPermission($resourceId, $type, $permission = "FULL")
     {
         $permissionModel = new PermissionModel();

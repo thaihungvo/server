@@ -14,41 +14,26 @@ class TasksController extends BaseController
     {
         $taskModel = new TaskModel($this->request->user);
         $task = $taskModel->getTask($taskId);
-
-        if (!$task) {
-            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
-        }
+        $this->exists($task);
 
         $document = $this->getDocument($task->project);
-
-        if (!$document) {
-            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
-        }
+        $this->exists($document);
 
         $stackModel = new StackModel($this->request->user);
         $stack = $stackModel->getStack($task->stack);
-
-        if (!$stack) {
-            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
-        }
+        $this->exists($stack);
 
         return $this->reply($task);
     }
 
     public function add_v1($stackId)
     {        
-        $stackModal = new StackModel();
-        $stack = $stackModal->find($stackId);
-
-        if (!$stack) {
-            return $this->reply("Stack not found", 404, "ERR-TASK-CREATE");
-        }
+        $stackModal = new StackModel($this->request->user);
+        $stack = $stackModal->getStack($stackId);
+        $this->exists($stack);
 
         $document = $this->getDocument($stack->project);
-
-        if (!$document) {
-            return $this->reply("Project not found", 404, "ERR-TASK-CREATE");
-        }
+        $this->exists($document);
 
         $this->can("add", $stack);
 
@@ -63,15 +48,13 @@ class TasksController extends BaseController
         $data->owner = $this->request->user->id;
         $data->public = 1;
 
-        $taskModel = new TaskModel();
+        $taskModel = new TaskModel($this->request->user);
         $taskModel->formatData($data);
 
         // getting the desired position
         $position = $this->request->getGet("position");
-
-        if (!$position) {
-            $position = "bottom";
-        }
+        // setting the default position to `bottom`
+        if (!$position) $position = "bottom";
 
         if (!in_array($position, ["top", "bottom"])) {
             return $this->reply("Invalid task position", 500, "ERR-TASK-CREATE");
@@ -98,6 +81,8 @@ class TasksController extends BaseController
                 ->update();
         }
         
+        $this->db->transStart();
+
         try {
             if ($taskModel->insert($data) === false) {
                 $errors = $taskModel->errors();
@@ -114,7 +99,13 @@ class TasksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-TASK-CREATE");
         }
 
-        $task = $taskModel->find($data->id);
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            return $this->reply(null, 500, "ERR-TASK-CREATE");
+        }
+
+        $task = $taskModel->getTask($data->id);
 
         $this->addActivity(
             $document->id,
@@ -132,10 +123,18 @@ class TasksController extends BaseController
         $this->lock($taskId);
         $taskModel = new TaskModel($this->request->user);
         $task = $taskModel->getTask($taskId);
+        $this->exists($task);
+
+        $document = $this->getDocument($task->project);
+        $this->exists($document);
+
+        $stackModel = new StackModel($this->request->user);
+        $stack = $stackModel->getStack($task->stack);
+
+        $this->exists($stack);
+        $this->can("update", $task);
 
         $data = $this->request->getJSON();
-        
-        $taskModel = new TaskModel();
         $taskModel->formatData($data);
         unset($data->id);
         unset($data->position);
@@ -144,26 +143,6 @@ class TasksController extends BaseController
         unset($data->assignees);
         unset($data->info);
         $data->archived = null;
-
-        if (!$task) {
-            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
-        }
-
-        $document = $this->getDocument($task->project);
-
-        if (!$document) {
-            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
-        }
-
-        $this->can("update", $document);
-        $this->can("update", $task);
-
-        $stackModel = new StackModel();
-        $stack = $stackModel->find($task->stack);
-
-        if (!$stack) {
-            return $this->reply(null, 404, "ERR-TASKS-NOT-FOUND");
-        }
 
         // if somebody tries changing the owner and it's not the current owner then remove it
         if ($data->owner && $data->owner != $user->id) {
@@ -218,21 +197,14 @@ class TasksController extends BaseController
         $this->lock($taskId);
         $taskModel = new TaskModel($this->request->user);
         $task = $taskModel->getTask($taskId);
-
-        if (!$task) {
-            return $this->reply(null, 404, "ERR-TASKS-DELETE");
-        }
+        $this->exists($task);
 
         $document = $this->getDocument($task->project);
-        if (!$document) {
-            return $this->reply(null, 404, "ERR-TASKS-DELETE");
-        }
+        $this->exists($document);
 
-        $this->can("delete", $document);
         $this->can("delete", $task);
 
         // delete selected task
-        $taskModel = new TaskModel();
         try {
             if ($taskModel->delete([$task->id]) === false) {
                 return $this->reply($taskModel->errors(), 500, "ERR-TASKS-DELETE");
@@ -254,6 +226,10 @@ class TasksController extends BaseController
 
     public function get_watchers_v1($taskId)
     {
+        $taskModel = new TaskModel($this->request->user);
+        $task = $taskModel->getTask($taskId);
+        $this->exists($task);
+
         $userModel = new UserModel();
         $userBuilder = $userModel->builder();
         $usersQuery = $userBuilder->select("users.id, users.email, users.nickname, users.firstName, users.lastName, tasks_watchers.created")
@@ -271,8 +247,11 @@ class TasksController extends BaseController
 
     public function add_watcher_v1($taskId)
     {
-        $taskWatcherModel = new TaskWatcherModel();
+        $taskModel = new TaskModel($this->request->user);
+        $task = $taskModel->getTask($taskId);
+        $this->exists($task);
 
+        $taskWatcherModel = new TaskWatcherModel();
         $watchers = $taskWatcherModel->where("task", $taskId)
             ->where("user", $this->request->user->id)
             ->findAll();
@@ -281,6 +260,8 @@ class TasksController extends BaseController
             "task" => $taskId,
             "user" => $this->request->user->id
         );
+
+        $this->db->transStart();
 
         if (!count($watchers)) {
             try {
@@ -301,6 +282,12 @@ class TasksController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-TASK-ADD-WATCHER");
         }
 
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            return $this->reply(null, 500, "ERR-TASK-ADD-WATCHER");
+        }
+
         $this->addActivity(
             "",
             "", 
@@ -314,6 +301,10 @@ class TasksController extends BaseController
 
     public function remove_watcher_v1($taskId)
     {
+        $taskModel = new TaskModel($this->request->user);
+        $task = $taskModel->getTask($taskId);
+        $this->exists($task);
+
         $taskWatcherModel = new TaskWatcherModel();
 
         try {

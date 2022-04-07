@@ -128,7 +128,6 @@ class StacksController extends BaseController
         }
 
         $this->db->transComplete();
-
         if ($this->db->transStatus() === false) {
             return $this->reply(null, 500, "ERR-STACK-UPDATE");
         }
