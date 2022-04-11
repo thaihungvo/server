@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.34)
 # Database: stacks
-# Generation Time: 2022-04-01 11:57:13 +0000
+# Generation Time: 2022-04-11 06:32:19 +0000
 # ************************************************************
 
 
@@ -168,7 +168,7 @@ DROP TABLE IF EXISTS `stk_permissions`;
 CREATE TABLE `stk_permissions` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `resource` char(36) NOT NULL DEFAULT '',
-  `type` enum('DOCUMENT','TASK') DEFAULT NULL,
+  `type` enum('DOCUMENT','STACK','TASK') DEFAULT NULL,
   `user` int(11) DEFAULT NULL,
   `permission` enum('FULL','EDIT','LIMITED','NONE') DEFAULT 'FULL',
   `created` datetime DEFAULT NULL,
@@ -192,6 +192,8 @@ CREATE TABLE `stk_stacks` (
   `automation` text,
   `position` smallint(6) NOT NULL,
   `sorting` text,
+  `public` tinyint(4) NOT NULL,
+  `owner` int(11) NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,

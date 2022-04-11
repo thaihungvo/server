@@ -3,6 +3,7 @@
 use CodeIgniter\Model;
 use App\Models\BaseModel;
 use App\Models\DocumentModel;
+use App\Models\StackModel;
 use App\Models\TaskModel;
 
 class PermissionModel extends BaseModel
@@ -30,9 +31,11 @@ class PermissionModel extends BaseModel
     {
         $model = null;
         if ($type === "DOCUMENT") {
-            $model = new DocumentModel();
-        } elseif ($type == 'TASK') {
-            $model = new TaskModel();
+            $model = new DocumentModel($this->user);
+        } elseif ($type == "STACK") {
+            $model = new StackModel($this->user);
+        } elseif ($type == "TASK") {
+            $model = new TaskModel($this->user);
         } else {
             return null;
         }

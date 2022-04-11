@@ -437,7 +437,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"text\": \"New Project\",\n  \"parent\": 0,\n  \"data\": {\n    \"type\": \"project\"\n  }\n}",
+							"raw": "{\n    \"text\": \"New Project\",\n    \"parent\": 0,\n    \"data\": {\n        \"type\": \"project\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
