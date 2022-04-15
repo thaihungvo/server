@@ -86,9 +86,15 @@ class PermissionModel extends BaseModel
 
         foreach ($resources as &$resource) {
             $userPermission = "FULL";
+            $isOwner = false;
+            if (isset($resource->isOwner)) {
+                $isOwner = $resource->isOwner;
+            } else if (isset($resource->data->isOwner)) {
+                $isOwner = $resource->data->isOwner;
+            }
             
             // if the user is not the owner that we need to apply any available permissions
-            if ($resource->owner != $this->user->id) {
+            if (!$isOwner) {
                 foreach ($permissions as $permission) {
                     // if the document is the same as the permission's resource
                     if (
