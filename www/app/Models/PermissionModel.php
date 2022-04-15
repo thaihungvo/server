@@ -73,7 +73,7 @@ class PermissionModel extends BaseModel
     public function getPermissions(&$resources, $appendToData = false)
     {
         $db = db_connect();
-        $resourceIds = array_map(fn() => $resource->id, $resources);
+        $resourceIds = array_map(fn($resource) => $resource->id, $resources);
 
         $permissionBuilder = $this->builder();
         $permissionQuery = $permissionBuilder->select("permissions.*, userPermissions.permission AS userPermission")

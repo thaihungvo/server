@@ -144,14 +144,15 @@ class TasksController extends BaseController
         unset($data->info);
         $data->archived = null;
 
+        $msg = "You do not have permission to perform this action.";
         // if somebody tries changing the owner and it's not the current owner then remove it
-        if ($data->owner && $data->owner != $user->id) {
-            return $this->reply(null, 403);
+        if ($data->owner && $data->owner !=  $this->request->user->id) {
+            return $this->reply(null, 403, $msg);
         }
 
         // if somebody tries changing the visibility (private, public) and it's not the owner then remove it
-        if ($data->public && $task->owner != $user->id) {
-            return $this->reply(null, 403);
+        if ($data->public && $task->owner !=  $this->request->user->id) {
+            return $this->reply(null, 403, $msg);
         }
 
         $this->db->transStart();
@@ -171,7 +172,7 @@ class TasksController extends BaseController
         }
 
         // update the task
-        if ($taskModel->update($taskID, $data) === false) {
+        if ($taskModel->update($task->id, $data) === false) {
             return $this->reply(null, 500, "ERR-TASK-UPDATE");
         }
 

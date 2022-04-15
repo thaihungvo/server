@@ -19,10 +19,10 @@ class PermissionsController extends BaseController
 
         if (!$resource) return $this->reply(null, 403, $msg);
         if (isset($resource->data)) {
-            if ($this->request->user->id !== $resource->data->owner) {
+            if ($this->request->user->id != $resource->data->owner) {
                 return $this->reply(null, 403, $msg);
             }
-        } else if ($this->request->user->id !== $resource->owner) {
+        } else if ($this->request->user->id != $resource->owner) {
             return $this->reply(null, 403, $msg);
         }
 
@@ -42,8 +42,15 @@ class PermissionsController extends BaseController
 
         if (count($permissions)) {
             $resource = $permissionModel->getResource($resourceId, $permissions[0]->type);
-            if (!$resource || $this->request->user->id !== $resource->data->owner) {
-                return $this->reply(null, 403, "You do not have permission to perform this action.");
+            $msg = "You do not have permission to perform this action.";
+
+            if (!$resource) return $this->reply(null, 403, $msg);
+            if (isset($resource->data)) {
+                if ($this->request->user->id != $resource->data->owner) {
+                    return $this->reply(null, 403, $msg);
+                }
+            } else if ($this->request->user->id != $resource->owner) {
+                return $this->reply(null, 403, $msg);
             }
         }
 
@@ -69,8 +76,13 @@ class PermissionsController extends BaseController
         $this->exists($permission);
 
         $resource = $permissionModel->getResource($resourceId, $permission->type);
-        if (!$resource || $this->request->user->id !== $resource->data->owner) {
-            return $this->reply(null, 403, "You do not have permission to perform this action.");
+        if (!$resource) return $this->reply(null, 403, $msg);
+        if (isset($resource->data)) {
+            if ($this->request->user->id != $resource->data->owner) {
+                return $this->reply(null, 403, $msg);
+            }
+        } else if ($this->request->user->id != $resource->owner) {
+            return $this->reply(null, 403, $msg);
         }
 
         $deleted = $permissionModel
@@ -110,8 +122,15 @@ class PermissionsController extends BaseController
         $this->exists($permission);
 
         $resource = $permissionModel->getResource($resourceId, $permission->type);
-        if (!$resource || $this->request->user->id !== $resource->data->owner) {
-            return $this->reply(null, 403, "You do not have permission to perform this action.");
+        $msg = "You do not have permission to perform this action.";
+
+        if (!$resource) return $this->reply(null, 403, $msg);
+        if (isset($resource->data)) {
+            if ($this->request->user->id != $resource->data->owner) {
+                return $this->reply(null, 403, $msg);
+            }
+        } else if ($this->request->user->id != $resource->owner) {
+            return $this->reply(null, 403, $msg);
         }
         
         $updated = $permissionModel
@@ -150,8 +169,15 @@ class PermissionsController extends BaseController
         }
 
         $resource = $permissionModel->getResource($data->resource, $data->type);
-        if (!$resource || $this->request->user->id !== $resource->data->owner) {
-            return $this->reply(null, 403, "You do not have permission to perform this action.");
+        $msg = "You do not have permission to perform this action.";
+
+        if (!$resource) return $this->reply(null, 403, $msg);
+        if (isset($resource->data)) {
+            if ($this->request->user->id != $resource->data->owner) {
+                return $this->reply(null, 403, "A");
+            }
+        } else if ($this->request->user->id != $resource->owner) {
+            return $this->reply(null, 403, $msg);
         }
 
         // check if there's already a permission with these settings

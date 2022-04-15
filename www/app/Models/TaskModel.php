@@ -15,7 +15,7 @@ class TaskModel extends BaseModel
 
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = ["id", "title", "description", "showDescription", "tags", "status", "duedate", "startdate", "cover", "done", "altTags", "estimate", "spent", "progress", "user", "hourlyFee", "owner", "priority", "repeats", "project", "stack", "position", "archived", "created", "updated"];
+    protected $allowedFields = ["id", "title", "description", "showDescription", "tags", "status", "duedate", "startdate", "cover", "done", "altTags", "estimate", "spent", "progress", "user", "hourlyFee", "owner", "priority", "repeats", "project", "stack", "position", "public", "owner", "archived", "created", "updated"];
 
     protected $useTimestamps = true;
     protected $createdField  = "created";
@@ -39,7 +39,7 @@ class TaskModel extends BaseModel
         $task->progress = intval($task->progress);
         $task->position = intval($task->position);
         $task->public = boolval($task->public);
-        $task->isOwner = $task->owner === $this->user->id;
+        $task->isOwner = $task->owner == $this->user->id;
         unset($task->order);
         unset($task->deleted);
 
@@ -175,6 +175,11 @@ class TaskModel extends BaseModel
         // convert tags to string
         if (isset($data->tags)) {
             $data->tags = json_encode($data->tags);
+        }
+
+        // convert public boolean to int
+        if (isset($data->public)) {
+            $data->public = intval($data->public);
         }
 
         // convert repeats to string

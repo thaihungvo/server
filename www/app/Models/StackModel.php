@@ -33,8 +33,9 @@ class StackModel extends BaseModel
     {
         $stack->position = intval($stack->position);
         $stack->collapsed = boolval($stack->collapsed);
+        $stack->public = boolval($stack->public);
         $stack->owner = intval($stack->owner);
-        $stack->isOwner = $stack->owner === $this->user->id;
+        $stack->isOwner = $stack->owner == $this->user->id;
 
         if (isset($stack->tag) && is_string($stack->tag)) {
             $stack->tag = json_decode($stack->tag);

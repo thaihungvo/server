@@ -41,7 +41,7 @@ class DocumentModel extends BaseModel
 
             $data["data"]->parent = intval($data["data"]->parent);
             $data["data"]->data = new \stdClass();
-            $data["data"]->data->isOwner = $data["data"]->owner == $user->id;
+            $data["data"]->data->isOwner = $data["data"]->data->owner == $user->id;
             $data["data"]->data->owner = intval($data["data"]->owner);
             $data["data"]->data->public = boolval($data["data"]->public);
             $data["data"]->data->type = $data["data"]->type;
@@ -61,7 +61,7 @@ class DocumentModel extends BaseModel
             
             $permissionModel = new PermissionModel($user);
             $data["data"]->data->permission = $permissionModel->getPermission($data["data"]->id, $data["data"]->owner);
-            $data["data"]->data->userPermissions = $this->getUserPermissions($data["data"]->data->permission);
+            $data["data"]->data->userPermissions = $this->getUserPermissions($data["data"]->data->permission, $data["data"]->data->type);
         }
 
         // format list of documents
@@ -96,7 +96,7 @@ class DocumentModel extends BaseModel
                 $document->data->public = boolval($document->public);
                 unset($document->public);
                 $document->data->owner = intval($document->owner);
-                $document->data->isOwner = $document->owner == $user->id;
+                $document->data->isOwner = $document->data->owner == $user->id;
                 unset($document->owner);
                 unset($document->options);
                 unset($document->deleted);
@@ -110,27 +110,40 @@ class DocumentModel extends BaseModel
             $permissionModel->getPermissions($data["data"], true);
 
             foreach ($data["data"] as $key => &$document) {
-                $document->data->userPermissions = $this->getUserPermissions($document->permission);
+                $document->data->userPermissions = $this->getUserPermissions($document->data->permissions, $document->type);
             }
         }
 
         return $data;
     }
 
-    protected function getUserPermissions($permission)
+    protected function getUserPermissions($permission, $type)
     {
         /*
+        - document
         FULL - add children, update, delete, manage options
         EDIT - add children, update
         LIMITED - 
         NONE - read only
+
+        - folder
+        FULL - add children, rename, delete and all children
+        EDIT - add children, update, CANNOT delete
+        LIMITED - cannot be deleted, children documents can be created
+        NONE - read only - children documents cannot be deleted or created
         */
 
         $can = new \stdClass();
-        $can->update = $permission === "FULL" || $permission === "EDIT" ? true : false;
-        $can->delete = $permission === "FULL" ? true : false;
-        $can->options = $permission === "FULL" ? true : false;
-        $can->add = $permission === "FULL" || $permission === "EDIT" ? true : false;
+        if ($type !== "folder") {
+            $can->delete = $permission === "FULL" ? true : false;
+            $can->update = $permission === "FULL" || $permission === "EDIT" ? true : false;
+            $can->options = $permission === "FULL" ? true : false;
+            $can->add = $permission === "FULL" || $permission === "EDIT" ? true : false;
+        } else {
+            $can->delete = $permission === "FULL" ? true : false;
+            $can->update = $permission === "FULL" || $permission === "EDIT" ? true : false;
+            $can->add = $permission === "FULL" || $permission === "EDIT" || $permission === "LIMITED" ? true : false;
+        }
 
         return $can;
     }

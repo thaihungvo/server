@@ -101,8 +101,10 @@ class BaseController extends Controller
         helper("documents");
         $document = $this->getDocument($documentId);
 
-        foreach (get_object_vars($document->data) as $key => $value) {
-            $document->$key = $document->data->$key;
+        if ($document->data) {
+            foreach (get_object_vars($document->data) as $key => $value) {
+                $document->$key = $document->data->$key;
+            }
         }
         unset($document->data);
 
