@@ -107,9 +107,9 @@ class PermissionModel extends BaseModel
             }
 
             if ($appendToData) {
-                $resource->data->permissions = $userPermission;
+                $resource->data->permission = $userPermission;
             } else {
-                $resource->permissions = $userPermission;
+                $resource->permission = $userPermission;
             }
         }
     }

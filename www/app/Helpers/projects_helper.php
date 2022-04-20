@@ -49,6 +49,23 @@ if (!function_exists("projects_expand")) {
         // TODO: moved archived task to their place
         $document->archived = [];
 
+        $permissions = $document->permissions;
+        $docId = $document->id;
+        $document->permissions = new \stdClass();
+        $document->permissions->$docId = $permissions;
+
+        foreach ($document->stacks as &$stack) {
+            $stackId = $stack->id;
+            $document->permissions->$stackId = $stack->permissions;
+            unset($stack->permissions);
+
+            foreach ($stack->tasks as &$task) {
+                $taskId = $task->id;
+                $document->permissions->$taskId = $task->permissions;
+                unset($task->permissions);
+            }
+        }
+
         unset($document->order);
         unset($document->deleted);
     }

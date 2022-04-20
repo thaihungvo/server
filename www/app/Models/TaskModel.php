@@ -133,11 +133,10 @@ class TaskModel extends BaseModel
 
     protected function getUserPermissions($permission, $task)
     {
-        $can = new \stdClass();
-        $can->add = $permission === "FULL" || $permission === "EDIT" ? true : false;
-        //$can->read = $permission !== "NONE" ? true : false;
-        $can->update = $permission === "FULL" || $permission === "EDIT" || ($permission === "LIMITED" && $task->isOwner) ? true : false;
-        $can->delete = $permission === "FULL" || $permission === "EDIT" ? true : false;
+        $can = "";
+        $can .= $permission === "FULL" || $permission === "EDIT" ? "A" : "";
+        $can .= $permission === "FULL" || $permission === "EDIT" || ($permission === "LIMITED" && $task->isOwner) ? "U" : "";
+        $can .= $permission === "FULL" || $permission === "EDIT" ? "D" : "";
         return $can;
     }
 

@@ -61,7 +61,7 @@ class DocumentModel extends BaseModel
             
             $permissionModel = new PermissionModel($user);
             $data["data"]->data->permission = $permissionModel->getPermission($data["data"]->id, $data["data"]->owner);
-            $data["data"]->data->userPermissions = $this->getUserPermissions($data["data"]->data->permission, $data["data"]->data->type);
+            $data["data"]->data->permissions = $this->getUserPermissions($data["data"]->data->permission, $data["data"]->data->type);
         }
 
         // format list of documents
@@ -108,9 +108,9 @@ class DocumentModel extends BaseModel
             // load the documents permissions
             $permissionModel = new PermissionModel($user);
             $permissionModel->getPermissions($data["data"], true);
-
+            
             foreach ($data["data"] as $key => &$document) {
-                $document->data->userPermissions = $this->getUserPermissions($document->data->permissions, $document->type);
+                $document->data->permissions = $this->getUserPermissions($document->data->permission, $document->type);
             }
         }
 
@@ -132,18 +132,17 @@ class DocumentModel extends BaseModel
         LIMITED - cannot be deleted, children documents can be created
         NONE - read only - children documents cannot be deleted or created
         */
-
-        $can = new \stdClass();
+        $can = "";
+        
         if ($type !== "folder") {
-            $can->delete = $permission === "FULL" ? true : false;
-            $can->update = $permission === "FULL" || $permission === "EDIT" ? true : false;
-            $can->options = $permission === "FULL" ? true : false;
-            $can->add = $permission === "FULL" || $permission === "EDIT" ? true : false;
+            $can .= $permission === "FULL" || $permission === "EDIT" ? "A" : "";
         } else {
-            $can->delete = $permission === "FULL" ? true : false;
-            $can->update = $permission === "FULL" || $permission === "EDIT" ? true : false;
-            $can->add = $permission === "FULL" || $permission === "EDIT" || $permission === "LIMITED" ? true : false;
+            $can .= $permission === "FULL" || $permission === "EDIT" || $permission === "LIMITED" ? "A" : "";
         }
+
+        $can .= $permission === "FULL" ? "D" : "";
+        $can .= $permission === "FULL" || $permission === "EDIT" ? "U" : "";
+        $can .= $permission === "FULL" ? "O" : "";
 
         return $can;
     }

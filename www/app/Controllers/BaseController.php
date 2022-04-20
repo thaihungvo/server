@@ -114,14 +114,22 @@ class BaseController extends Controller
 
     protected function can($action, $resource, $errorMsg = null)
     {
-        $can = false;
-        if (isset($resource->data->userPermissions)) {
-            $can = $resource->data->userPermissions->$action;
-        } else if (isset($resource->userPermissions)) {
-            $can = $resource->userPermissions->$action;
+        $permissions = "";
+
+        $actions = [
+            "add" => "A",
+            "update" => "U",
+            "delete" => "D",
+            "options" => "O"
+        ];
+
+        if (isset($resource->data->permissions)) {
+            $permissions = $resource->data->permissions;
+        } else if (isset($resource->permissions)) {
+            $permissions = $resource->permissions;
         }
 
-        if (!$can) {
+        if (strpos($permissions, $actions[$action]) === false) {
             $response = $this->reply(null, 403, $errorMsg ? $errorMsg : "You do not have permission to perform this action");
             $response->send();
             die();

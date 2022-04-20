@@ -81,10 +81,10 @@ class StackModel extends BaseModel
             LIMITED - owner can rename the stack
             NONE - Read only
         */
-        $can = new \stdClass();
-        $can->add = $permission === "FULL" || $permission === "EDIT" ? true : false;
-        $can->update = $permission === "FULL" || $permission === "EDIT" ? true : false;
-        $can->delete = $permission === "FULL" || $permission === "EDIT" ? true : false;
+        $can = "";
+        $can .= $permission === "FULL" || $permission === "EDIT" ? "A" : "";
+        $can .= $permission === "FULL" || $permission === "EDIT" ? "D" : "";
+        $can .= $permission === "FULL" || $permission === "EDIT" ? "U" : "";
         return $can;
     }
 
@@ -119,7 +119,7 @@ class StackModel extends BaseModel
         if ($stack) {
             $permissionModel = new PermissionModel($this->user);
             $stack->permission = $permissionModel->getPermission($stack->id, $stack->owner);
-            $stack->userPermissions = $this->getUserPermissions($stack->permission);
+            $stack->permissions = $this->getUserPermissions($stack->permission);
         }
 
         return $stack;
@@ -137,7 +137,7 @@ class StackModel extends BaseModel
             $permissionModel->getPermissions($stacks);
 
             foreach ($stacks as &$stack) {
-                $stack->userPermissions = $this->getUserPermissions($stack->permission, $stack->public, $stack->isOwner);
+                $stack->permissions = $this->getUserPermissions($stack->permission, $stack->public, $stack->isOwner);
             }
         }
 

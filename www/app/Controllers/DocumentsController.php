@@ -15,6 +15,15 @@ class DocumentsController extends BaseController
         $response = new \stdClass();
         $response->documents = $documentModel->getDocuments();
 
+        // normalize permissions
+        $response->permissions = new \stdClass();
+        foreach ($response->documents as &$document) {
+            $docId = $document->id;
+            $response->permissions->$docId = $document->data->permissions;
+            unset($document->data->permissions);
+        }
+
+
         // load the global tags
         $tagModel = new TagModel();
         $response->tags = $tagModel->where("project", NULL)->findAll();
@@ -98,7 +107,7 @@ class DocumentsController extends BaseController
         // checking if the requested document exists
         $document = $this->getDocument($documentId);
         $this->exists($document);
-        
+
         // checking user permissions to update this document
         $this->can("update", $document);
 
@@ -120,16 +129,15 @@ class DocumentsController extends BaseController
 
         unset($data->type); // just in case someone tries to change types
         unset($data->created);
-        // unset($data->owner); // we don't want to change the owner
 
         // checking if someone without privilages changes the visibility
         if (isset($data->public) && $data->public != $document->data->public && $data->owner != $document->data->owner) {
-            return $this->reply(null, 403, "You do not have permission to perform this action");
+            return $this->reply(null, 403, "You do not have permission to perform this action. 1");
         }
 
         // checking if someone without privilages changes the owner
         if (isset($data->owner) && $data->owner != $document->data->owner && $data->owner != $document->data->owner) {
-            return $this->reply(null, 403, "You do not have permission to perform this action.");
+            return $this->reply(null, 403, "You do not have permission to perform this action. 2");
         }
 
         $this->db->transStart();
