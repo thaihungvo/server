@@ -209,7 +209,7 @@ class TaskModel extends BaseModel
         if ($task) {
             $permissionModel = new PermissionModel($this->user);
             $task->permission = $permissionModel->getPermission($task->id, $task->owner);
-            $task->userPermissions = $this->getUserPermissions($task->permission, $task);
+            $task->permissions = $this->getUserPermissions($task->permission, $task);
         }
 
         return $task;
@@ -227,7 +227,7 @@ class TaskModel extends BaseModel
             $permissionModel->getPermissions($tasks);
 
             foreach ($tasks as &$task) {
-                $task->userPermissions = $this->getUserPermissions($task->permission, $task);
+                $task->permissions = $this->getUserPermissions($task->permission, $task);
             }
         }
 
