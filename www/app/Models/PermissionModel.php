@@ -29,18 +29,21 @@ class PermissionModel extends BaseModel
 
     public function getResource($id, $type)
     {
-        $model = null;
+        $resource = null;
         if ($type === "DOCUMENT") {
-            $model = new DocumentModel($this->user);
+            $documentModel = new DocumentModel($this->user);
+            $resource = $documentModel->getDocument($id);
         } elseif ($type == "STACK") {
-            $model = new StackModel($this->user);
+            $stackModel = new StackModel($this->user);
+            $resource = $stackModel->getStack($id);
         } elseif ($type == "TASK") {
-            $model = new TaskModel($this->user);
+            $taskModel = new TaskModel($this->user);
+            $resource = $taskModel->getTask($id);
         } else {
             return null;
         }
-        if (!$model) return null;
-        return $model->find($id);
+
+        return $resource;
     }
 
     public function getPermission($resourceId, $owner)

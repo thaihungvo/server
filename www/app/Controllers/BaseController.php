@@ -51,6 +51,7 @@ class BaseController extends Controller
     const SECTION_TASK = "task";
     const SECTION_ORDER = "order";
     const SECTION_WATCHER = "watcher";
+    const SECTION_PERMISSION = "permission";
 
     const PERMISSION_FULL = "FULL";
     const PERMISSION_EDIT = "EDIT";

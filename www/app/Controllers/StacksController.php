@@ -20,7 +20,7 @@ class StacksController extends BaseController
         // check if the current user has the permission to add a new stack
         $this->can("add", $document);
 
-        $stackModel = new StackModel();
+        $stackModel = new StackModel($this->request->user);
         $data = $this->request->getJSON();
         $data->project = $document->id;
         $data->owner = $this->request->user->id;
@@ -64,7 +64,7 @@ class StacksController extends BaseController
             $this::SECTION_STACK
         );
 
-        $stack = $stackModel->find($data->id);
+        $stack = $stackModel->getStack($data->id);
         return $this->reply($stack);
     }
 

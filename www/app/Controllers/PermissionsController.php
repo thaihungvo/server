@@ -16,17 +16,12 @@ class PermissionsController extends BaseController
         $resource = $permissionModel->getResource($resourceId, $permission->type);
 
         $msg = "You do not have permission to perform this action.";
-
         if (!$resource) return $this->reply(null, 403, $msg);
-        if (isset($resource->data)) {
-            if ($this->request->user->id != $resource->data->owner) {
-                return $this->reply(null, 403, $msg);
-            }
-        } else if ($this->request->user->id != $resource->owner) {
-            return $this->reply(null, 403, $msg);
-        }
 
-        return $this->reply($permission);
+        $permissions = new \stdClass();
+        $permissions->$resourceId = isset($resource->data) ? $resource->data->permissions : $resource->permissions;
+
+        return $this->reply($permissions);
     }
 
     public function get_users_v1($resourceId)
@@ -67,6 +62,57 @@ class PermissionsController extends BaseController
         return $this->reply($permissions);
     }
 
+    public function add_v1()
+    {
+        $permissionModel = new PermissionModel($this->request->user);
+        
+        $data = $this->request->getJSON();
+        if (!isset($data->permission)) {
+            return $this->reply("Permission missing or not valid", 500, "ERR-PERMISSION-CREATE");
+        }
+
+        $resource = $permissionModel->getResource($data->resource, $data->type);
+        $msg = "You do not have permission to perform this action.";
+
+        if (!$resource) return $this->reply(null, 403, $msg);
+        if (isset($resource->data)) {
+            if ($this->request->user->id != $resource->data->owner) {
+                return $this->reply(null, 403, $msg);
+            }
+        } else if ($this->request->user->id != $resource->owner) {
+            return $this->reply(null, 403, $msg);
+        }
+
+        // check if there's already a permission with these settings
+        $permissions = $permissionModel
+            ->where("user", $data->user)
+            ->where("resource", $data->resource)
+            ->where("type", $data->type)
+            ->findAll();
+
+        if (count($permissions) > 0) {
+            return $this->reply("A permission with these params already exist", 409, "ERR-PERMISSION-ADD");
+        }
+
+        try {
+            if ($permissionModel->insert($data) === false) {
+                return $this->reply($permissionModel->errors(), 500, "ERR-PERMISSIONS-ADD");
+            }    
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-PERMISSIONS-ADD");
+        }
+
+        $this->addActivity(
+            "",
+            "",
+            $resource->id,
+            $this::ACTION_CREATE,
+            $this::SECTION_PERMISSION
+        );
+
+        return $this->reply(true);
+    }
+
     public function delete_user_v1($resourceId, $userId)
     {
         $permissionModel = new PermissionModel($this->request->user);
@@ -98,14 +144,13 @@ class PermissionsController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-PERMISSIONS-DELETE");
         }
 
-        // TODO: trigger an activity
-        // $this->addActivity(
-        //     $document->id,
-        //     $document->parent,
-        //     $document->id,
-        //     $this::ACTION_DELETE,
-        //     $this::SECTION_DOCUMENTS
-        // );
+        $this->addActivity(
+            "",
+            "",
+            $resource->id,
+            $this::ACTION_DELETE,
+            $this::SECTION_PERMISSION
+        );
 
         return $this->reply(true);
     }
@@ -124,7 +169,8 @@ class PermissionsController extends BaseController
         $resource = $permissionModel->getResource($resourceId, $permission->type);
         $msg = "You do not have permission to perform this action.";
 
-        if (!$resource) return $this->reply(null, 403, $msg);
+        $this->exists($resource);
+
         if (isset($resource->data)) {
             if ($this->request->user->id != $resource->data->owner) {
                 return $this->reply(null, 403, $msg);
@@ -147,59 +193,13 @@ class PermissionsController extends BaseController
             return $this->reply($e->getMessage(), 500, "ERR-PERMISSIONS-UPDATE");
         }
 
-        // TODO: trigger an activity
-        // $this->addActivity(
-        //     $document->id,
-        //     $document->parent,
-        //     $document->id,
-        //     $this::ACTION_DELETE,
-        //     $this::SECTION_DOCUMENTS
-        // );
-
-        return $this->reply(true);
-    }
-
-    public function add_v1()
-    {
-        $permissionModel = new PermissionModel($this->request->user);
-        
-        $data = $this->request->getJSON();
-        if (!isset($data->permission)) {
-            $data->permission = "FULL";
-        }
-
-        $resource = $permissionModel->getResource($data->resource, $data->type);
-        $msg = "You do not have permission to perform this action.";
-
-        if (!$resource) return $this->reply(null, 403, $msg);
-        if (isset($resource->data)) {
-            if ($this->request->user->id != $resource->data->owner) {
-                return $this->reply(null, 403, "A");
-            }
-        } else if ($this->request->user->id != $resource->owner) {
-            return $this->reply(null, 403, $msg);
-        }
-
-        // check if there's already a permission with these settings
-        $permissions = $permissionModel
-            ->where("user", $data->user)
-            ->where("resource", $data->resource)
-            ->where("type", $data->type)
-            ->findAll();
-
-        if (count($permissions) > 0) {
-            return $this->reply("A permission with these params already exist", 409, "ERR-PERMISSION-ADD");
-        }
-
-        try {
-            if ($permissionModel->insert($data) === false) {
-                return $this->reply($permissionModel->errors(), 500, "ERR-PERMISSIONS-ADD");
-            }    
-        } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-PERMISSIONS-ADD");
-        }
-
-        // TODO: trigger an activity
+        $this->addActivity(
+            "",
+            "",
+            $resource->id,
+            $this::ACTION_UPDATE,
+            $this::SECTION_PERMISSION
+        );
 
         return $this->reply(true);
     }
