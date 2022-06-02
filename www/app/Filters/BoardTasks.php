@@ -33,7 +33,7 @@ class BoardTasks implements FilterInterface
             ->groupStart()
                 ->where('boards.owner', $user->id)
                 ->orWhere('boards_members.user', $user->id)
-                ->orWhere('boards.everyone', 1)
+                ->orWhere('boards.public', 1)
             ->groupEnd()
             ->limit(1)
             ->get();

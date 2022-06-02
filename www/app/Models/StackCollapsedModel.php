@@ -18,7 +18,7 @@ class StackCollapsedModel extends Model
     protected $deletedField  = "";
 
     protected $validationRules = [
-        "stack" => "required|min_length[35]",
+        "stack" => "required|min_length[20]",
         "collapsed" => "required|integer",
         "user" => "required|integer"
     ];

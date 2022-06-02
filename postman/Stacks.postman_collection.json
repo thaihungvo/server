@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"name": "0. Ping",
+			"name": "Ping",
 			"item": [
 				{
 					"name": "Ping",
@@ -47,16 +47,32 @@
 			]
 		},
 		{
-			"name": "1. User",
+			"name": "User",
 			"item": [
 				{
 					"name": "User registration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"user\", jsonData.data);",
+									"",
+									"pm.test(\"Registration status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"email\": \"admin@stacks.rocks\",\n\t\"password\": \"123456\",\n    \"firstName\": \"Admin\",\n    \"lastName\": \"Stacks\"\n}",
+							"raw": "{\n\t\"email\": \"{{testUserUsername}}\",\n\t\"password\": \"{{testUserPassword}}\",\n    \"firstName\": \"Lorem\",\n    \"lastName\": \"Ipsum\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -91,7 +107,8 @@
 									"",
 									"pm.test(\"Login user test\", function () {",
 									"    const responseJson = pm.response.json();",
-									"    pm.expect(responseJson.data.id).to.equal(\"1\");",
+									"    const user = pm.environment.get(\"user\");",
+									"    pm.expect(responseJson.data.id).is.equal(`${user}`);",
 									"});"
 								],
 								"type": "text/javascript"
@@ -103,7 +120,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"email\": \"l.skywalker@resistance.com\",\n\t\"password\": \"123456\"\n}",
+							"raw": "{\n\t\"email\": \"{{testUserUsername}}\",\n\t\"password\": \"{{testUserPassword}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -169,225 +186,8 @@
 			]
 		},
 		{
-			"name": "2. Documents",
+			"name": "Documents",
 			"item": [
-				{
-					"name": "Various documents",
-					"item": [
-						{
-							"name": "Add Project",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"var jsonData = pm.response.json();",
-											"pm.environment.set(\"document\", jsonData.data.id);",
-											"",
-											"pm.test(\"Add document status test\", function () {",
-											"    pm.response.to.have.status(200);",
-											"});",
-											"",
-											"pm.test(\"Add document response\", function () {",
-											"    const responseJson = pm.response.json();",
-											"    pm.expect(responseJson.data).to.be.an(\"object\");",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "{{authToken}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"text\": \"New Project\",\n  \"parent\": 0,\n  \"data\": {\n    \"type\": \"project\"\n  }\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{server}}/api/{{ver}}/documents",
-									"host": [
-										"{{server}}"
-									],
-									"path": [
-										"api",
-										"{{ver}}",
-										"documents"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Add People",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"var jsonData = pm.response.json();",
-											"pm.environment.set(\"document\", jsonData.data.id);",
-											"",
-											"pm.test(\"Add document status test\", function () {",
-											"    pm.response.to.have.status(200);",
-											"});",
-											"",
-											"pm.test(\"Add document response\", function () {",
-											"    const responseJson = pm.response.json();",
-											"    pm.expect(responseJson.data).to.be.an(\"object\");",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "{{authToken}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"text\": \"New People\",\n  \"parent\": 0,\n  \"data\": {\n    \"type\": \"people\"\n  }\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{server}}/api/{{ver}}/documents",
-									"host": [
-										"{{server}}"
-									],
-									"path": [
-										"api",
-										"{{ver}}",
-										"documents"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Add Notepad",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"var jsonData = pm.response.json();",
-											"pm.environment.set(\"document\", jsonData.data.id);",
-											"",
-											"pm.test(\"Add document status test\", function () {",
-											"    pm.response.to.have.status(200);",
-											"});",
-											"",
-											"pm.test(\"Add document response\", function () {",
-											"    const responseJson = pm.response.json();",
-											"    pm.expect(responseJson.data).to.be.an(\"object\");",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "{{authToken}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"text\": \"New Notepad\",\n  \"parent\": 0,\n  \"data\": {\n    \"type\": \"notepad\"\n  }\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{server}}/api/{{ver}}/documents",
-									"host": [
-										"{{server}}"
-									],
-									"path": [
-										"api",
-										"{{ver}}",
-										"documents"
-									]
-								}
-							},
-							"response": []
-						}
-					]
-				},
-				{
-					"name": "Get All Documents",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"folder\", jsonData.data.id);",
-									"",
-									"pm.test(\"Get All Documents status test\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Get All Documents response\", function () {",
-									"    const responseJson = pm.response.json();",
-									"    pm.expect(responseJson.data).to.be.an(\"object\");",
-									"});",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"documents"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Add Folder",
 					"event": [
@@ -445,7 +245,7 @@
 					"response": []
 				},
 				{
-					"name": "Add Document",
+					"name": "Add Generic Document",
 					"event": [
 						{
 							"listen": "test",
@@ -454,11 +254,11 @@
 									"var jsonData = pm.response.json();",
 									"pm.environment.set(\"document\", jsonData.data.id);",
 									"",
-									"pm.test(\"Add document status test\", function () {",
+									"pm.test(\"Add document (Generic) status test\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"Add document response\", function () {",
+									"pm.test(\"Add document (Generic) response\", function () {",
 									"    const responseJson = pm.response.json();",
 									"    pm.expect(responseJson.data).to.be.an(\"object\");",
 									"});"
@@ -478,7 +278,166 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"text\": \"Some document\",\n  \"parent\": \"{{folder}}\",\n  \"data\": {\n    \"created\": \"2021-04-20T08:32:25.998Z\",\n    \"type\": \"project\"\n  }\n}",
+							"raw": "{\n  \"text\": \"New Document\",\n  \"parent\": 0,\n  \"data\": {\n    \"type\": \"project\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/documents",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"documents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add People",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Add document (People) status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add document (People) response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"text\": \"New People\",\n  \"parent\": 0,\n  \"data\": {\n    \"type\": \"people\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/documents",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"documents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Notepad",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Add document (Notepad) status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add document (Notepad) response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"text\": \"New Notepad\",\n  \"parent\": 0,\n  \"data\": {\n    \"type\": \"notepad\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/documents",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"documents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Project",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"project\", jsonData.data.id);",
+									"",
+									"pm.test(\"Add document (Project) status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add document (Project) response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"New Project\",\n    \"parent\": 0,\n    \"data\": {\n        \"type\": \"project\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -506,6 +465,79 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test(\"Get Single Document status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const currentDocumentId = pm.environment.get(\"project\");",
+									"pm.test(\"Get Single Document response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});",
+									"",
+									"pm.test(\"Get Single Document response ID\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data.id).to.equal(currentDocumentId);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/documents/{{project}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"documents",
+								"{{project}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Documents",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"folder\", jsonData.data.id);",
+									"",
+									"pm.test(\"Get All Documents status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get All Documents response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});",
+									"",
+									"pm.test(\"Get All Documents response structure\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    const data = responseJson.data;",
+									"",
+									"    let valid = data.hasOwnProperty(\"documents\");",
+									"    // valid.expect(data.documents).to.be.an(\"array\");",
+									"    valid = data.hasOwnProperty(\"tags\");",
+									"    valid = data.hasOwnProperty(\"statuses\");",
+									"",
+									"    pm.expect(valid).to.eql(true);",
+									"});",
 									""
 								],
 								"type": "text/javascript"
@@ -522,15 +554,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents/{{document}}",
+							"raw": "{{server}}/api/{{ver}}/documents",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"documents",
-								"{{document}}"
+								"documents"
 							]
 						}
 					},
@@ -538,6 +569,19 @@
 				},
 				{
 					"name": "Update Document",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Document status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -549,7 +593,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"text\": \"Some new title\"\n}",
+							"raw": "{\n  \"text\": \"New title\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -557,7 +601,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents/{{document}}",
+							"raw": "{{server}}/api/{{ver}}/documents/{{project}}",
 							"host": [
 								"{{server}}"
 							],
@@ -565,7 +609,7 @@
 								"api",
 								"{{ver}}",
 								"documents",
-								"{{document}}"
+								"{{project}}"
 							]
 						}
 					},
@@ -603,7 +647,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    // parentId: [documentId, documentId, ...]\n  \"c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\": [\n    \"d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\",\n    \"w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\"\n  ]\n}",
+							"raw": "{\n  \"c9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\": [\n    \"d9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\",\n    \"w9da620c-d4e9-429a-9a6b-e3f6d8d1f9f7\"\n  ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -626,14 +670,155 @@
 					"response": []
 				},
 				{
+					"name": "Update Options",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Document Options status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"feeCurrency\":\"USD\",\n    \"archivedOrder\":\"archived-asc\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/documents/{{project}}/options",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"documents",
+								"{{project}}",
+								"options"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Document attachments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Document Attachments status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/documents/{{project}}/attachments",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"documents",
+								"{{project}}",
+								"attachments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Toggle Visibility (Public/Private)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Document Visibility status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Update Document Visibility status response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.equal(true);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"public\": 0\n}",
+							"options": {
+								"raw": {
+									"language": "javascript"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/documents/{{project}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"documents",
+								"{{project}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Delete Document/Folder",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"",
 									"pm.test(\"Delete document status test\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
@@ -665,9 +850,173 @@
 						}
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "Permissions",
+			"item": [
+				{
+					"name": "Get Resource Permission",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Resource Permission status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get Resource Permission response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/permissions/{{project}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"permissions",
+								"{{project}}"
+							]
+						}
+					},
+					"response": []
 				},
 				{
-					"name": "Update Options",
+					"name": "Add a Permission",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Add a User Permission status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add a User Permission response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resource\": \"{{project}}\",\n    \"permission\": \"FULL\",\n    \"type\": \"DOCUMENT\",\n    \"user\": {{user}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/permissions",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"permissions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Resource Users Permissions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Users Permission for Resource status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get Users Permission for Resource response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"array\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/permissions/{{project}}/users",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"permissions",
+								"{{project}}",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a Users Permission",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update a Users Permission status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Update a Users Permission response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -679,7 +1028,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"feeCurrency\":\"USD\",\n    \"archivedOrder\":\"archived-asc\"\n}",
+							"raw": "{\n    \"permission\": \"FULL\",\n    \"user\": {{user}}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -687,25 +1036,42 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents/{{document}}/options",
+							"raw": "{{server}}/api/{{ver}}/permissions/{{project}}",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"documents",
-								"{{document}}",
-								"options"
+								"permissions",
+								"{{project}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get Document attachments",
+					"name": "Delete a User Permission",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Delete a Users Permission status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Delete a Users Permission response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
-						"method": "GET",
+						"method": "DELETE",
 						"header": [
 							{
 								"key": "Authorization",
@@ -714,16 +1080,17 @@
 							}
 						],
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/documents/{{document}}/attachments",
+							"raw": "{{server}}/api/{{ver}}/permissions/{{project}}/users/{{user}}",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"{{ver}}",
-								"documents",
-								"{{document}}",
-								"attachments"
+								"permissions",
+								"{{project}}",
+								"users",
+								"{{user}}"
 							]
 						}
 					},
@@ -732,79 +1099,744 @@
 			]
 		},
 		{
-			"name": "2. Projects",
+			"name": "Projects",
 			"item": [
 				{
-					"name": "Order Stack",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"stack\": \"1234-1234-1234-1234\",\n    \"position\": 0\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+					"name": "Stacks",
+					"item": [
+						{
+							"name": "Add Stack",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"pm.environment.set(\"stack\", jsonData.data.id);",
+											"",
+											"pm.test(\"Add Stack status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Add Stack response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.an(\"object\");",
+											"});"
+										],
+										"type": "text/javascript"
+									}
 								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/order-stack",
-							"host": [
-								"{{server}}"
 							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"projects",
-								"{{project}}",
-								"order-stack"
-							]
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"title\": \"To Do\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/projects/{{project}}/stacks",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"projects",
+										"{{project}}",
+										"stacks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Stack",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Update Stack status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Update Stack response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.equal(true);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"title\": \"Updated Stack\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"stacks",
+										"{{stack}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a Stack",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Get a Stack status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Get a Stack response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data.title).to.be.equal(\"Updated Stack\");",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"stacks",
+										"{{stack}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Mark all task as Done",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Mark all task as Done status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Mark all task as Done response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.equal(true);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/done",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"stacks",
+										"{{stack}}",
+										"done"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Mark all tasks as To Do",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Mark all task as To Do status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Mark all task as To Do response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.equal(true);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/todo",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"stacks",
+										"{{stack}}",
+										"todo"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Archive All tasks",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Archive All status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Archive All response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.equal(true);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/archive-all",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"stacks",
+										"{{stack}}",
+										"archive-all"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Archive done tasks",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Archive Done status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Archive Done response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.equal(true);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/archive-done",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"stacks",
+										"{{stack}}",
+										"archive-done"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Order Stack",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Order Stack status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Order Stack response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.equal(true);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"stack\": \"{{stack}}\",\n    \"position\": 0\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/projects/{{project}}/order-stack",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"projects",
+										"{{project}}",
+										"order-stack"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "Set Tasks Order",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"task\": \"1234-1234-1234-1234\",\n\t\"stack\": \"1234-1234-1234-1234\",\n    \"position\": 0\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+					"name": "Tasks",
+					"item": [
+						{
+							"name": "Add Task",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"pm.environment.set(\"task\", jsonData.data.id);",
+											"",
+											"pm.test(\"Add Task status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Add Task response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.an(\"object\");",
+											"});"
+										],
+										"type": "text/javascript"
+									}
 								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/order-task",
-							"host": [
-								"{{server}}"
 							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"projects",
-								"{{project}}",
-								"order-task"
-							]
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"title\": \"New task\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/tasks",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"stacks",
+										"{{stack}}",
+										"tasks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Task to TOP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Add Task to Top status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Add Task to Top  response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.an(\"object\");",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"title\": \"New task\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/tasks?position=top",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"stacks",
+										"{{stack}}",
+										"tasks"
+									],
+									"query": [
+										{
+											"key": "position",
+											"value": "top"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Task",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Update Task status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Update Task response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.equal(true);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"title\": \"Updated task\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/tasks/{{task}}",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"tasks",
+										"{{task}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Single Task",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Get Task status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Get Task response\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data).to.be.an(\"object\");",
+											"});",
+											"",
+											"pm.test(\"Get Task response 2\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.data.title).to.be.equal(\"Updated task\");",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/tasks/{{task}}",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"tasks",
+										"{{task}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Task watchers",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Get Task watchers status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/tasks/{{task}}/watchers",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"tasks",
+										"{{task}}",
+										"watchers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Task watcher",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Add Task watcher status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/tasks/{{task}}/watch",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"tasks",
+										"{{task}}",
+										"watch"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Task watcher",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Remove Task watcher status test\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{server}}/api/{{ver}}/tasks/{{task}}/unwatch",
+									"host": [
+										"{{server}}"
+									],
+									"path": [
+										"api",
+										"{{ver}}",
+										"tasks",
+										"{{task}}",
+										"unwatch"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
 					"name": "Get Order",
@@ -832,29 +1864,21 @@
 						}
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "3. Stacks",
-			"item": [
+				},
 				{
-					"name": "Add Stack",
+					"name": "Set Tasks Order",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"stack\", jsonData.data.id);",
-									"",
-									"pm.test(\"Add Stack status test\", function () {",
+									"pm.test(\"Set Task Order status test\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"Add Stack response\", function () {",
+									"pm.test(\"Set Task Order response\", function () {",
 									"    const responseJson = pm.response.json();",
-									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"    pm.expect(responseJson.data).to.be.equal(true);",
 									"});"
 								],
 								"type": "text/javascript"
@@ -872,7 +1896,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"title\": \"To Do\"\n}",
+							"raw": "{\n    \"task\": \"{{task}}\",\n\t\"stack\": \"{{stack}}\",\n    \"position\": 0\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -880,7 +1904,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/stacks",
+							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/order-task",
 							"host": [
 								"{{server}}"
 							],
@@ -889,463 +1913,7 @@
 								"{{ver}}",
 								"projects",
 								"{{project}}",
-								"stacks"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Stack",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"title\": \"Updated Stack\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"stacks",
-								"{{stack}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get a Stack",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"stacks",
-								"{{stack}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Stack",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"stacks",
-								"{{stack}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Mark all task as Done",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/done",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"stacks",
-								"{{stack}}",
-								"done"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Mark all tasks as To Do",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/todo",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"stacks",
-								"{{stack}}",
-								"todo"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Archive All tasks",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/archive-all",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"stacks",
-								"{{stack}}",
-								"archive-all"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Archive done tasks",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/archive-done",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"stacks",
-								"{{stack}}",
-								"archive-done"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "4. Tasks",
-			"item": [
-				{
-					"name": "Add Task",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"task\", jsonData.data.id);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"title\": \"New task\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/tasks",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"stacks",
-								"{{stack}}",
-								"tasks"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add Task to TOP",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"task\", jsonData.data.id);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"title\": \"New task\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}/tasks?position=top",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"stacks",
-								"{{stack}}",
-								"tasks"
-							],
-							"query": [
-								{
-									"key": "position",
-									"value": "top"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Task",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"title\": \"Updated title\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"tasks",
-								"{{task}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Single Task",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"pm.environment.set(\"task\", jsonData.data.id);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"tasks",
-								"{{task}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Task watchers",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}/watchers",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"tasks",
-								"{{task}}",
-								"watchers"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add Task watcher",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}/watch",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"tasks",
-								"{{task}}",
-								"watch"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Remove Task watcher",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{authToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{server}}/api/{{ver}}/tasks/{{task}}/unwatch",
-							"host": [
-								"{{server}}"
-							],
-							"path": [
-								"api",
-								"{{ver}}",
-								"tasks",
-								"{{task}}",
-								"unwatch"
+								"order-task"
 							]
 						}
 					},
@@ -1376,11 +1944,55 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Delete Stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Delete Stack status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Delete Stack response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.equal(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/stacks/{{stack}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"stacks",
+								"{{stack}}"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
 		{
-			"name": "5. Files",
+			"name": "Files",
 			"item": [
 				{
 					"name": "Upload attachment - only in the client",
@@ -1472,10 +2084,29 @@
 			]
 		},
 		{
-			"name": "6. Tags",
+			"name": "Tags",
 			"item": [
 				{
 					"name": "Get All Tags",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get All Tags status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get All Tags response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"array\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1500,7 +2131,7 @@
 					"response": []
 				},
 				{
-					"name": "Add Tag",
+					"name": "Add Global Tag",
 					"event": [
 						{
 							"listen": "test",
@@ -1509,11 +2140,11 @@
 									"var jsonData = pm.response.json();",
 									"pm.environment.set(\"tag\", jsonData.data.id);",
 									"",
-									"pm.test(\"Add Tag status test\", function () {",
+									"pm.test(\"Add Global Tag status test\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"Add tag response\", function () {",
+									"pm.test(\"Add Global tag response\", function () {",
 									"    const responseJson = pm.response.json();",
 									"    pm.expect(responseJson.data).to.be.an(\"object\");",
 									"});",
@@ -1556,14 +2187,73 @@
 					"response": []
 				},
 				{
-					"name": "Update Tag",
+					"name": "Add Project Tag",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"tag\", jsonData.data.id);",
 									"",
+									"pm.test(\"Add Project Tag status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add Project Tag response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});",
+									"",
+									"pm.test(\"Add Project Tag response 2\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data.project).to.be.not.equal(null);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"New Tag\",\n\t\"color\": \"#000000\",\n    \"project\": \"{{project}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/tags",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"tags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Tag",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
 									"pm.test(\"Update Tag status test\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
@@ -1584,7 +2274,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"title\": \"Update New Tag\",\n\t\"color\": \"#ffffff\"\n}",
+							"raw": "{\n\t\"title\": \"Updated Tag\",\n\t\"color\": \"#ffffff\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1613,8 +2303,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"",
 									"pm.test(\"Delete Tag status test\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
@@ -1651,13 +2339,273 @@
 			]
 		},
 		{
-			"name": "7. Members",
+			"name": "Statuses",
+			"item": [
+				{
+					"name": "Get All Statuses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get All Statuses status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get All Statuses response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"array\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/statuses",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"statuses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Global Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"status\", jsonData.data.id);",
+									"",
+									"pm.test(\"Add Global Status status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add Global Status response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"New Status\",\n\t\"color\": \"#000000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/statuses",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"statuses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Project Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"status\", jsonData.data.id);",
+									"",
+									"pm.test(\"Add Project Status status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Add Project Status response\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data).to.be.an(\"object\");",
+									"});",
+									"",
+									"pm.test(\"Add Project Status response 2\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data.project).to.be.not.equal(null);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"New Status\",\n\t\"color\": \"#000000\",\n    \"project\": \"{{project}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/statuses",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"statuses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Status status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Update New Status\",\n\t\"color\": \"#ffffff\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/statuses/{{status}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"statuses",
+								"{{status}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Delete Status status test\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/api/{{ver}}/statuses/{{status}}",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"{{ver}}",
+								"statuses",
+								"{{status}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Members",
 			"item": [
 				{
 					"name": "Add Project member/s",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{server}}/api/{{ver}}/projects/{{project}}/members",
 							"host": [
@@ -1677,7 +2625,7 @@
 			]
 		},
 		{
-			"name": "8. People",
+			"name": "People",
 			"item": [
 				{
 					"name": "Add person",
@@ -1760,7 +2708,7 @@
 			]
 		},
 		{
-			"name": "9. Notepad",
+			"name": "Notepad",
 			"item": [
 				{
 					"name": "Update Notepad",
@@ -1800,10 +2748,10 @@
 			]
 		},
 		{
-			"name": "10. Search",
+			"name": "Search",
 			"item": [
 				{
-					"name": "New Request",
+					"name": "Search",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1836,7 +2784,7 @@
 			]
 		},
 		{
-			"name": "11. Updates",
+			"name": "Updates",
 			"item": [
 				{
 					"name": "Get latest updates",
@@ -1870,6 +2818,23 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Cleanup",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/cleanup",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"cleanup"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [

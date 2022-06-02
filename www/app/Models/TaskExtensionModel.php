@@ -17,24 +17,44 @@ class TaskExtensionModel extends Model
     protected $updatedField  = '';
     protected $deletedField  = '';
 
+    protected $afterFind = ["formatExtensions"];
+
     protected $validationRules = [
-        'id' => 'required|min_length[35]',
-        'task' => 'required|min_length[35]',
+        'id' => 'required|min_length[20]',
+        'task' => 'required|min_length[20]',
         'type' => 'required|string'
     ];
 
-    protected $validationMessages = [
-        'id' => [
-            'required' => 'ERR-TASK-EXT-ID-REQUIRED',
-            'min_length' => 'ERR-TASK-EXT-ID-INVALID',
-        ],
-        'task' => [
-            'required' => 'ERR-TASK-ID-REQUIRED',
-            'min_length' => 'ERR-TASK-ID-INVALID',
-        ],
-        'type' => [
-            'required' => 'ERR-TASK-EXT-TYPE-REQUIRED',
-            'string' => 'ERR-TASK-EXT-TYPE-INVALID'
-        ]
-    ];
+    protected function formatExtension(&$extension)
+    {
+        $extension->options = json_decode($extension->options);
+        $extension->content = json_decode($extension->content);
+    }
+
+    protected function formatExtensions(array $data)
+    {
+
+        // format list of extensions
+        if (!$data["singleton"] && $data["data"]) {
+            foreach ($data["data"] as $key => &$extension) {
+                $this->formatExtension($extension);
+            }
+        }
+
+        return $data;
+    }
+
+    public function getTaskExtensions($taskId)
+    {
+        return $this
+            ->where("task", $taskId)
+            ->findAll();
+    }
+
+    public function getTasksExtensions($tasksIds)
+    {
+        return $this
+            ->where("task", $taskId)
+            ->findAll();
+    }
 }

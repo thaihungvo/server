@@ -2,59 +2,6 @@
 
 use App\Models\DocumentModel;
 
-if (!function_exists('documents_load_documents'))
-{
-    function documents_load_documents($user, $loadCounters = false)
-    {
-        // get all the documents
-        $documentModel = new DocumentModel();
-        $documentBuilder = $documentModel->builder();
-        $documentQuery = $documentBuilder->select("documents.id, documents.text, documents.type, documents.updated, documents.created, documents.parent")
-            ->join("documents_members", "documents_members.document = documents.id", "left")
-            ->where("documents.deleted", NULL)
-            ->groupStart()
-                ->where("documents.owner", $user->id)
-                ->orWhere("documents_members.user", $user->id)
-                ->orWhere("documents.everyone", 1)
-            ->groupEnd()
-            ->groupBy("documents.id")
-            ->orderBy("documents.position", "ASC")
-            ->get();
-        $documents = $documentQuery->getResult();
-
-        $projects = array();
-        $people = array();
-
-        foreach ($documents as &$document) {
-            if ($document->parent === "0") {
-                $document->parent = 0;
-            }
-
-            if ($document->type === "folder") {
-                $document->droppable = true;
-            } else if ($document->type === "project") {
-                $projects[] = $document->id;
-            } else if ($document->type === "people") {
-                $people[] = $document->id;
-            }
-
-            $document->data = new \stdClass();
-            $document->data->type = $document->type;
-            unset($document->type);
-            $document->data->created = $document->created;
-            unset($document->created);
-            $document->data->updated = $document->updated;
-            unset($document->updated);
-        }
-
-        if ($loadCounters) {
-            $counters = documents_load_counters($documents);
-        }
-
-        return $documents;
-    }
-}
-
 if (!function_exists('documents_load_counters'))
 {
     function documents_load_counters(&$documents)
@@ -111,44 +58,6 @@ if (!function_exists('documents_get_default_options'))
     }
 }
 
-if (!function_exists('documents_load_document'))
-{
-    function documents_load_document($documentID, $user)
-    {
-        $documentModel = new DocumentModel();
-
-        $documentBuilder = $documentModel->builder();
-        $documentQuery = $documentBuilder->select("documents.*")
-            ->join("documents_members", "documents_members.document = documents.id", "left")
-            ->where("documents.deleted", NULL)
-            ->where("documents.id", $documentID)
-            ->groupStart()
-                ->where("documents.owner", $user->id)
-                ->orWhere("documents_members.user", $user->id)
-                ->orWhere("documents.everyone", 1)
-            ->groupEnd()
-            ->limit(1)
-            ->get();
-
-        $documents = $documentQuery->getResult();
-        
-        if (!count($documents)) return null;
-
-        $document = $documents[0];
-        if ($document->options) {
-            $document->options = json_decode($document->options);
-        }
-
-        documents_expand_document($document, $user);
-
-        // removing unncessary prop
-        unset($document->deleted);
-        unset($document->position);
-
-        return $document;
-    }
-}
-
 if (!function_exists('documents_expand_document'))
 {
     function documents_expand_document(&$document, $user)
@@ -181,7 +90,7 @@ if (!function_exists('documents_clean_up'))
     function documents_clean_up($documents)
     {
         foreach ($documents as $document) {        
-            switch ($document->type) {
+            switch ($document->data->type) {
                 case "project":
                     helper("projects");
                     return projects_clean_up($document);

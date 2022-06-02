@@ -41,7 +41,6 @@ class UserController extends BaseController
     public function register_v1()
     {
         $userData = $this->request->getJSON();
-
         // username or password missing
         if (
             !isset($userData->email) ||
@@ -69,17 +68,13 @@ class UserController extends BaseController
             'salt' => uniqid(mt_rand(), true),
             'cost' => 12
         ];
-        $hash = password_hash($userData->password, PASSWORD_DEFAULT, $options);
-
-        $data = [
-            'email'    => $userData->email,
-            'password' => $hash
-        ];
+        $userData->password = password_hash($userData->password, PASSWORD_DEFAULT, $options);
         
-        if (!$userModel->insert($data)) {
+        if (!$userModel->insert($userData)) {
             return $this->reply(null, 500, "ERR-USER-REGISTRATION-SAVE");
         }
+        
 
-        return $this->reply(null, 200, "OK-USER-REGISTRATION-SUCCESS");
+        return $this->reply($this->db->insertID(), 200, "OK-USER-REGISTRATION-SUCCESS");
     }
 }

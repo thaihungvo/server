@@ -5,9 +5,9 @@
 # http://www.sequelpro.com/
 # https://github.com/sequelpro/sequelpro
 #
-# Host: 127.0.0.1 (MySQL 5.7.26-log)
+# Host: 127.0.0.1 (MySQL 5.7.34)
 # Database: stacks
-# Generation Time: 2021-11-26 09:09:34 +0000
+# Generation Time: 2022-04-11 06:32:19 +0000
 # ************************************************************
 
 
@@ -75,7 +75,7 @@ CREATE TABLE `stk_documents` (
   `text` varchar(100) NOT NULL DEFAULT '',
   `type` enum('folder','project','notepad','people','file') NOT NULL DEFAULT 'project',
   `owner` int(11) NOT NULL,
-  `everyone` tinyint(1) NOT NULL DEFAULT '1',
+  `public` tinyint(1) NOT NULL DEFAULT '1',
   `parent` char(36) NOT NULL DEFAULT '',
   `position` smallint(6) NOT NULL,
   `options` text,
@@ -83,21 +83,6 @@ CREATE TABLE `stk_documents` (
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-
-# Dump of table stk_documents_members
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `stk_documents_members`;
-
-CREATE TABLE `stk_documents_members` (
-  `document` char(36) NOT NULL DEFAULT '',
-  `user` char(36) NOT NULL DEFAULT '',
-  `created` datetime DEFAULT NULL,
-  PRIMARY KEY (`user`),
-  UNIQUE KEY `record` (`document`,`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -175,6 +160,24 @@ CREATE TABLE `stk_people` (
 
 
 
+# Dump of table stk_permissions
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `stk_permissions`;
+
+CREATE TABLE `stk_permissions` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `resource` char(36) NOT NULL DEFAULT '',
+  `type` enum('DOCUMENT','STACK','TASK') DEFAULT NULL,
+  `user` int(11) DEFAULT NULL,
+  `permission` enum('FULL','EDIT','LIMITED','NONE') DEFAULT 'FULL',
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
 # Dump of table stk_stacks
 # ------------------------------------------------------------
 
@@ -188,6 +191,9 @@ CREATE TABLE `stk_stacks` (
   `maxTasks` int(6) DEFAULT NULL,
   `automation` text,
   `position` smallint(6) NOT NULL,
+  `sorting` text,
+  `public` tinyint(4) NOT NULL,
+  `owner` int(11) NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `deleted` datetime DEFAULT NULL,
@@ -207,6 +213,24 @@ CREATE TABLE `stk_stacks_collapsed` (
   `collapsed` tinyint(1) NOT NULL,
   `user` int(11) NOT NULL,
   `created` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+# Dump of table stk_statuses
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `stk_statuses`;
+
+CREATE TABLE `stk_statuses` (
+  `id` char(36) NOT NULL DEFAULT '',
+  `title` varchar(100) NOT NULL DEFAULT '',
+  `color` varchar(7) NOT NULL DEFAULT '',
+  `project` char(36) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  `deleted` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -242,8 +266,8 @@ CREATE TABLE `stk_tasks` (
   `showDescription` tinyint(1) NOT NULL DEFAULT '0',
   `tags` text,
   `status` varchar(36) DEFAULT NULL,
-  `startdate` datetime DEFAULT NULL,
-  `duedate` datetime DEFAULT NULL,
+  `startdate` varchar(20) DEFAULT NULL,
+  `duedate` varchar(20) DEFAULT NULL,
   `cover` tinyint(1) DEFAULT NULL,
   `done` tinyint(1) DEFAULT NULL,
   `altTags` tinyint(1) DEFAULT NULL,
@@ -253,11 +277,12 @@ CREATE TABLE `stk_tasks` (
   `hourlyFee` float DEFAULT NULL,
   `archived` datetime DEFAULT NULL,
   `completed` datetime DEFAULT NULL,
-  `priority` enum('low','medium','high') DEFAULT NULL,
+  `priority` enum('none','low','medium','high') DEFAULT NULL,
   `repeats` text,
   `project` char(36) NOT NULL DEFAULT '',
   `stack` char(36) NOT NULL,
   `position` smallint(6) NOT NULL,
+  `public` tinyint(1) NOT NULL DEFAULT '1',
   `owner` int(11) NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,

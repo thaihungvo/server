@@ -19,7 +19,7 @@ class AttachmentModel extends Model
 
     protected $validationRules = [
         'owner' => 'required|integer',
-        'resource' => 'required|min_length[35]',
+        'resource' => 'required|min_length[20]',
         'title' => 'required|string',
         'content' => 'required|string',
         'extension' => 'required|string',
