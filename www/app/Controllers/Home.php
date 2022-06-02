@@ -27,8 +27,8 @@ class Home extends BaseController
             $this->db->query("TRUNCATE stk_tasks_assignees");
             $this->db->query("TRUNCATE stk_tasks_extensions");
             $this->db->query("TRUNCATE stk_tasks_watchers");
-            $this->db->query("DELETE FROM stk_users WHERE id > 3");
-            $this->db->query("ALTER TABLE stk_users AUTO_INCREMENT = 4");
+            // $this->db->query("DELETE FROM stk_users WHERE id > 3");
+            // $this->db->query("ALTER TABLE stk_users AUTO_INCREMENT = 4");
         } catch (\Exception $e) {
             return $this->reply(false);    
         }

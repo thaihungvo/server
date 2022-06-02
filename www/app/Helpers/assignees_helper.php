@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\TaskAssigneeModel;
-use App\Models\PersonModel;
+use App\Models\UserModel;
 
 if (!function_exists('tasks_assignees'))
 {
@@ -13,8 +13,8 @@ if (!function_exists('tasks_assignees'))
 
 		$taskAssigneeModel = new TaskAssigneeModel();
         $taskAssigneeBuilder = $taskAssigneeModel->builder();
-        $taskAssigneeQuery = $taskAssigneeBuilder->select("people.id, people.firstName, people.lastName, tasks_assignees.task")
-            ->join('people', 'people.id = tasks_assignees.person', 'left')
+        $taskAssigneeQuery = $taskAssigneeBuilder->select("users.id, users.firstName, users.lastName, tasks_assignees.task")
+            ->join('users', 'users.id = tasks_assignees.person', 'left')
             ->whereIn('tasks_assignees.task', $tasksIDs)
             ->get();
         $assignees = $taskAssigneeQuery->getResult();
