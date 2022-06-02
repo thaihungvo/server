@@ -1,4 +1,4 @@
-# Stacks Server (Public Beta)
+# Stacks Server (Public Beta - not production ready)
 
 **Stacks Server** is a PHP server for the [Stacks Task Manager](https://stacks.rocks) app.
 More information can be found at the [official site](https://stacks.rocks).
