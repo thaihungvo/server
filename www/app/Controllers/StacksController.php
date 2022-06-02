@@ -1,116 +1,95 @@
 <?php namespace App\Controllers;
 
+use App\Models\DocumentModel;
 use App\Models\StackModel;
 use App\Models\TaskModel;
 use App\Models\StackCollapsedModel;
 
 class StacksController extends BaseController
 {
+    protected $permissionSection = "stacks";
+
     public function add_v1($idProject)
     {
-        helper("documents");
+        $document = $this->getDocument($idProject);
 
-        $user = $this->request->user;
-        $document = documents_load_document($idProject, $user);
-        
         if (!$document) {
             return $this->reply("Project not found", 404, "ERR-STACK-CREATE");
         }
-
-        $stackModel = new StackModel();
-        $stackData = $this->request->getJSON();
-        $stackData->project = $document->id;
-
-        if (isset($stackData->tag)) {
-            $stackData->tag = json_encode($stackData->tag);
-        }
-        if (isset($stackData->automation)) {
-            $stackData->automation = json_encode($stackData->automation);
-        }
-
-        if (!isset($stackData->position)) {
-            $lastPosition = $stackModel
-                ->where("project", $document->id)
-                ->orderBy("position", "desc")
-                ->first();
-
-            $stackData->position = intval($lastPosition->position) + 1;
-        }
-
-        if (!isset($stackData->id)) {
-            helper('uuid');
-            $stackData->id = uuid();
-        }
-
-        try {
-            if ($stackModel->insert($stackData) === false) {
-                $errors = $stackModel->errors();
-                return $this->reply($errors, 500, "ERR-STACK-CREATE");
-            }
-        } catch (\Exception $e) {
-            return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
-        }
-
-        $stackCollapsedModel = new StackCollapsedModel();
         
-        // create a default collapsed state
-        $collapsed = [
-            "stack" => $stackData->id,
-            "collapsed" => 0,
-            "user" => $user->id
-        ];
+        // check if the current user has the permission to add a new stack
+        $this->can("add", $document);
+
+        $stackModel = new StackModel($this->request->user);
+        $data = $this->request->getJSON();
+        $data->project = $document->id;
+        $data->owner = $this->request->user->id;
+        $data->public = 1;
+        $stackModel->formatData($data);
+
+        $this->db->transStart();
 
         try {
-            if ($stackCollapsedModel->insert($collapsed) === false) {
-                $errors = $stackCollapsedModel->errors();
-                return $this->reply($errors, 500, "ERR-STACK-CREATE");    
+            if ($stackModel->insert($data) === false) {
+                return $this->reply($stackModel->errors(), 500, "ERR-STACK-CREATE");
             }
         } catch (\Exception $e) {
             return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
+        }
+
+        try {
+            $stackModel->addCollapsedState($data->id, $this->request->user->id);
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
+        }
+
+        // inserting the default document permission
+        try {
+            $this->addPermission($data->id, $this::PERMISSION_TYPE_STACK);
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-STACK-CREATE");
+        }
+
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            return $this->reply(null, 500, "ERR-STACK-UPDATE");
         }
 
         $this->addActivity(
             $document->id,
             $document->id, 
-            $stackData->id, 
+            $data->id, 
             $this::ACTION_CREATE, 
             $this::SECTION_STACK
         );
 
-        $stack = $stackModel->find($stackData->id);
+        $stack = $stackModel->getStack($data->id);
         return $this->reply($stack);
     }
 
     public function get_v1($idStack)
     {
-        $stackModel = new StackModel();
-        $stack = $stackModel->find($idStack);
+        $stackModel = new StackModel($this->request->user);
+        $stack = $stackModel->getStack($idStack);
 
         if (!$stack) {
             return $this->reply("Stack not found", 404, "ERR-STACK-GET");
         }
 
-        if (isset($stack->tag)) {
-            $stack->tag = json_decode($stack->tag);
-        }
-        if (isset($stack->automation)) {
-            $stack->automation = json_decode($stack->automation);
+        $document = $this->getDocument($stack->project);
+        if (!$document) {
+            return $this->reply("Stack not found", 404, "ERR-STACK-GET");
         }
 
-        unset($stack->project);
-        $stack->position = intval($stack->position);
-
-        $stackCollapsedModel = new StackCollapsedModel();
-        $stackCollapsed = $stackCollapsedModel->where("stack", $idStack)->first();
-        $stack->collapsed = (bool)$stackCollapsed->collapsed;
+        // checking if the current user has the permission to get the stack
+        // $this->can("read", $document);
 
         return $this->reply($stack);
     }
 
     public function update_v1($idStack)
     {
-        $this->lock($idStack);
-
         $stackModel = new StackModel();
         $stack = $stackModel->find($idStack);
 
@@ -118,64 +97,39 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-UPDATE");
         }
 
-        helper("documents");
+        $this->lock($idStack);
 
-        $user = $this->request->user;
-        $document = documents_load_document($stack->project, $user);
+        $document = $this->getDocument($stack->project);
 
-        $stackData = $this->request->getJSON();
-        if (!isset($stackData->maxTasks)) {
-            $stackData->maxTasks = NULL;
-        }
-        unset($stackData->created);
+        // checking if the current user has the permission to update the stack
+        $this->can("update", $document);
 
+        $data = $this->request->getJSON();
         // forcing the stack project id
-        $stackData->project = $document->id;
+        $data->project = $document->id;
+        // forcing the stack id
+        $data->id = $stack->id;
+        $stackModel->formatData($data);
 
-        // saving stack tag/tint color
-        if (isset($stackData->tag)) {
-            $stackData->tag = json_encode($stackData->tag);
-        } else {
-            $stackData->tag = "";
-        }
-
-        // saving stack automation
-        if (isset($stackData->automation)) {
-            $stackData->automation = json_encode($stackData->automation);
-        } else {
-            $stackData->automation = "";
-        }
+        $this->db->transStart();
 
         // saving collapsed state of the stack for the current user
-        if (isset($stackData->collapsed)) {
-            $stackCollapsedModel = new StackCollapsedModel();
+        if (isset($data->collapsed)) {
             try {
-                if (
-                    $stackCollapsedModel
-                        ->where("user", $user->id)
-                        ->where("stack", $stackData->id)
-                        ->delete() === false
-                ) {
-                    $errors = $stackCollapsedModel->errors();
-                    return $this->reply($errors, 500, "ERR-STACK-UPDATE");
-                }
-                    
-                if ($stackCollapsedModel->insert([
-                    "stack" => $stackData->id,
-                    "collapsed" => intval($stackData->collapsed),
-                    "user" => $user->id
-                ]) === false) {
-                    $errors = $stackCollapsedModel->errors();
-                    return $this->reply($errors, 500, "ERR-STACK-UPDATE");
-                }
+                $stackModel->addCollapsedState($stack->id, $this->request->user->id, intval($data->collapsed));
             } catch (\Exception $e) {
                 return $this->reply($e->getMessage(), 500, "ERR-STACK-UPDATE");
             }
         }
 
         // update the stack data
-        if ($stackModel->update($stack->id, $stackData) === false) {
+        if ($stackModel->update($stack->id, $data) === false) {
             return $this->reply($stackModel->errors(), 500, "ERR-STACK-UPDATE");
+        }
+
+        $this->db->transComplete();
+        if ($this->db->transStatus() === false) {
+            return $this->reply(null, 500, "ERR-STACK-UPDATE");
         }
 
         $this->addActivity(
@@ -200,13 +154,15 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-DONE");
         }
 
-        helper("documents");
-        $user = $this->request->user;
-        $document = documents_load_document($stack->project, $user);
+        $documentModel = new DocumentModel($this->request->user);
+        $document = $documentModel->find($stack->project);
 
         if (!$document) {
             return $this->reply("Stack not found", 404, "ERR-STACK-DONE");
         }
+
+        // checking if the current user has the permission to update the stack
+        $this->can("update", $document);
 
         $taskModel = new TaskModel();
 
@@ -239,13 +195,15 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-TODO");
         }
 
-        helper("documents");
-        $user = $this->request->user;
-        $document = documents_load_document($stack->project, $user);
+        $documentModel = new DocumentModel($this->request->user);
+        $document = $documentModel->find($stack->project);
 
         if (!$document) {
             return $this->reply("Stack not found", 404, "ERR-STACK-TODO");
         }
+
+        // checking if the current user has the permission to update the stack
+        $this->can("update", $document);
 
         $taskModel = new TaskModel();
 
@@ -278,13 +236,15 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-ALL");
         }
 
-        helper("documents");
-        $user = $this->request->user;
-        $document = documents_load_document($stack->project, $user);
+        $documentModel = new DocumentModel($this->request->user);
+        $document = $documentModel->find($stack->project);
 
         if (!$document) {
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-ALL");
         }
+
+        // checking if the current user has the permission to update the stack
+        $this->can("update", $document);
 
         $taskModel = new TaskModel();
 
@@ -314,13 +274,15 @@ class StacksController extends BaseController
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-DONE");
         }
 
-        helper("documents");
-        $user = $this->request->user;
-        $document = documents_load_document($stack->project, $user);
+        $documentModel = new DocumentModel($this->request->user);
+        $document = $documentModel->find($stack->project);
 
         if (!$document) {
             return $this->reply("Stack not found", 404, "ERR-STACK-ARCHIVE-DONE");
         }
+
+        // checking if the current user has the permission to update the stack
+        $this->can("update", $document);
 
         $taskModel = new TaskModel();
 
@@ -350,6 +312,12 @@ class StacksController extends BaseController
         if (!$stack) {
             return $this->reply("Stack not found", 404, "ERR-STACK-DELETE");
         }
+
+        $documentModel = new DocumentModel($this->request->user);
+        $document = $documentModel->find($stack->project);
+
+        // checking if the current user has the permission to delete the stack
+        $this->can("delete", $document);
 
         // delete all connected tasks
         $taskModel = new TaskModel();

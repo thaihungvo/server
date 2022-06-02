@@ -2,9 +2,9 @@
 
 use CodeIgniter\Model;
 
-class TagModel extends Model
+class StatusModel extends Model
 {
-    protected $table      = "tags";
+    protected $table      = "statuses";
     protected $primaryKey = "id";
     protected $returnType = "object";
 

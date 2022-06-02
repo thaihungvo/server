@@ -6,14 +6,8 @@ class PeopleController extends BaseController
 {
     public function add_v1($peopleId)
     {
-        helper("documents");
-
-        $user = $this->request->user;
-        $document = documents_load_document($peopleId, $user);
-
-        if (!$document) {
-            return $this->reply("People list not found", 404, "ERR-PEOPLE-ADD");
-        }
+        $document = $this->getDocument($peopleId);
+        $this->exists($document);
 
         $personData = $this->request->getJSON();
         $personData->people = $document->id;
@@ -42,10 +36,7 @@ class PeopleController extends BaseController
     {
         $personModel = new PersonModel();
         $person = $personModel->find($personId);
-
-        if (!$person) {
-            return $this->reply("Person not found", 404, "ERR-PEOPLE-UPDATE");
-        }
+        $this->exists($person);
 
         helper("documents");
 

@@ -2,22 +2,69 @@
 
 use App\Models\StackModel;
 use App\Models\TagModel;
+use App\Models\StatusModel;
 use App\Models\TaskModel;
 
 if (!function_exists("projects_expand")) {
     function projects_expand(&$document, $user) {
         // load project tags
         $tagModel = new TagModel();
-        $tags = $tagModel->where("project", $document->id)->findAll();
-        foreach ($tags as &$tag) {
+        $document->tags = $tagModel
+            ->where("project", $document->id)
+            ->findAll();
+            
+        foreach ($document->tags as &$tag) {
             unset($tag->project);
         }
-        $document->tags = $tags;
+
+        // load project statuses
+        $statusModel = new StatusModel();
+        $document->statuses = $statusModel->where("project", $document->id)->findAll();
+        foreach ($document->statuses as &$status) {
+            unset($status->project);
+        }
 
         // load project stacks
-        $document->stacks = projects_load_stacks($document->id, $user);
+        $stackModel = new StackModel($user);
+        $document->stacks = $stackModel->getStacks($document->id);
+        
+        if (count($document->stacks)) {
+            $stacksIDs = array_map(fn($stack) => $stack->id, $document->stacks);
+
+            // load all tasks
+            $taskModel = new TaskModel($user);
+            $tasks = $taskModel->getTasksByStacks($stacksIDs);
+
+            // connect tasks to stacks
+            foreach ($document->stacks as &$stack) {
+                foreach ($tasks as $task) {                    
+                    if ($task->stack === $stack->id) {
+                        $stack->tasks[] = $task;
+                    }
+                }
+            }
+        }
+        
+
         // TODO: moved archived task to their place
         $document->archived = [];
+
+        $permissions = $document->permissions;
+        $docId = $document->id;
+        $document->permissions = new \stdClass();
+        $document->permissions->$docId = $permissions;
+
+        foreach ($document->stacks as &$stack) {
+            $stackId = $stack->id;
+            $document->permissions->$stackId = $stack->permissions;
+            unset($stack->permissions);
+
+            foreach ($stack->tasks as &$task) {
+                $taskId = $task->id;
+                $document->permissions->$taskId = $task->permissions;
+                unset($task->permissions);
+            }
+        }
 
         unset($document->order);
         unset($document->deleted);
@@ -60,56 +107,6 @@ if (!function_exists('projects_add_tags'))
     }
 }
 
-if (!function_exists('projects_load_stacks'))
-{
-    function projects_load_stacks($id, $user)
-    {
-        $stackModel = new StackModel();
-        $stackBuilder = $stackModel->builder();
-        $stackQuery = $stackBuilder->select("stacks.*, stacks_collapsed.collapsed")
-            ->join('stacks_collapsed', 'stacks_collapsed.stack = stacks.id AND stacks_collapsed.user = '.$user->id, 'left')
-            ->where('stacks.project', $id)
-            ->where('stacks.deleted', NULL)
-            ->orderBy('position', 'ASC')
-            ->get();
-        $stacks = $stackQuery->getResult();
-
-        if (count($stacks)) {
-            $stacksIDs = [];
-
-            foreach ($stacks as &$stack) {
-                $stack->collapsed = boolval($stack->collapsed);
-                $stack->tag = json_decode($stack->tag);
-                $stack->automation = json_decode($stack->automation);
-                
-                unset($stack->project);
-                unset($stack->deleted);
-
-                $stacksIDs[] = $stack->id;
-            }
-
-            helper('tasks');
-
-            // load all tasks
-            $tasks = tasks_load($stacksIDs);
-
-            // connect tasks to stacks
-            foreach ($stacks as &$stack) {
-                // remove the order property from the stack
-                unset($stack->position);
-
-                $stack->tasks = [];
-                foreach ($tasks as $task) {                    
-                    if ($task->stack === $stack->id) {
-                        $stack->tasks[] = task_format($task);
-                    }
-                }
-            }
-        }
-
-        return $stacks;
-    }
-}
 
 if (!function_exists("projects_clean_up")) 
 {
@@ -138,5 +135,7 @@ if (!function_exists("projects_clean_up"))
         } catch (\Exception $e) {
             return false;
         }
+
+        return true;
     }
 }
