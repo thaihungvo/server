@@ -68,7 +68,11 @@ class UserController extends BaseController
             'salt' => uniqid(mt_rand(), true),
             'cost' => 12
         ];
+        
+        helper('uuid');
         $userData->password = password_hash($userData->password, PASSWORD_DEFAULT, $options);
+        $userData->id = uuid();
+        $userData->system = 1;
         
         if (!$userModel->insert($userData)) {
             return $this->reply(null, 500, "ERR-USER-REGISTRATION-SAVE");

@@ -70,7 +70,7 @@ $routes->get("/ping", "PingController::index");
 
 // MEMBERS
     // get all members
-    $routes->get("/api/v1/members", "MembersController::all_v1");
+    $routes->get("/api/v1/members/(:segment)", "MembersController::all_v1/$1");
 
 // TAGS
     // get all tags

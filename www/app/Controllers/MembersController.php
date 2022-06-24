@@ -4,10 +4,9 @@ use App\Models\UserModel;
 
 class MembersController extends BaseController
 {
-	public function all_v1()
+	public function all_v1($peopleId)
 	{
         $userModel = new UserModel();
-
         $users = $userModel->findAll();
 
         foreach ($users as &$user) {

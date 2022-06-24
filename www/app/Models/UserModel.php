@@ -10,7 +10,7 @@ class UserModel extends Model
 
     protected $useSoftDeletes = false;
 
-    protected $allowedFields = ["email", "password", "firstName", "lastName"];
+    protected $allowedFields = ["id", "email", "password", "system", "people", "firstName", "lastName", "email", "gender", "nickname", "birthday", "age", "jobTitle", "company", "officePhone", "cellPhone", "homePhone", "fax", "address", "county", "zip", "city", "country", "address2", "website", "notes", "socialTwitter", "socialFacebook", "socialLinkedin", "socialInstagram", "socialOther", "type", "avatar"];
 
     protected $useTimestamps = true;
     protected $createdField  = "created";
