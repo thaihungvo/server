@@ -73,12 +73,16 @@ class UserController extends BaseController
         $userData->password = password_hash($userData->password, PASSWORD_DEFAULT, $options);
         $userData->id = uuid();
         $userData->system = 1;
-        
-        if (!$userModel->insert($userData)) {
-            return $this->reply(null, 500, "ERR-USER-REGISTRATION-SAVE");
+
+        try {
+            if ($userModel->insert($userData) === false) {
+                return $this->reply($permissionModel->errors(), 500, "ERR-USER-REGISTRATION-SAVE");
+            }
+        } catch (\Exception $e) {
+            return $this->reply($e->getMessage(), 500, "ERR-USER-REGISTRATION-SAVE");
         }
         
 
-        return $this->reply($this->db->insertID(), 200, "OK-USER-REGISTRATION-SUCCESS");
+        return $this->reply($userData->id, 200, "OK-USER-REGISTRATION-SUCCESS");
     }
 }
