@@ -108,6 +108,7 @@ if (!function_exists('documents_clean_up'))
                     return files_clean_up($document);
                     break;
                 default:
+                    return true;
                     break;
             }
         }
