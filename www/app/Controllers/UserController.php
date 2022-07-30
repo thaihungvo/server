@@ -65,7 +65,6 @@ class UserController extends BaseController
         }
 
         $options = [
-            'salt' => uniqid(mt_rand(), true),
             'cost' => 12
         ];
         
