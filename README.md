@@ -51,7 +51,7 @@ Import the latest `sql` file from the `dump/db.sql` folder either using [phpMyAd
 
 The databse comes prepacked with 3 test users:
 
-* `admin@stacks.server` - `123456`
+* `admin@stacks.rocks` - `123456`
 * `l.skywalker@resistance.com` - `123456`
 * `d.vader@theempire.com` - `123456`
 

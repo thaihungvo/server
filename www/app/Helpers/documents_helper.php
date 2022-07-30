@@ -12,13 +12,13 @@ if (!function_exists('documents_load_counters'))
         // get counters
         $documentModel = new DocumentModel();
         $documentBuilder = $documentModel->builder();
-        $documentQuery = $documentBuilder->select("COUNT(". $db->protectIdentifiers("tasks", true) .".`id`) AS totalTasks, COUNT(". $db->protectIdentifiers("people", true) .".`id`) AS totalPeople, SUM(CASE WHEN ". $db->protectIdentifiers("tasks", true) .".`duedate` < '". $today ."' AND ". $db->protectIdentifiers("tasks", true) .".`done` = 0 THEN 1 ELSE 0 END) AS warning, documents.id")
+        $documentQuery = $documentBuilder->select("COUNT(". $db->protectIdentifiers("tasks", true) .".`id`) AS totalTasks, COUNT(". $db->protectIdentifiers("users", true) .".`id`) AS totalPeople, SUM(CASE WHEN ". $db->protectIdentifiers("tasks", true) .".`duedate` < '". $today ."' AND ". $db->protectIdentifiers("tasks", true) .".`done` = 0 THEN 1 ELSE 0 END) AS warning, documents.id")
             ->join("tasks", "tasks.project = documents.id", "left")
-            ->join("people", "people.people = documents.id", "left")
+            ->join("users", "users.people = documents.id", "left")
             ->whereIn("documents.type", ["project", "people"])
             ->where("documents.deleted", NULL)
             ->where("tasks.deleted", NULL)
-            ->where("people.deleted", NULL)
+            ->where("users.deleted", NULL)
             ->groupBy("documents.id")
             ->get();
         $counters = $documentQuery->getResult();
@@ -108,6 +108,7 @@ if (!function_exists('documents_clean_up'))
                     return files_clean_up($document);
                     break;
                 default:
+                    return true;
                     break;
             }
         }
