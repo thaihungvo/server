@@ -77,7 +77,7 @@ Unlike systems like Subversion, Git can have multiple remotes. A remote is the n
 
 If you are using the command-line, you can do the following to update your fork to the latest changes:
 
-1. `git remote add server git://github.com/stacks-task-manager/server.git`
+1. `git remote add server https://github.com/stacks-task-manager/server.git`
 2. `git pull server develop`
 3. `git push origin develop`
 
